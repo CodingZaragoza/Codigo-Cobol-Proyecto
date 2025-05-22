@@ -1,0 +1,541 @@
+000100 IDENTIFICATION DIVISION.                                         00010014
+000200 PROGRAM-ID.    HHMGR200.                                         00020028
+000300                                                                  00030014
+000400*----------------------------------------------------------------*00040014
+000500*  THIS PROGRAM CALLS HHOPN200                                   *00050028
+000600*----------------------------------------------------------------*00060014
+000700                                                                  00070014
+000800 DATE-COMPILED.                                                   00080014
+000900 ENVIRONMENT                     DIVISION.                        00090014
+001000                                                                  00100014
+001100 CONFIGURATION                   SECTION.                         00110014
+001200 SOURCE-COMPUTER.                IBM-370.                         00120014
+001300 OBJECT-COMPUTER.                IBM-370.                         00130014
+001400                                                                  00140014
+001500 INPUT-OUTPUT SECTION.                                            00150014
+001600 FILE-CONTROL.                                                    00160014
+001700                                                                  00170014
+001800     SELECT HHAFILE    ASSIGN TO UT-S-HHAFILE                     00180014
+001900         FILE STATUS IS UT1-STAT.                                 00190014
+002000     SELECT OUTFILE    ASSIGN TO UT-S-OUTFILE                     00200014
+002100         FILE STATUS IS UT2-STAT.                                 00210014
+002200     SELECT PRTFILE    ASSIGN TO UT-S-PRTFILE                     00220014
+002300         FILE STATUS IS PRT-STAT.                                 00230014
+002400                                                                  00240014
+002500 DATA DIVISION.                                                   00250014
+002600 FILE SECTION.                                                    00260014
+002700 FD  HHAFILE                                                      00270014
+002800     LABEL RECORDS ARE STANDARD                                   00280014
+002900     RECORDING MODE IS F                                          00290014
+003000     BLOCK CONTAINS 0 RECORDS.                                    00300014
+003100 01  HHA-REC                     PIC X(650).                      00310014
+003200                                                                  00320014
+003300 FD  OUTFILE                                                      00330014
+003400     LABEL RECORDS ARE STANDARD                                   00340014
+003500     RECORDING MODE IS F                                          00350014
+003600     BLOCK CONTAINS 0 RECORDS.                                    00360014
+003700 01  OUT-REC                     PIC X(650).                      00370014
+003800                                                                  00380014
+003900 FD  PRTFILE                                                      00390014
+004000     RECORDING MODE IS F                                          00400014
+004100     BLOCK CONTAINS 133 RECORDS                                   00410014
+004200     LABEL RECORDS ARE STANDARD.                                  00420014
+004300 01  PRTFILE-LINE                PIC X(133).                      00430014
+004400                                                                  00440014
+004500                                                                  00450014
+004600 WORKING-STORAGE SECTION.                                         00460014
+004700 77  W-STORAGE-REF               PIC X(36)  VALUE                 00470014
+004800     'HHMGR - W O R K I N G  S T O R A G E'.                      00480014
+004900 01  HHMGR-VERSION               PIC X(09)  VALUE 'M2020.0'.      00490028
+005000 01  HHOPN200                    PIC X(08)  VALUE 'HHOPN200'.     00500028
+005100 01  SUB1                        PIC 9(03)  VALUE 0.              00510014
+005200 01  EOF-SW                      PIC 9(01)  VALUE 0.              00520014
+005300 01  LINE-CTR                    PIC 9(02)  VALUE 65.             00530014
+005400 01  HHAFILE-CTR                 PIC 9(09)  VALUE 0.              00540014
+005500 01  OUTFILE-CTR                 PIC 9(09)  VALUE 0.              00550014
+005600 01  PRTFILE-CTR                 PIC 9(09)  VALUE 0.              00560014
+005700 01  UT1-STAT.                                                    00570014
+005800     05  UT1-STAT1               PIC X.                           00580014
+005900     05  UT1-STAT2               PIC X.                           00590014
+006000 01  UT2-STAT.                                                    00600014
+006100     05  UT2-STAT1               PIC X.                           00610014
+006200     05  UT2-STAT2               PIC X.                           00620014
+006300 01  PRT-STAT.                                                    00630014
+006400     05  PRT-STAT1               PIC X.                           00640014
+006500     05  PRT-STAT2               PIC X.                           00650014
+006810*----------------------------------------------------------------*00681023
+006820*  INPUT/OUTPUT RECORD LAYOUT - PIC X(650)                       *00682023
+006830*  THIS RECORD WAS MODIFIED FOR THE 01/01/2020 RELEASE           *00683023
+006840*----------------------------------------------------------------*00684023
+006850 01  HHA-INPUT-DATA.                                              00685023
+006860     05  HHA-DATA.                                                00686023
+006870         10  HHA-NPI                 PIC X(10).                   00687023
+006880         10  HHA-HIC                 PIC X(12).                   00688023
+006890         10  HHA-PROV-NO             PIC X(06).                   00689023
+006891         10  HHA-INIT-PAY-QRP-INDICATOR  PIC X(01).               00689126
+006892             88  HHA-WITH-DATA-CHECK VALUE '0', '1'.              00689223
+006893             88  HHA-NO-DATA-CHECK   VALUE '2', '3'.              00689323
+006894         10  HHA-PROV-VBP-ADJ-FAC    PIC 9V9(5).                  00689423
+006895         10  HHA-PROV-OUTLIER-PAY-TOTAL PIC 9(08)V9(02).          00689523
+006896         10  HHA-PROV-PAYMENT-TOTAL  PIC 9(09)V9(02).             00689623
+006897         10  HHA-TOB                 PIC X(03).                   00689723
+006898             88 HHA-VALID-TOB-CLAIM  VALUE                        00689823
+006899             '327', '329',                                        00689926
+006900             '32F', '32G', '32H', '32I', '32J',                   00690023
+006901             '32K', '32M', '32Q', '32P'.                          00690123
+006902             88 H-VALID-TOB-RAP     VALUE                         00690223
+006903             '322'.                                               00690326
+006904         10  HHA-CBSA                PIC X(05).                   00690423
+006905         10  HHA-COUNTY-CODE         PIC X(05).                   00690523
+006906         10  HHA-SERV-FROM-DATE.                                  00690623
+006907             15  HHA-FROM-CC         PIC XX.                      00690723
+006908             15  HHA-FROM-YYMMDD.                                 00690823
+006909                 25  HHA-FROM-YY     PIC XX.                      00690923
+006910                 25  HHA-FROM-MM     PIC XX.                      00691023
+006911                 25  HHA-FROM-DD     PIC XX.                      00691123
+006912         10  HHA-SERV-THRU-DATE.                                  00691223
+006913             15  HHA-THRU-CC         PIC XX.                      00691323
+006914             15  HHA-THRU-YYMMDD.                                 00691423
+006915                 25  HHA-THRU-YY     PIC XX.                      00691523
+006916                 25  HHA-THRU-MM     PIC XX.                      00691623
+006917                 25  HHA-THRU-DD     PIC XX.                      00691723
+006918         10  HHA-ADMIT-DATE.                                      00691823
+006919             15  HHA-ADMIT-CC        PIC XX.                      00691923
+006920             15  HHA-ADMIT-YYMMDD.                                00692023
+006921                 25  HHA-ADMIT-YY    PIC XX.                      00692123
+006922                 25  HHA-ADMIT-MM    PIC XX.                      00692223
+006923                 25  HHA-ADMIT-DD    PIC XX.                      00692323
+006924         10  HHA-LUPA-SRC-ADM           PIC X.                    00692423
+006925         10  HHA-ADJ-IND                PIC X.                    00692523
+006926         10  HHA-PEP-INDICATOR       PIC X.                       00692623
+006927         10  HHA-HRG-INPUT-CODE       PIC X(05).                  00692723
+006928         10  HHA-HRG-NO-OF-DAYS       PIC 9(03).                  00692823
+006929         10  HHA-HRG-WGTS             PIC 9(02)V9(04).            00692923
+006930         10  HHA-HRG-PAY              PIC 9(07)V9(02).            00693023
+006931         10  HHA-REVENUE-DATA     OCCURS 6.                       00693123
+006932             15  HHA-REVENUE-CODE              PIC X(04).         00693223
+006933             15  HHA-REVENUE-QTY-COV-VISITS    PIC 9(03).         00693323
+006934             15  HHA-REVENUE-QTY-OUTL-UNITS    PIC 9(05).         00693423
+006935             15  HHA-REVENUE-EARLIEST-DATE     PIC 9(08).         00693523
+006936             15  HHA-REVENUE-DOLL-RATE         PIC 9(07)V9(02).   00693623
+006937             15  HHA-REVENUE-COST              PIC 9(07)V9(02).   00693723
+006938             15  HHA-REVENUE-ADD-ON-VISIT-AMT  PIC 9(07)V9(02).   00693823
+006940         10  HHA-PAY-RTC                PIC 99.                   00694023
+006941         10  HHA-REVENUE-SUM1-6-QTY-ALL PIC 9(05).                00694123
+006942         10  HHA-OUTLIER-PAYMENT        PIC 9(07)V9(02).          00694223
+006943         10  HHA-TOTAL-PAYMENT          PIC 9(07)V9(02).          00694323
+006944     05  HHA-VBP-ADJ-AMT                PIC S9(7)V99.             00694423
+006945     05  HHA-PPS-STD-VALUE              PIC 9(7)V99.              00694523
+006946     05  FILLER                         PIC X(206).               00694623
+014300                                                                  01430014
+014400 01  HOLD-VARIABLES-DATA.                                         01440014
+014500     02  HOLD-VAR-DATA.                                           01450014
+014600         05  PRICER-OPTION-SW         PIC X.                      01460014
+014700         05  HHOPN-VERSION            PIC X(07).                  01470014
+014800         05  HHDRV-VERSION            PIC X(07).                  01480014
+014900         05  HHCAL-VERSION            PIC X(07).                  01490014
+015000         05  FILLER                   PIC X(20).                  01500014
+015100                                                                  01510014
+015200                                                                  01520014
+015300 01  TOTAL-COUNTERS.                                              01530014
+015400     03  FILLER    OCCURS 22.                                     01540018
+015500         05  COUNT-TOTAL       PIC 9(09)  COMP.                   01550014
+015600                                                                  01560014
+015700*******************************************************           01570014
+015800*----------------------------------------------------**           01580014
+015900*    HHA PAYMENT REPORT COMPONENTS                    *           01590014
+016000*----------------------------------------------------**           01600014
+016100 01  HHA-DETAIL-LINE.                                             01610014
+016200     05  FILLER                  PIC X(02)  VALUE SPACES.         01620014
+016300     05  PRT-NPI                 PIC X(10).                       01630014
+016400     05  FILLER                  PIC X(02).                       01640014
+016500     05  PRT-HIC                 PIC X(12).                       01650014
+016600     05  FILLER                  PIC X(02).                       01660014
+016700     05  PRT-PROV                PIC X(06).                       01670014
+016800     05  FILLER                  PIC X(02)  VALUE SPACES.         01680014
+016900     05  PRT-MSA-CBSA            PIC X(05).                       01690014
+017000     05  FILLER                  PIC X(01)  VALUE SPACES.         01700014
+017100     05  PRT-FROM-DATE           PIC X(08).                       01710014
+017200     05  FILLER                  PIC X(03)  VALUE SPACES.         01720014
+017300     05  PRT-PEP                 PIC X.                           01730014
+017400     05  FILLER                  PIC X(02)  VALUE SPACES.         01740014
+017500     05  PRT-MED-IND1            PIC X.                           01750014
+017600     05  PRT-MED-IND2            PIC X.                           01760014
+017700     05  PRT-MED-IND3            PIC X.                           01770014
+017800     05  PRT-MED-IND4            PIC X.                           01780014
+017900     05  PRT-MED-IND5            PIC X.                           01790014
+018000     05  PRT-MED-IND6            PIC X.                           01800014
+018100     05  FILLER                  PIC X(01)  VALUE SPACES.         01810014
+018200     05  PRT-TOB                 PIC XXX.                         01820014
+018300     05  PRT-OUTLIER-PAY         PIC $$,$$$,$$$.99.               01830014
+018400     05  PRT-PAYMENT-RATE        PIC $$,$$$,$$$.99.               01840014
+018500     05  FILLER                  PIC X(01)  VALUE SPACES.         01850014
+018600     05  FILLER                  PIC X(01)  VALUE SPACES.         01860014
+018700     05  PRT-HHA-RTC             PIC 99.                          01870014
+018800     05  FILLER                  PIC X(01)  VALUE SPACES.         01880014
+018900     05  PRT-13-QTY              PIC X(5).                        01890014
+019000     05  FILLER                  PIC X(01)  VALUE '/'.            01900014
+019100     05  PRT-16-QTY              PIC X(5).                        01910014
+019200     05  FILLER                  PIC X(02)  VALUE SPACES.         01920014
+019300     05  PRT-INIT-PAY-IND        PIC X.                           01930014
+019400     05  FILLER                  PIC X(01)  VALUE SPACES.         01940014
+019500     05  PRT-THRU-DATE           PIC X(08).                       01950014
+019600     05  PRT-REV-DOLL-RATE-1     PIC $$,$$$,$$$.99.               01960014
+019700                                                                  01970014
+019800 01  HHA-HEAD1.                                                   01980014
+019900     05  FILLER                  PIC X(01)  VALUE SPACES.         01990014
+020000     05  FILLER                  PIC X(44)  VALUE                 02000014
+020100        ' C M S,                                     '.           02010014
+020200     05  FILLER                  PIC X(44)  VALUE                 02020014
+020300        '                                            '.           02030014
+020400     05  FILLER                  PIC X(44)  VALUE                 02040014
+020500        '                                            '.           02050014
+020600                                                                  02060014
+020700 01  HHA-HEAD2.                                                   02070014
+020800     05  FILLER                  PIC X(01)  VALUE SPACES.         02080014
+020900     05  FILLER                  PIC X(44)  VALUE                 02090014
+021000        ' PBG,DDS     HHA NATIONAL PRICER            '.           02100014
+021100     05  FILLER                  PIC X(44)  VALUE                 02110014
+021200        '                          T E S T   D A T A '.           02120014
+021300     05  FILLER                  PIC X(44)  VALUE                 02130014
+021400        '  R E P O R T                               '.           02140014
+021500                                                                  02150014
+021600 01  HHA-HEAD3.                                                   02160014
+021700     05  FILLER                  PIC X(01)  VALUE SPACES.         02170014
+021800     05  FILLER                  PIC X(44)  VALUE                 02180014
+021900        '    NPI         HIC         PROV           F'.           02190014
+022000     05  FILLER                  PIC X(44)  VALUE                 02200014
+022100        'ROM    PEP  MED   TOB    OUTLIER         TOT'.           02210014
+022200     05  FILLER                  PIC X(44)  VALUE                 02220014
+022300        'AL   RTC SUM3/SUM6  PAY  THRU        REV-1  '.           02230014
+022400                                                                  02240014
+022500 01  HHA-HEAD4.                                                   02250014
+022600     05  FILLER                  PIC X(01)  VALUE SPACES.         02260014
+022700     05  FILLER                  PIC X(44)  VALUE                 02270014
+022800        '    NO.         NO.         NO.  MSA/CBSA  D'.           02280014
+022900     05  FILLER                  PIC X(44)  VALUE                 02290014
+023000        'ATE    COD  COD          PAYMENT        PAYM'.           02300014
+023100     05  FILLER                  PIC X(44)  VALUE                 02310014
+023200        'ENT         QTY     IND  DATE        RATE   '.           02320014
+023300                                                                  02330014
+023400**--------------------------------------------------------------  02340014
+023500 PROCEDURE  DIVISION.                                             02350014
+023600                                                                  02360014
+023700 0000-MAINLINE  SECTION.                                          02370014
+023800     OPEN INPUT  HHAFILE                                          02380014
+023900          OUTPUT OUTFILE                                          02390014
+024000          OUTPUT PRTFILE.                                         02400014
+024100                                                                  02410014
+024200     MOVE LOW-VALUES TO TOTAL-COUNTERS.                           02420014
+024300                                                                  02430014
+024400     PERFORM 0100-PROCESS-RECORDS THRU 0100-EXIT UNTIL EOF-SW = 1.02440014
+024500                                                                  02450014
+024600     DISPLAY ' '.                                                 02460014
+024700                                                                  02470014
+024800     DISPLAY '-- PROGRAM HHMGR200  VERSION  ===> ' HHMGR-VERSION. 02480028
+024900     DISPLAY '-- PROGRAM HHOPN200  VERSION  ===> ' HHOPN-VERSION. 02490028
+025000     DISPLAY '-- PROGRAM HHDRV200  VERSION  ===> ' HHDRV-VERSION. 02500028
+025100                                                                  02510014
+025200     DISPLAY ' '.                                                 02520014
+025300                                                                  02530014
+025400     IF COUNT-TOTAL (1) > 0                                       02540014
+025500         DISPLAY '-- PROGRAM HHCAL016  VERSION  ===> P2001.6 '.   02550014
+025600     IF COUNT-TOTAL (2) > 0                                       02560014
+025700         DISPLAY '-- PROGRAM HHCAL023  VERSION  ===> P2002.3 '.   02570014
+025800     IF COUNT-TOTAL (3) > 0                                       02580014
+025900         DISPLAY '-- PROGRAM HHCAL033  VERSION  ===> P2003.3 '.   02590014
+026000     IF COUNT-TOTAL (4) > 0                                       02600014
+026100         DISPLAY '-- PROGRAM HHCAL044  VERSION  ===> P2004.4 '.   02610014
+026200     IF COUNT-TOTAL (5) > 0                                       02620014
+026300         DISPLAY '-- PROGRAM HHCAL053  VERSION  ===> P2005.3 '.   02630014
+026400     IF COUNT-TOTAL (6) > 0                                       02640014
+026500         DISPLAY '-- PROGRAM HHCAL066  VERSION  ===> P2006.6 '.   02650014
+026600     IF COUNT-TOTAL (7) > 0                                       02660014
+026700         DISPLAY '-- PROGRAM HHCAL074  VERSION  ===> P2007.4 '.   02670014
+026800     IF COUNT-TOTAL (8) > 0                                       02680014
+026900         DISPLAY '-- PROGRAM HHCAL088  VERSION  ===> P2008.8 '.   02690014
+027000     IF COUNT-TOTAL (9) > 0                                       02700014
+027100         DISPLAY '-- PROGRAM HHCAL095  VERSION  ===> P2009.5 '.   02710014
+027200     IF COUNT-TOTAL (10) > 0                                      02720014
+027300         DISPLAY '-- PROGRAM HHCAL10D  VERSION  ===> P2010.D '.   02730014
+027400     IF COUNT-TOTAL (11) > 0                                      02740014
+027500         DISPLAY '-- PROGRAM HHCAL10A  VERSION  ===> P2010.A '.   02750014
+027600     IF COUNT-TOTAL (12) > 0                                      02760014
+027700         DISPLAY '-- PROGRAM HHCAL112  VERSION  ===> P2011.2 '.   02770014
+027800     IF COUNT-TOTAL (13) > 0                                      02780014
+027900         DISPLAY '-- PROGRAM HHCAL121  VERSION  ===> P2012.1 '.   02790014
+028000     IF COUNT-TOTAL (14) > 0                                      02800014
+028100         DISPLAY '-- PROGRAM HHCAL131  VERSION  ===> P2013.1 '.   02810014
+028200     IF COUNT-TOTAL (15) > 0                                      02820014
+028300         DISPLAY '-- PROGRAM HHCAL144  VERSION  ===> P2014.4 '.   02830014
+028400     IF COUNT-TOTAL (16) > 0                                      02840014
+028500         DISPLAY '-- PROGRAM HHCAL152  VERSION  ===> P2015.2 '.   02850014
+028600     IF COUNT-TOTAL (17) > 0                                      02860014
+028700         DISPLAY '-- PROGRAM HHCAL160  VERSION  ===> P2016.0 '.   02870014
+028800     IF COUNT-TOTAL (18) > 0                                      02880014
+028900         DISPLAY '-- PROGRAM HHCAL170  VERSION  ===> P2017.0 '.   02890014
+029000     IF COUNT-TOTAL (19) > 0                                      02900014
+029100         DISPLAY '-- PROGRAM HHCAL181  VERSION  ===> P2018.1 '.   02910014
+029110     IF COUNT-TOTAL (20) > 0                                      02911014
+029120         DISPLAY '-- PROGRAM HHCAL190  VERSION  ===> P2019.0 '.   02912016
+029130     IF COUNT-TOTAL (21) > 0                                      02913018
+029140         DISPLAY '-- PROGRAM HHCAL20B  VERSION  ===> P2020.0 '.   02914028
+029200                                                                  02920014
+029300     DISPLAY ' '.                                                 02930014
+029400                                                                  02940014
+029500     IF COUNT-TOTAL (1) > 0                                       02950014
+029600        DISPLAY '-- FY2001 RECORD COUNT  ===> ' COUNT-TOTAL (1).  02960014
+029700     IF COUNT-TOTAL (2) > 0                                       02970014
+029800        DISPLAY '-- FY2002 RECORD COUNT  ===> ' COUNT-TOTAL (2).  02980014
+029900     IF COUNT-TOTAL (3) > 0                                       02990014
+030000        DISPLAY '-- FY2003 RECORD COUNT  ===> ' COUNT-TOTAL (3).  03000014
+030100     IF COUNT-TOTAL (4) > 0                                       03010014
+030200        DISPLAY '-- FY2004 RECORD COUNT  ===> ' COUNT-TOTAL (4).  03020014
+030300     IF COUNT-TOTAL (5) > 0                                       03030014
+030400        DISPLAY '-- FY2005 RECORD COUNT  ===> ' COUNT-TOTAL (5).  03040014
+030500     IF COUNT-TOTAL (6) > 0                                       03050014
+030600        DISPLAY '-- CY2006 RECORD COUNT  ===> ' COUNT-TOTAL (6).  03060014
+030700     IF COUNT-TOTAL (7) > 0                                       03070014
+030800        DISPLAY '-- CY2007 RECORD COUNT  ===> ' COUNT-TOTAL (7).  03080014
+030900     IF COUNT-TOTAL (8) > 0                                       03090014
+031000        DISPLAY '-- CY2008 RECORD COUNT  ===> ' COUNT-TOTAL (8).  03100014
+031100     IF COUNT-TOTAL (9) > 0                                       03110014
+031200        DISPLAY '-- CY2009 RECORD COUNT  ===> ' COUNT-TOTAL (9).  03120014
+031300     IF COUNT-TOTAL (10) > 0                                      03130014
+031400        DISPLAY '-- CY2010C RECORD COUNT ===> ' COUNT-TOTAL (10). 03140014
+031500     IF COUNT-TOTAL (11) > 0                                      03150014
+031600        DISPLAY '-- CY20109 RECORD COUNT ===> ' COUNT-TOTAL (11). 03160014
+031700     IF COUNT-TOTAL (12) > 0                                      03170014
+031800        DISPLAY '-- CY2011  RECORD COUNT ===> ' COUNT-TOTAL (12). 03180014
+031900     IF COUNT-TOTAL (13) > 0                                      03190014
+032000        DISPLAY '-- CY2012  RECORD COUNT ===> ' COUNT-TOTAL (13). 03200014
+032100     IF COUNT-TOTAL (14) > 0                                      03210014
+032200        DISPLAY '-- CY2013  RECORD COUNT ===> ' COUNT-TOTAL (14). 03220014
+032300     IF COUNT-TOTAL (15) > 0                                      03230014
+032400        DISPLAY '-- CY2014  RECORD COUNT ===> ' COUNT-TOTAL (15). 03240014
+032500     IF COUNT-TOTAL (16) > 0                                      03250014
+032600        DISPLAY '-- CY2015  RECORD COUNT ===> ' COUNT-TOTAL (16). 03260014
+032700     IF COUNT-TOTAL (17) > 0                                      03270014
+032800        DISPLAY '-- CY2016  RECORD COUNT ===> ' COUNT-TOTAL (17). 03280014
+032900     IF COUNT-TOTAL (18) > 0                                      03290014
+033000        DISPLAY '-- CY2017  RECORD COUNT ===> ' COUNT-TOTAL (18). 03300014
+033100     IF COUNT-TOTAL (19) > 0                                      03310014
+033200        DISPLAY '-- CY2018  RECORD COUNT ===> ' COUNT-TOTAL (19). 03320014
+033210     IF COUNT-TOTAL (20) > 0                                      03321014
+033220        DISPLAY '-- CY2019  RECORD COUNT ===> ' COUNT-TOTAL (20). 03322014
+033230     IF COUNT-TOTAL (21) > 0                                      03323018
+033240        DISPLAY '-- CY2020  RECORD COUNT ===> ' COUNT-TOTAL (21). 03324028
+033300                                                                  03330014
+033400     DISPLAY ' '.                                                 03340014
+033500                                                                  03350014
+033600     DISPLAY '-- INPUT  COUNTS FOR HHAFILE  ===> ' HHAFILE-CTR.   03360014
+033700     DISPLAY '-- OUTPUT COUNTS FOR OUTFILE  ===> ' OUTFILE-CTR.   03370014
+033800     DISPLAY '-- OUTPUT COUNTS FOR PRTFILE  ===> ' PRTFILE-CTR.   03380014
+033900                                                                  03390014
+034000     CLOSE HHAFILE.                                               03400014
+034100     CLOSE OUTFILE.                                               03410014
+034200     CLOSE PRTFILE.                                               03420014
+034300                                                                  03430014
+034400     STOP RUN.                                                    03440014
+034500                                                                  03450014
+034600 0100-PROCESS-RECORDS.                                            03460014
+034700     READ HHAFILE INTO HHA-INPUT-DATA                             03470014
+034800         AT END                                                   03480014
+034900             MOVE 1 TO EOF-SW                                     03490014
+035000             GO TO 0100-EXIT.                                     03500014
+035100                                                                  03510014
+035200     ADD 1 TO HHAFILE-CTR.                                        03520014
+035300                                                                  03530014
+035400     MOVE ALL '0' TO HOLD-VAR-DATA                                03540014
+035410     INITIALIZE      HHA-PAY-RTC                                  03541025
+035420                     HHA-REVENUE-SUM1-6-QTY-ALL                   03542025
+035430                     HHA-OUTLIER-PAYMENT                          03543025
+035440                     HHA-TOTAL-PAYMENT                            03544025
+035450                     HHA-VBP-ADJ-AMT                              03545025
+035460                     HHA-PPS-STD-VALUE.                           03546025
+035700                                                                  03570014
+035800     IF  EOF-SW = 0                                               03580014
+035900         PERFORM 0400-APPLY-COUNTERS THRU 0400-EXIT               03590014
+036000         PERFORM 0200-CALL-DRV THRU 0200-EXIT                     03600014
+036100         PERFORM 1100-WRITE THRU 1100-EXIT.                       03610014
+036200                                                                  03620014
+036300 0100-EXIT.  EXIT.                                                03630014
+036400 0200-CALL-DRV.                                                   03640014
+036500         MOVE 'A' TO PRICER-OPTION-SW                             03650014
+036600         CALL  HHOPN200   USING HHA-INPUT-DATA                    03660028
+036700                                HOLD-VARIABLES-DATA.              03670014
+036800                                                                  03680014
+036900 0200-EXIT.  EXIT.                                                03690014
+037000 0400-APPLY-COUNTERS.                                             03700014
+037100                                                                  03710014
+037200      IF HHA-SERV-THRU-DATE < 20020101                            03720014
+037300         ADD 1 TO COUNT-TOTAL (1)                                 03730014
+037400         GO TO 0400-EXIT.                                         03740014
+037500                                                                  03750014
+037600      IF HHA-SERV-THRU-DATE < 20030101                            03760014
+037700         ADD 1 TO COUNT-TOTAL (2)                                 03770014
+037800         GO TO 0400-EXIT.                                         03780014
+037900                                                                  03790014
+038000      IF HHA-SERV-THRU-DATE < 20040101                            03800014
+038100         ADD 1 TO COUNT-TOTAL (3)                                 03810014
+038200         GO TO 0400-EXIT.                                         03820014
+038300                                                                  03830014
+038400      IF HHA-SERV-THRU-DATE < 20050101                            03840014
+038500         ADD 1 TO COUNT-TOTAL (4)                                 03850014
+038600         GO TO 0400-EXIT.                                         03860014
+038700                                                                  03870014
+038800      IF HHA-SERV-THRU-DATE < 20060101                            03880014
+038900         ADD 1 TO COUNT-TOTAL (5)                                 03890014
+039000         GO TO 0400-EXIT.                                         03900014
+039100                                                                  03910014
+039200      IF HHA-SERV-THRU-DATE < 20070101                            03920014
+039300         ADD 1 TO COUNT-TOTAL (6)                                 03930014
+039400         GO TO 0400-EXIT.                                         03940014
+039500                                                                  03950014
+039600      IF HHA-SERV-THRU-DATE < 20080101                            03960014
+039700         ADD 1 TO COUNT-TOTAL (7)                                 03970014
+039800         GO TO 0400-EXIT.                                         03980014
+039900                                                                  03990014
+040000      IF HHA-SERV-THRU-DATE < 20090101                            04000014
+040100         ADD 1 TO COUNT-TOTAL (8)                                 04010014
+040200         GO TO 0400-EXIT.                                         04020014
+040300                                                                  04030014
+040400      IF HHA-SERV-THRU-DATE < 20100101                            04040014
+040500         ADD 1 TO COUNT-TOTAL (9)                                 04050014
+040600         GO TO 0400-EXIT.                                         04060014
+040700                                                                  04070014
+040800      IF HHA-SERV-THRU-DATE < 20100401                            04080014
+040900         ADD 1 TO COUNT-TOTAL (10)                                04090014
+041000         GO TO 0400-EXIT.                                         04100014
+041100                                                                  04110014
+041200      IF HHA-SERV-THRU-DATE < 20110101                            04120014
+041300         ADD 1 TO COUNT-TOTAL (11)                                04130014
+041400         GO TO 0400-EXIT.                                         04140014
+041500                                                                  04150014
+041600      IF HHA-SERV-THRU-DATE < 20120101                            04160014
+041700         ADD 1 TO COUNT-TOTAL (12)                                04170014
+041800         GO TO 0400-EXIT.                                         04180014
+041900                                                                  04190014
+042000      IF HHA-SERV-THRU-DATE < 20130101                            04200014
+042100         ADD 1 TO COUNT-TOTAL (13)                                04210014
+042200         GO TO 0400-EXIT.                                         04220014
+042300                                                                  04230014
+042400      IF HHA-SERV-THRU-DATE < 20140101                            04240014
+042500         ADD 1 TO COUNT-TOTAL (14)                                04250014
+042600         GO TO 0400-EXIT.                                         04260014
+042700                                                                  04270014
+042800      IF HHA-SERV-THRU-DATE < 20150101                            04280014
+042900         ADD 1 TO COUNT-TOTAL (15)                                04290014
+043000         GO TO 0400-EXIT.                                         04300014
+043100                                                                  04310014
+043200      IF HHA-SERV-THRU-DATE < 20160101                            04320014
+043300         ADD 1 TO COUNT-TOTAL (16)                                04330014
+043400         GO TO 0400-EXIT.                                         04340014
+043500                                                                  04350014
+043600      IF HHA-SERV-THRU-DATE < 20170101                            04360014
+043700         ADD 1 TO COUNT-TOTAL (17)                                04370014
+043800         GO TO 0400-EXIT.                                         04380014
+043900                                                                  04390014
+044000      IF HHA-SERV-THRU-DATE < 20180101                            04400014
+044100         ADD 1 TO COUNT-TOTAL (18)                                04410014
+044200         GO TO 0400-EXIT.                                         04420014
+044210                                                                  04421014
+044220      IF HHA-SERV-THRU-DATE < 20190101                            04422014
+044230         ADD 1 TO COUNT-TOTAL (19)                                04423014
+044240         GO TO 0400-EXIT.                                         04424014
+044250                                                                  04425017
+044260      IF HHA-SERV-THRU-DATE < 20200101                            04426017
+044270         ADD 1 TO COUNT-TOTAL (20)                                04427017
+044280         GO TO 0400-EXIT.                                         04428017
+044290                                                                  04429018
+044291      IF HHA-SERV-THRU-DATE < 20210101                            04429118
+044292         ADD 1 TO COUNT-TOTAL (21)                                04429218
+044293         GO TO 0400-EXIT.                                         04429318
+044300                                                                  04430014
+044400      ADD 1 TO COUNT-TOTAL (22).                                  04440018
+044500                                                                  04450014
+044600 0400-EXIT.  EXIT.                                                04460014
+044700                                                                  04470014
+044800 1100-WRITE.                                                      04480014
+044900                                                                  04490014
+045000******************************************************************04500014
+045100*    PRINT HHA PROSPECTIVE PAYMENT TEST DATA DETAIL REPORT        04510014
+045200******************************************************************04520014
+045300                                                                  04530014
+045400     IF  LINE-CTR > 54                                            04540014
+045500         PERFORM 1200-HHA-HEADINGS THRU 1200-EXIT.                04550014
+045600                                                                  04560014
+045700     MOVE SPACES          TO  HHA-DETAIL-LINE.                    04570014
+045800                                                                  04580014
+045900*    IF HHA-SERV-THRU-DATE < 20060101                             04590014
+046000*       MOVE HHA-MSA2          TO PRT-MSA-CBSA                    04600014
+046100*    ELSE                                                         04610014
+046200*       MOVE HHA-CBSA          TO PRT-MSA-CBSA.                   04620014
+046300                                                                  04630014
+046400     MOVE HHA-CBSA           TO PRT-MSA-CBSA.                     04640014
+046500     MOVE HHA-SERV-FROM-DATE TO PRT-FROM-DATE.                    04650014
+046600     MOVE HHA-SERV-THRU-DATE TO PRT-THRU-DATE.                    04660014
+046700                                                                  04670014
+046800     MOVE HHA-NPI                TO PRT-NPI.                      04680014
+046900     MOVE HHA-HIC                TO PRT-HIC.                      04690014
+047000     MOVE HHA-PROV-NO            TO PRT-PROV.                     04700014
+047100                                                                  04710014
+047200*    MOVE HHA-REVENUE-SUM1-3-QTY-THR TO PRT-13-QTY.               04720020
+047300     MOVE HHA-REVENUE-SUM1-6-QTY-ALL TO PRT-16-QTY.               04730014
+047400                                                                  04740014
+047500     MOVE HHA-PEP-INDICATOR          TO PRT-PEP.                  04750014
+047600*    MOVE HHA-MED-REVIEW-INDICATOR (1)  TO PRT-MED-IND1.          04760020
+047700*    MOVE HHA-MED-REVIEW-INDICATOR (2)  TO PRT-MED-IND2.          04770020
+047800*    MOVE HHA-MED-REVIEW-INDICATOR (3)  TO PRT-MED-IND3.          04780020
+047900*    MOVE HHA-MED-REVIEW-INDICATOR (4)  TO PRT-MED-IND4.          04790020
+048000*    MOVE HHA-MED-REVIEW-INDICATOR (5)  TO PRT-MED-IND5.          04800020
+048100*    MOVE HHA-MED-REVIEW-INDICATOR (6)  TO PRT-MED-IND6.          04810020
+048200     MOVE HHA-TOB                    TO PRT-TOB.                  04820014
+048300     MOVE HHA-INIT-PAY-QRP-INDICATOR TO PRT-INIT-PAY-IND.         04830027
+048400                                                                  04840014
+048500     MOVE HHA-OUTLIER-PAYMENT        TO PRT-OUTLIER-PAY.          04850014
+048600     MOVE HHA-TOTAL-PAYMENT          TO PRT-PAYMENT-RATE.         04860014
+048700     MOVE HHA-REVENUE-DOLL-RATE (1)  TO                           04870014
+048800                                      PRT-REV-DOLL-RATE-1.        04880014
+048900                                                                  04890014
+049000     MOVE HHA-PAY-RTC                TO PRT-HHA-RTC.              04900014
+049100                                                                  04910014
+049200     WRITE PRTFILE-LINE FROM HHA-DETAIL-LINE                      04920014
+049300                             AFTER ADVANCING 1.                   04930014
+049400     ADD 1 TO PRTFILE-CTR.                                        04940014
+049500     IF PRT-STAT1 > 0 DISPLAY ' BAD1 WRITE ON PRTFILE FILE'.      04950014
+049600     ADD 1 TO LINE-CTR.                                           04960014
+049700                                                                  04970014
+049800******************************************************************04980014
+049900*    WRITE OUT-REC FILE 600 BYTES TO GO INTO YOUR INTERFACE       04990014
+050000******************************************************************05000014
+050100     WRITE OUT-REC FROM HHA-INPUT-DATA.                           05010014
+050200                                                                  05020014
+050300     IF UT2-STAT1 > 0 DISPLAY ' BAD2 WRITE ON OUTFILE  FILE'.     05030014
+050400     ADD 1 TO OUTFILE-CTR.                                        05040014
+050500                                                                  05050014
+050600 1100-EXIT.  EXIT.                                                05060014
+050700                                                                  05070014
+050800 1200-HHA-HEADINGS.                                               05080014
+050900     WRITE PRTFILE-LINE FROM HHA-HEAD1                            05090014
+051000                             AFTER ADVANCING PAGE.                05100014
+051100     IF PRT-STAT1 > 0 DISPLAY ' BAD3 WRITE ON PRTFILE FILE'.      05110014
+051200     WRITE PRTFILE-LINE FROM HHA-HEAD2                            05120014
+051300                             AFTER ADVANCING 1.                   05130014
+051400     IF PRT-STAT1 > 0 DISPLAY ' BAD5 WRITE ON PRTFILE FILE'.      05140014
+051500     MOVE ALL '---' TO PRTFILE-LINE.                              05150014
+051600     WRITE PRTFILE-LINE AFTER ADVANCING 1.                        05160014
+051700     IF PRT-STAT1 > 0 DISPLAY ' BAD4 WRITE ON PRTFILE FILE'.      05170014
+051800     WRITE PRTFILE-LINE FROM HHA-HEAD3                            05180014
+051900                             AFTER ADVANCING 2.                   05190014
+052000     IF PRT-STAT1 > 0 DISPLAY ' BAD6 WRITE ON PRTFILE FILE'.      05200014
+052100     WRITE PRTFILE-LINE FROM HHA-HEAD4                            05210014
+052200                             AFTER ADVANCING 1.                   05220014
+052300     IF PRT-STAT1 > 0 DISPLAY ' BAD7 WRITE ON PRTFILE FILE'.      05230014
+052400     MOVE ALL '  -' TO PRTFILE-LINE.                              05240014
+052500     WRITE PRTFILE-LINE AFTER ADVANCING 1.                        05250014
+052600     IF PRT-STAT1 > 0 DISPLAY ' BAD7 WRITE ON PRTFILE FILE'.      05260014
+052700     MOVE 7 TO LINE-CTR.                                          05270014
+052800                                                                  05280014
+052900 1200-EXIT.  EXIT.                                                05290014
+

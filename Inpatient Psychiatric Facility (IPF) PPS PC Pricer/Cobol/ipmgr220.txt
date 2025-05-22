@@ -1,0 +1,839 @@
+000100 IDENTIFICATION DIVISION.                                         00010008
+000200 PROGRAM-ID.    IPMGR220.                                         00020009
+000300*AUTHOR.   CMS.                                                   00030008
+000400*          CENTERS FOR MEDICARE AND MEDICAID SERVICES             00040008
+000500*          INPATIENT PSYCHIATRIC FACILITY PPS PRICER              00050008
+000600 DATE-COMPILED.                                                   00060008
+000700 ENVIRONMENT                     DIVISION.                        00070008
+000800 CONFIGURATION                   SECTION.                         00080008
+000900 SOURCE-COMPUTER.                IBM-370.                         00090008
+001000 OBJECT-COMPUTER.                IBM-370.                         00100008
+001100 INPUT-OUTPUT SECTION.                                            00110008
+001200 FILE-CONTROL.                                                    00120008
+001300                                                                  00130008
+001400     SELECT IPFBILL    ASSIGN TO UT-S-IPFBILL                     00140008
+001500         FILE STATUS IS UT1-STAT.                                 00150008
+001600     SELECT IPFOUT     ASSIGN TO UT-S-IPFOUT                      00160008
+001700         FILE STATUS IS UT2-STAT.                                 00170008
+001800     SELECT IPFPRT     ASSIGN TO UT-S-IPFPRT                      00180008
+001900         FILE STATUS IS OPR-STAT.                                 00190008
+002000                                                                  00200008
+002100 DATA DIVISION.                                                   00210008
+002110 FILE SECTION.                                                    00211008
+002120 FD  IPFBILL                                                      00212008
+002130     LABEL RECORDS ARE STANDARD                                   00213008
+002140     RECORDING MODE IS F                                          00214008
+002150     BLOCK CONTAINS 0 RECORDS.                                    00215008
+002160 01  IPF-REC                     PIC X(416).                      00216008
+002170                                                                  00217008
+002180 FD  IPFOUT                                                       00218008
+002190     LABEL RECORDS ARE STANDARD                                   00219008
+002200     RECORDING MODE IS F                                          00220008
+002300     BLOCK CONTAINS 0 RECORDS.                                    00230008
+002400 01  OUT-REC                     PIC X(752).                      00240008
+002500                                                                  00250008
+002600 FD  IPFPRT                                                       00260008
+002700     RECORDING MODE IS F                                          00270008
+002800     BLOCK CONTAINS 133 RECORDS                                   00280008
+002900     LABEL RECORDS ARE STANDARD.                                  00290008
+003000 01  IPFPRT-LINE                 PIC X(133).                      00300008
+003100                                                                  00310008
+003200                                                                  00320008
+003300 WORKING-STORAGE SECTION.                                         00330008
+003400 77  W-STORAGE-REF               PIC X(40)  VALUE                 00340008
+003500     'IPMGR220 - W O R K I N G   S T O R A G E'.                  00350009
+003600 01  IPMGR-VERSION               PIC X(05)  VALUE 'M22.0'.        00360009
+003700 01  IPOPN-VERSION               PIC X(05)  VALUE 'O22.0'.        00370009
+003800 01  IPOPN220                    PIC X(08)  VALUE 'IPOPN220'.     00380012
+003900 01  EOF-SW                      PIC 9(01)  VALUE 0.              00390008
+004000 01  TBL-EOF-SW                  PIC 9(01)  VALUE 0.              00400008
+004100 01  X1                          PIC 9(05)  COMP SYNC VALUE 0.    00410008
+004200 01  X2                          PIC 9(05)  COMP SYNC VALUE 0.    00420008
+004300 01  X3                          PIC 9(05)  COMP SYNC VALUE 0.    00430008
+004400 01  X4                          PIC 9(05)  COMP SYNC VALUE 0.    00440008
+004500 01  OPERLINE-CTR                PIC 9(02)  VALUE 65.             00450008
+004600 01  IPFBILL-CTR                 PIC 9(09)  VALUE 0.              00460008
+004700 01  IPFOUT-CTR                  PIC 9(09)  VALUE 0.              00470008
+004800 01  UT1-STAT.                                                    00480008
+004900     05  UT1-STAT1               PIC X.                           00490008
+005000     05  UT1-STAT2               PIC X.                           00500008
+005100 01  UT2-STAT.                                                    00510008
+005200     05  UT2-STAT1               PIC X.                           00520008
+005300     05  UT2-STAT2               PIC X.                           00530008
+005400 01  OPR-STAT.                                                    00540008
+005500     05  OPR-STAT1               PIC X.                           00550008
+005600     05  OPR-STAT2               PIC X.                           00560008
+005700*******************************************************           00570008
+005800*******************************************************           00580008
+005900*               BILL RECORD FORMAT                    *           00590008
+006000*******************************************************           00600008
+006100 01  BILL-WORK.                                                   00610008
+006200     05  BILL-IN-DATA.                                            00620008
+006300         10  BILL-NPI-NUMBER.                                     00630008
+006400             15  BILL-NPI            PIC X(08).                   00640008
+006500             15  BILL-NPI-FILLER     PIC X(02).                   00650008
+006600         10  BILL-PROVIDER-NO        PIC X(06).                   00660008
+006700         10  BILL-HIC-NO             PIC X(12).                   00670008
+006800         10  BILL-DISCHARGE-DATE.                                 00680008
+006900             15  D-CC                PIC 9(02).                   00690008
+007000             15  D-YY                PIC 9(02).                   00700008
+007100             15  D-MM                PIC 9(02).                   00710008
+007200             15  D-DD                PIC 9(02).                   00720008
+007300         10  BILL-PATIENT-STATUS     PIC X(02).                   00730008
+007400         10  BILL-AGE                PIC 9(03).                   00740008
+007500         10  BILL-DRG                PIC 9(03).                   00750008
+007600         10  BILL-LOS                PIC 9(05).                   00760008
+007700         10  BILL-OUTL-OCCUR-IND     PIC X(01).                   00770008
+007800         10  BILL-SRC-OF-ADMISSION   PIC X(01).                   00780008
+007900         10  BILL-ECT-NO-OF-UNITS    PIC 9(03).                   00790008
+008000         10  BILL-CHARGES-CLAIMED    PIC 9(07)V9(02).             00800008
+008100         10  BILL-OTHER-DIAG-DATA    PIC X(175).                  00810008
+008200         10  BILL-OTHER-PROC-DATA    PIC X(175).                  00820008
+008300         10  BILL-PRIOR-DAYS         PIC 9(03).                   00830008
+008400         10  FILLER                  PIC X(11).                   00840008
+008500*******************************************************           00850008
+008600*    PASSED AND RETURNED BY IPDRV                     *           00860008
+008700*******************************************************           00870008
+008800     05  IPF-DATA-VARIABLES.                                      00880008
+008900         10  IPF-RTC                 PIC 9(02).                   00890008
+009000         10  IPF-MSA-CBSA            PIC X(05).                   00900008
+009100         10  IPF-MSA-CODE REDEFINES IPF-MSA-CBSA.                 00910008
+009200             15  IPF-MSA             PIC X(04).                   00920008
+009300             15  FILLER              PIC X.                       00930008
+009400         10  IPF-CBSA-CODE REDEFINES IPF-MSA-CBSA.                00940008
+009500             15  IPF-CBSA            PIC X(05).                   00950008
+009600         10  IPF-WAGE-INDEX          PIC 9(02)V9(04).             00960008
+009700         10  IPF-LABOR-SHARE         PIC 9(01)V9(05).             00970008
+009800         10  IPF-NLABOR-SHARE        PIC 9(01)V9(05).             00980008
+009900         10  IPF-COLA                PIC 9(01)V9(03).             00990008
+010000         10  IPF-STD-FACTOR          PIC 9(01)V9(05).             01000008
+010100         10  IPF-COMORB-FACTOR       PIC 9(01)V9(05).             01010008
+010200         10  IPF-AGE-ADJ             PIC 9(01)V9(02).             01020008
+010300         10  IPF-DRG-FACTOR          PIC 9(01)V9(02).             01030008
+010400         10  IPF-GEO-RURAL-ADJ       PIC 9(01)V9(02).             01040008
+010500         10  IPF-EMERG-ADJ           PIC 9(01)V9(02).             01050008
+010600         10  IPF-TEACH-ADJ           PIC 9(01)V9(02).             01060008
+010700         10  IPF-FED-PPS-BLEND-IND   PIC X.                       01070008
+010800         10  IPF-CAL-VERSION         PIC X(05).                   01080008
+010900         10  IPF-CSTCHG-RATIO        PIC 9(01)V9(03).             01090008
+011000         10  FILLER                  PIC X(08).                   01100008
+011100                                                                  01110008
+011200*******************************************************           01120008
+011300*    PASSED AND RETURNED BY IPDRV                     *           01130008
+011400*******************************************************           01140008
+011500     05  IPF-ADDITIONAL-VARIABLES.                                01150008
+011600       07  IPF-MF-VARIABLES.                                      01160008
+011700         10  IPF-100PCT-STOPLOS-AMT     PIC 9(07)V9(02).          01170008
+011800         10  IPF-TOT-PAYMENT            PIC 9(07)V9(02).          01180008
+011900         10  IPF-FED-PAYMENT            PIC 9(07)V9(02).          01190008
+012000         10  IPF-FAC-PAYMENT            PIC 9(07)V9(02).          01200008
+012100         10  IPF-ECT-PAYMENT            PIC 9(07)V9(02).          01210008
+012200         10  IPF-OUTLIER-PAYMENT        PIC 9(07)V9(02).          01220008
+012300         10  IPF-OUTL-COST              PIC 9(07)V9(02).          01230008
+012400         10  IPF-OUTL-ADJ-COST          PIC 9(07)V9(02).          01240008
+012500         10  IPF-OUTL-PER-DIEM-AMT      PIC 9(07)V9(02).          01250008
+012600         10  IPF-OUTL-THRES-AMT         PIC 9(07)V9(02).          01260008
+012700         10  IPF-OUTL-THRES-ADJ-AMT     PIC 9(07)V9(02).          01270008
+012800         10  IPF-ADJUSTED-PER-DIEM-AMT  PIC 9(07)V9(02).          01280008
+012900         10  IPF-WAGE-ADJ-AMT           PIC 9(07)V9(02).          01290008
+013000         10  IPF-LABOR-BASE-AMT         PIC 9(07)V9(05).          01300008
+013100         10  IPF-NLABOR-BASE-AMT        PIC 9(07)V9(05).          01310008
+013200         10  IPF-OUTL-LABOR-BASE-AMT    PIC 9(07)V9(05).          01320008
+013300         10  IPF-OUTL-NLABOR-BASE-AMT   PIC 9(07)V9(05).          01330008
+013400         10  IPF-BUDGNUT-RATE-AMT       PIC 9(05)V9(02).          01340008
+013500         10  IPF-ECT-RATE-AMT           PIC 9(05)V9(02).          01350008
+013600         10  FILLER                     PIC X(10).                01360008
+013700       07  IPF-PC-VARIABLES.                                      01370008
+013800           10  IPF-PC-DATA            PIC X(44).                  01380008
+013900     05  FILLER                         PIC X(18).                01390008
+014000                                                                  01400008
+014100                                                                  01410008
+014200*******************************************************           01420008
+014300*    PASSED TO IPDRV___                               *           01430008
+014400*******************************************************           01440008
+014500 01  BILL-INPUT-DATA.                                             01450008
+014600     05  B-INPUT-DATA.                                            01460008
+014700         10  B-NPI-NUMBER.                                        01470008
+014800             15  B-NPI            PIC X(08).                      01480008
+014900             15  B-NPI-FILLER     PIC X(02).                      01490008
+015000         10  B-PROVIDER-NO        PIC X(06).                      01500008
+015100         10  B-HIC-NO             PIC X(12).                      01510008
+015200         10  B-DISCHARGE-DATE.                                    01520008
+015300             15  B-D-CC           PIC 9(02).                      01530008
+015400             15  B-D-YY           PIC 9(02).                      01540008
+015500             15  B-D-MM           PIC 9(02).                      01550008
+015600             15  B-D-DD           PIC 9(02).                      01560008
+015700         10  B-PATIENT-STATUS     PIC X(02).                      01570008
+015800         10  B-AGE                PIC 9(03).                      01580008
+015900         10  B-DRG                PIC 9(03).                      01590008
+016000         10  B-LOS                PIC 9(05).                      01600008
+016100         10  B-OUTL-OCCUR-IND     PIC X(01).                      01610008
+016200         10  B-SRC-OF-ADMISSION   PIC X(01).                      01620008
+016300         10  B-ECT-NO-OF-UNITS    PIC X(03).                      01630008
+016400         10  B-CHARGES-CLAIMED    PIC 9(07)V9(02).                01640008
+016500         10  B-OTHER-DIAG-DATA    PIC X(175).                     01650008
+016600         10  B-OTHER-PROC-DATA    PIC X(175).                     01660008
+016700         10  B-PRIOR-DAYS         PIC X(03).                      01670008
+016800                                                                  01680008
+016900*******************************************************           01690008
+017000*    PASSED AND RETURNED BY IPDRV                     *           01700008
+017100*******************************************************           01710008
+017200 01  PRICER-OPT-VERS-SW.                                          01720008
+017300     02  PRICER-OPTION-SW        PIC X.                           01730008
+017400     02  IPF-VERSIONS.                                            01740008
+017500         10  IPDRV-VERSION       PIC X(05).                       01750008
+017600                                                                  01760008
+017700*******************************************************           01770008
+017800*    CAN BE PASSED TO IPDRV___  OPTION P OR B         *           01780008
+017900*******************************************************           01790008
+018000 01  PROV-RECORD-FROM-USER       PIC X(240).                      01800008
+018100                                                                  01810008
+018200*******************************************************           01820008
+018300*    CAN BE PASSED TO IPDRV___  OPTION B              *           01830008
+018400*******************************************************           01840008
+018500 01  MSAX-TABLE-FROM-USER.                                        01850008
+018600     05  FILLER                  PIC X(32000).                    01860008
+018700     05  FILLER                  PIC X(30000).                    01870008
+018800     05  FILLER                  PIC X(30000).                    01880008
+018900                                                                  01890008
+019000*******************************************************           01900008
+019100*    CAN BE PASSED TO IPDRV___  OPTION B              *           01910008
+019200*******************************************************           01920008
+019300 01  CBSA-TABLE-FROM-USER.                                        01930008
+019400     05  FILLER                  PIC X(32000).                    01940008
+019500     05  FILLER                  PIC X(30000).                    01950008
+019600     05  FILLER                  PIC X(30000).                    01960008
+019700                                                                  01970008
+019800*******************************************************           01980008
+019900*    PASSED TO COMORBIDITY GROUPER AND RETURNED       *           01990008
+020000*******************************************************           02000008
+020100                                                                  02010008
+020200*******************************************************           02020008
+020300*    PROSPECTIVE PAYMENT REPORT COMPONENTS            *           02030008
+020400*******************************************************           02040008
+020500 01  IPF-DETAIL-LINE.                                             02050008
+020600     05  FILLER                  PIC X(01)  VALUE SPACES.         02060008
+020700     05  PRT-HIC                 PIC X(12).                       02070008
+020800     05  FILLER                  PIC X(01)  VALUE SPACES.         02080008
+020900     05  PRT-PROV                PIC X(06).                       02090008
+021000     05  FILLER                  PIC X(01)  VALUE SPACES.         02100008
+021100     05  PRT-WAGE-INDEX          PIC 9.9999.                      02110008
+021200     05  FILLER                  PIC X(01)  VALUE SPACES.         02120008
+021300     05  PRT-GRP-DRG             PIC 9(03).                       02130008
+021400     05  FILLER                  PIC X(01)  VALUE SPACES.         02140008
+021500     05  PRT-DRG-FACTOR          PIC 9.99.                        02150008
+021600     05  FILLER                  PIC X(01)  VALUE SPACES.         02160008
+021700     05  PRT-AGE                 PIC ZZ9.                         02170008
+021800     05  FILLER                  PIC X(01)  VALUE SPACES.         02180008
+021900     05  PRT-DISCHG-DATE         PIC 9(08).                       02190008
+022000     05  FILLER                  PIC X(01)  VALUE SPACES.         02200008
+022100     05  PRT-TOT-PAY             PIC Z,ZZZ,ZZZ.99.                02210008
+022200     05  FILLER                  PIC X(01)  VALUE SPACES.         02220008
+022300     05  PRT-ECT-PAY             PIC ZZZ,ZZZ.99.                  02230008
+022400     05  FILLER                  PIC X(02)  VALUE SPACES.         02240008
+022500     05  PRT-ECT-UNITS           PIC ZZ9.                         02250008
+022600     05  FILLER                  PIC X      VALUE SPACES.         02260008
+022700     05  PRT-OUTLIER-PAY         PIC ZZZ,ZZZ.99.                  02270008
+022800     05  FILLER                  PIC X(03)  VALUE SPACES.         02280008
+022900     05  PRT-OUTL-OCCUR-IND      PIC X(01)  VALUE SPACES.         02290008
+023000     05  FILLER                  PIC X(01)  VALUE SPACES.         02300008
+023100     05  PRT-MSA-CBSA            PIC X(05).                       02310008
+023200     05  FILLER                  PIC X(01)  VALUE SPACES.         02320008
+023300     05  PRT-STOPLOSS-AMT        PIC ZZZ,ZZZ.99.                  02330008
+023400     05  FILLER                  PIC X(01)  VALUE SPACES.         02340008
+023500     05  PRT-FAC-PAY             PIC ZZZ,ZZZ.99.                  02350008
+023600     05  FILLER                  PIC X(01)  VALUE SPACES.         02360008
+023700     05  PRT-LOS                 PIC ZZ9.                         02370008
+023800     05  FILLER                  PIC X(02)  VALUE SPACES.         02380008
+023900     05  PRT-PATIENT-STATUS      PIC 99.                          02390008
+024000     05  FILLER                  PIC X(01)  VALUE SPACES.         02400008
+024100     05  PRT-PPS-RTC             PIC 99.                          02410008
+024200     05  FILLER                  PIC X(01)  VALUE SPACES.         02420008
+024300                                                                  02430008
+024400 01  PPS-HEAD1.                                                   02440008
+024500     05  FILLER                  PIC X(01)  VALUE SPACES.         02450008
+024600     05  FILLER                  PIC X(44)  VALUE                 02460008
+024700        '  C M S ,                                   '.           02470008
+024800     05  FILLER                  PIC X(44)  VALUE                 02480008
+024900        '                                            '.           02490008
+025000     05  FILLER                  PIC X(44)  VALUE                 02500008
+025100        '                                            '.           02510008
+025200                                                                  02520008
+025300 01  PPS-HEAD2-OPER.                                              02530008
+025400     05  FILLER                  PIC X(01)  VALUE SPACES.         02540008
+025500     05  FILLER                  PIC X(44)  VALUE                 02550008
+025600        '  C M S     IPF PRICER        P R O S P E C '.           02560008
+025700     05  FILLER                  PIC X(44)  VALUE                 02570008
+025800        'T I V E   P A Y M E N T   T E S T   D A T A '.           02580008
+025900     05  FILLER                  PIC X(44)  VALUE                 02590008
+026000        '  R E P O R T                               '.           02600008
+026100                                                                  02610008
+026200 01  PPS-HEAD3-OPER.                                              02620008
+026300     05  FILLER                  PIC X(01)  VALUE SPACES.         02630008
+026400     05  FILLER                  PIC X(44)  VALUE                 02640008
+026500        ' HI CLAIM   PROVIDER WAGE  DRG DRG AGE DIS-D'.           02650008
+026600     05  FILLER                  PIC X(44)  VALUE                 02660008
+026700        'ATE      TOT BLEND     ECT     ECT   OUTLIER'.           02670008
+026800     05  FILLER                  PIC X(44)  VALUE                 02680008
+026900        ' OUTL MSA/CBSA STOPLOSS   FAC      STAT IPF '.           02690008
+027000                                                                  02700008
+027100 01  PPS-HEAD4-OPER.                                              02710008
+027200     05  FILLER                  PIC X(01)  VALUE SPACES.         02720008
+027300     05  FILLER                  PIC X(44)  VALUE                 02730008
+027400        '    NO         NO    INDEX  NO FAC     CCYYM'.           02740008
+027500     05  FILLER                  PIC X(44)  VALUE                 02750008
+027600        'MDD      PAYMENT     PAYMENT  UNITS  PAYMENT'.           02760008
+027700     05  FILLER                  PIC X(44)  VALUE                 02770008
+027800        '  IND   NO.     AMOUNT  PAYMENT LOS CD  RTC '.           02780008
+027900                                                                  02790008
+028000                                                                  02800008
+028010*----------------------------------------------------------------*02801008
+028020*- UPDATE THIS COUNTER WITH EVERY RELEASE                       -*02802008
+028030*----------------------------------------------------------------*02803008
+028040 01  TOTAL-COUNTERS.                                              02804008
+028050     03  FILLER                  OCCURS 25.                       02805010
+028060         05  COUNT-TOTAL             PIC 9(09) COMP.              02806008
+028070                                                                  02807008
+028080 01  PRT-LINE.                                                    02808008
+028090     05  FILLER                  PIC X(01)  VALUE SPACES.         02809008
+028100     05  PRT-LNE                 OCCURS 8.                        02810008
+028200         10  PRT-XXX             PIC X(02).                       02820008
+028300         10  PRT-DRG             PIC 9(03).                       02830008
+028400         10  PRT-CNT             PIC Z(08)9B.                     02840008
+028500         10  PRT-COL             PIC X(01).                       02850008
+028600                                                                  02860008
+028700 01  PRT-HDG-OLD.                                                 02870008
+028800     05  FILLER                  PIC X(01)  VALUE SPACES.         02880008
+028900     05  FILLER                  PIC X(44)  VALUE                 02890008
+029000         '   ****** A L L   R E C O R D S ******      '.          02900008
+029100     05  FILLER                  PIC X(44)  VALUE                 02910008
+029200         '    DISCHARGES OLDER THEN 5 YEARS           '.          02920008
+029300     05  FILLER                  PIC X(35)  VALUE                 02930008
+029400        '                C M S ,            '.                    02940008
+029500                                                                  02950008
+029600                                                                  02960008
+029700 01  PRT-HDG-V220.                                                02970008
+029800     05  FILLER                  PIC X(01)  VALUE SPACES.         02980008
+029900     05  FILLER                  PIC X(44)  VALUE                 02990008
+030000         'G R O U P E R  V22/23 COUNTS BY   D R G     '.          03000008
+030100     05  FILLER                  PIC X(44)  VALUE                 03010008
+030200         'FOR DISCHARGES ON OR AFTER 01/01/2005       '.          03020008
+030300     05  FILLER                  PIC X(35)  VALUE                 03030008
+030400        '                C M S ,            '.                    03040008
+030500                                                                  03050008
+030600 01  PRT-HDG-V230.                                                03060008
+030700     05  FILLER                  PIC X(01)  VALUE SPACES.         03070008
+030800     05  FILLER                  PIC X(44)  VALUE                 03080008
+030900         'G R O U P E R  V23.0  COUNTS BY   D R G     '.          03090008
+031000     05  FILLER                  PIC X(44)  VALUE                 03100008
+031100         'FOR DISCHARGES ON OR AFTER 07/01/2006       '.          03110008
+031200     05  FILLER                  PIC X(35)  VALUE                 03120008
+031300        '                C M S ,            '.                    03130008
+031400                                                                  03140008
+031500 01  PRT-HDG-V240.                                                03150008
+031600     05  FILLER                  PIC X(01)  VALUE SPACES.         03160008
+031700     05  FILLER                  PIC X(44)  VALUE                 03170008
+031800         'G R O U P E R  V23.0  COUNTS BY   D R G     '.          03180008
+031900     05  FILLER                  PIC X(44)  VALUE                 03190008
+032000         'FOR DISCHARGES ON OR AFTER 07/01/2007       '.          03200008
+032100     05  FILLER                  PIC X(35)  VALUE                 03210008
+032200        '                C M S ,            '.                    03220008
+032300                                                                  03230008
+032400                                                                  03240008
+032500 01  PRT-HDG                     PIC X(132).                      03250008
+032600                                                                  03260008
+032700**=============================================================   03270008
+032800 PROCEDURE  DIVISION.                                             03280008
+032900                                                                  03290008
+033000 0000-MAINLINE  SECTION.                                          03300008
+033100     OPEN INPUT  IPFBILL.                                         03310008
+033200                                                                  03320008
+033300     OPEN OUTPUT IPFOUT.                                          03330008
+033400     OPEN OUTPUT IPFPRT.                                          03340008
+033500                                                                  03350008
+033600     MOVE LOW-VALUES   TO TOTAL-COUNTERS.                         03360008
+033700     MOVE ALL '0'      TO BILL-INPUT-DATA                         03370008
+033800                          IPF-DATA-VARIABLES                      03380008
+033900                          IPF-ADDITIONAL-VARIABLES                03390008
+034000                          IPF-VERSIONS.                           03400008
+034100                                                                  03410008
+034200     PERFORM 0100-PROCESS-RECORDS THRU 0100-EXIT UNTIL EOF-SW = 1.03420008
+034300                                                                  03430008
+034400     DISPLAY '-- PROGRAM IPMGR___  VERSION ==> ' IPMGR-VERSION.   03440008
+034500     DISPLAY '-- PROGRAM IPOPN___  VERSION ==> ' IPOPN-VERSION.   03450008
+034600     DISPLAY '-- PROGRAM IPDRV___  VERSION ==> ' IPDRV-VERSION.   03460008
+034700                                                                  03470008
+034800*----------------------------------------------------------------*03480008
+034900*- UPDATE THIS COUNTER WITH EVERY RELEASE                       -*03490008
+035000*----------------------------------------------------------------*03500008
+035100     DISPLAY ' '.                                                 03510008
+035200     IF COUNT-TOTAL (2) > 0                                       03520008
+035300       DISPLAY '-- PROGRAM IPCAL___  VERSION ==> C05.7 '.         03530008
+035400     IF COUNT-TOTAL (3) > 0                                       03540008
+035500       DISPLAY '-- PROGRAM IPCAL___  VERSION ==> C07.6 '.         03550008
+035600     IF COUNT-TOTAL (4) > 0                                       03560008
+035700       DISPLAY '-- PROGRAM IPCAL___  VERSION ==> C08.A '.         03570008
+035800     IF COUNT-TOTAL (5) > 0                                       03580008
+035900       DISPLAY '-- PROGRAM IPCAL___  VERSION ==> C08.6 '.         03590008
+036000     IF COUNT-TOTAL (6) > 0                                       03600008
+036100       DISPLAY '-- PROGRAM IPCAL___  VERSION ==> C09.A '.         03610008
+036200     IF COUNT-TOTAL (7) > 0                                       03620008
+036300       DISPLAY '-- PROGRAM IPCAL___  VERSION ==> C09.4 '.         03630008
+036400     IF COUNT-TOTAL (8) > 0                                       03640008
+036500       DISPLAY '-- PROGRAM IPCAL___  VERSION ==> C10.0 '.         03650008
+036600     IF COUNT-TOTAL (9) > 0                                       03660008
+036700       DISPLAY '-- PROGRAM IPCAL___  VERSION ==> C10.2 '.         03670008
+036800     IF COUNT-TOTAL (10) > 0                                      03680008
+036900       DISPLAY '-- PROGRAM IPCAL___  VERSION ==> C11.0 '.         03690008
+037000     IF COUNT-TOTAL (11) > 0                                      03700008
+037100       DISPLAY '-- PROGRAM IPCAL___  VERSION ==> C11.1 '.         03710008
+037200     IF COUNT-TOTAL (12) > 0                                      03720008
+037300       DISPLAY '-- PROGRAM IPCAL___  VERSION ==> C11.2 '.         03730008
+037400     IF COUNT-TOTAL (13) > 0                                      03740008
+037500       DISPLAY '-- PROGRAM IPCAL___  VERSION ==> C12.0 '.         03750008
+037600     IF COUNT-TOTAL (14) > 0                                      03760008
+037700       DISPLAY '-- PROGRAM IPCAL___  VERSION ==> C12.1 '.         03770008
+037800     IF COUNT-TOTAL (15) > 0                                      03780008
+037900       DISPLAY '-- PROGRAM IPCAL___  VERSION ==> C13.0 '.         03790008
+038000     IF COUNT-TOTAL (16) > 0                                      03800008
+038100       DISPLAY '-- PROGRAM IPCAL___  VERSION ==> C14.0 '.         03810008
+038200     IF COUNT-TOTAL (17) > 0                                      03820008
+038300       DISPLAY '-- PROGRAM IPCAL___  VERSION ==> C15.0 '.         03830008
+038310     IF COUNT-TOTAL (18) > 0                                      03831008
+038320       DISPLAY '-- PROGRAM IPCAL___  VERSION ==> C16.0 '.         03832008
+038330     IF COUNT-TOTAL (19) > 0                                      03833008
+038331       DISPLAY '-- PROGRAM IPCAL___  VERSION ==> C17.0 '.         03833108
+038332     IF COUNT-TOTAL (20) > 0                                      03833208
+038333       DISPLAY '-- PROGRAM IPCAL___  VERSION ==> C18.0 '.         03833308
+038334     IF COUNT-TOTAL (21) > 0                                      03833408
+038335       DISPLAY '-- PROGRAM IPCAL___  VERSION ==> C19.0 '.         03833508
+038336     IF COUNT-TOTAL (22) > 0                                      03833608
+038337       DISPLAY '-- PROGRAM IPCAL___  VERSION ==> C20.1 '.         03833708
+038338     IF COUNT-TOTAL (23) > 0                                      03833808
+038339       DISPLAY '-- PROGRAM IPCAL___  VERSION ==> C21.0 '.         03833910
+038340     IF COUNT-TOTAL (24) > 0                                      03834010
+038341       DISPLAY '-- PROGRAM IPCAL___  VERSION ==> C22.0 '.         03834110
+038342                                                                  03834210
+038343*----------------------------------------------------------------*03834310
+038344*- UPDATE THIS COUNTER WITH EVERY RELEASE                       -*03834410
+038345*----------------------------------------------------------------*03834510
+038346     DISPLAY ' '.                                                 03834610
+038347     IF COUNT-TOTAL (1) > 0                                       03834710
+038348      DISPLAY '--   TOTAL OLD RECORDS   ======> ' COUNT-TOTAL (1).03834810
+038349     IF COUNT-TOTAL (2) > 0                                       03834910
+038350      DISPLAY '-- FY 2005 RECORD COUNTS ======> ' COUNT-TOTAL (2).03835010
+038351     IF COUNT-TOTAL (3) > 0                                       03835110
+038352      DISPLAY '-- FY 2007 RECORD COUNTS ======> ' COUNT-TOTAL (3).03835210
+038353     IF COUNT-TOTAL (4) > 0                                       03835310
+038354      DISPLAY '-- FY 2008-A REC  COUNTS ======> ' COUNT-TOTAL (4).03835410
+038355     IF COUNT-TOTAL (5) > 0                                       03835510
+038356      DISPLAY '-- FY 2008-6 REC  COUNTS ======> ' COUNT-TOTAL (5).03835610
+038357     IF COUNT-TOTAL (6) > 0                                       03835710
+038358      DISPLAY '-- FY 2009-A REC  COUNTS ======> ' COUNT-TOTAL (6).03835810
+038359     IF COUNT-TOTAL (7) > 0                                       03835910
+038360      DISPLAY '-- FY 2009-4 REC  COUNTS ======> ' COUNT-TOTAL (7).03836010
+038361     IF COUNT-TOTAL (8) > 0                                       03836110
+038362      DISPLAY '-- FY 2010 RECORD COUNTS ======> ' COUNT-TOTAL (8).03836210
+038370     IF COUNT-TOTAL (9) > 0                                       03837008
+038380      DISPLAY '-- FY 2010-2 REC  COUNTS ======> ' COUNT-TOTAL (9).03838008
+038390     IF COUNT-TOTAL (10) > 0                                      03839008
+038400      DISPLAY '-- FY 2011 REC  COUNTS ======> ' COUNT-TOTAL (10). 03840008
+038500     IF COUNT-TOTAL (11) > 0                                      03850008
+038600      DISPLAY '-- FY 2011-2 REC  COUNTS =====> ' COUNT-TOTAL (11).03860008
+038700     IF COUNT-TOTAL (12) > 0                                      03870008
+038800      DISPLAY '-- FY 2011-3 REC  COUNTS =====> ' COUNT-TOTAL (12).03880008
+038900     IF COUNT-TOTAL (13) > 0                                      03890008
+038910      DISPLAY '-- FY 2012-0 REC  COUNTS =====> ' COUNT-TOTAL (13).03891008
+038920     IF COUNT-TOTAL (14) > 0                                      03892008
+038930      DISPLAY '-- FY 2012-1 REC  COUNTS =====> ' COUNT-TOTAL (14).03893008
+038940     IF COUNT-TOTAL (15) > 0                                      03894008
+038950      DISPLAY '-- FY 2013-0 REC  COUNTS =====> ' COUNT-TOTAL (15).03895008
+038960     IF COUNT-TOTAL (16) > 0                                      03896008
+038970      DISPLAY '-- FY 2014-0 REC  COUNTS =====> ' COUNT-TOTAL (16).03897008
+038980     IF COUNT-TOTAL (17) > 0                                      03898008
+038990      DISPLAY '-- FY 2015-0 REC  COUNTS =====> ' COUNT-TOTAL (17).03899008
+038991     IF COUNT-TOTAL (18) > 0                                      03899108
+038992      DISPLAY '-- FY 2016-0 REC  COUNTS =====> ' COUNT-TOTAL (18).03899208
+038993     IF COUNT-TOTAL (19) > 0                                      03899308
+038994      DISPLAY '-- FY 2017-0 REC  COUNTS =====> ' COUNT-TOTAL (19).03899408
+038995     IF COUNT-TOTAL (21) > 0                                      03899508
+038996      DISPLAY '-- FY 2018-0 REC  COUNTS =====> ' COUNT-TOTAL (21).03899608
+038997     IF COUNT-TOTAL (22) > 0                                      03899708
+038998      DISPLAY '-- FY 2019-0 REC  COUNTS =====> ' COUNT-TOTAL (22).03899808
+038999     IF COUNT-TOTAL (23) > 0                                      03899908
+039000      DISPLAY '-- FY 2021-0 REC  COUNTS =====> ' COUNT-TOTAL (23).03900010
+039001     IF COUNT-TOTAL (24) > 0                                      03900110
+039002      DISPLAY '-- FY 2022-0 REC  COUNTS =====> ' COUNT-TOTAL (24).03900210
+039003                                                                  03900308
+039004     DISPLAY '                                -----------'.       03900408
+039005                                                                  03900508
+039006     DISPLAY '-- INPUT  COUNTS FOR IPFBILL ===> ' IPFBILL-CTR.    03900608
+039007     DISPLAY '-- OUTPUT COUNTS FOR IPFOUT  ===> ' IPFOUT-CTR.     03900708
+039008                                                                  03900808
+039009     CLOSE IPFBILL.                                               03900908
+039010     CLOSE IPFOUT.                                                03901008
+039020                                                                  03902008
+039030*    MOVE 1 TO X4.                                                03903008
+039040*    MOVE PRT-HDG-OLD  TO PRT-HDG.                                03904008
+039050*    WRITE IPFPRT-LINE FROM PRT-HDG AFTER ADVANCING PAGE.         03905008
+039060*    IF OPR-STAT1 > 0 DISPLAY ' BAD1 WRITE ON IPFPRT FILE'.       03906008
+039070                                                                  03907008
+039080     MOVE SPACES TO PRT-LINE.                                     03908008
+039090     MOVE '  TOTAL RECORDS PROCESSED' TO PRT-HDG.                 03909008
+039100     WRITE IPFPRT-LINE FROM PRT-HDG AFTER ADVANCING 3.            03910008
+039200     IF OPR-STAT1 > 0 DISPLAY ' BAD2 WRITE ON IPFPRT FILE'.       03920008
+039300                                                                  03930008
+039400     MOVE COUNT-TOTAL (X4) TO PRT-CNT (1).                        03940008
+039500     WRITE IPFPRT-LINE FROM PRT-LINE AFTER ADVANCING 1.           03950008
+039600     IF OPR-STAT1 > 0 DISPLAY ' BAD3 WRITE ON IPFPRT FILE'.       03960008
+039700                                                                  03970008
+039800*    MOVE 2 TO X4.                                                03980008
+039900*    MOVE PRT-HDG-V220 TO PRT-HDG.                                03990008
+040000*    PERFORM 1300-PRINT-COUNTERS THRU 1300-EXIT.                  04000008
+040100                                                                  04010008
+040200*    MOVE 3 TO X4.                                                04020008
+040300*    MOVE PRT-HDG-V230 TO PRT-HDG.                                04030008
+040400*    PERFORM 1300-PRINT-COUNTERS THRU 1300-EXIT.                  04040008
+040500                                                                  04050008
+040600*    MOVE 4 TO X4.                                                04060008
+040700*    MOVE PRT-HDG-V240 TO PRT-HDG.                                04070008
+040800*    PERFORM 1300-PRINT-COUNTERS THRU 1300-EXIT.                  04080008
+040900                                                                  04090008
+041000*    MOVE 5 TO X4.                                                04100008
+041100*    MOVE PRT-HDG-V240 TO PRT-HDG.                                04110008
+041200*    PERFORM 1300-PRINT-COUNTERS THRU 1300-EXIT.                  04120008
+041300                                                                  04130008
+041400*    MOVE 6 TO X4.                                                04140008
+041500*    MOVE PRT-HDG-V240 TO PRT-HDG.                                04150008
+041600*    PERFORM 1300-PRINT-COUNTERS THRU 1300-EXIT.                  04160008
+041700                                                                  04170008
+041800*    MOVE 7 TO X4.                                                04180008
+041900*    MOVE PRT-HDG-V240 TO PRT-HDG.                                04190008
+042000*    PERFORM 1300-PRINT-COUNTERS THRU 1300-EXIT.                  04200008
+042100                                                                  04210008
+042200     CLOSE IPFPRT.                                                04220008
+042300     STOP RUN.                                                    04230008
+042400                                                                  04240008
+042500 0100-PROCESS-RECORDS.                                            04250008
+042600     READ IPFBILL INTO BILL-WORK                                  04260008
+042700         AT END                                                   04270008
+042800             MOVE 1 TO EOF-SW.                                    04280008
+042900     MOVE BILL-NPI-NUMBER       TO B-NPI-NUMBER.                  04290008
+043000     MOVE BILL-PROVIDER-NO      TO B-PROVIDER-NO.                 04300008
+043100     MOVE BILL-HIC-NO           TO B-HIC-NO.                      04310008
+043200     MOVE BILL-PATIENT-STATUS   TO B-PATIENT-STATUS.              04320008
+043300     MOVE BILL-AGE              TO B-AGE.                         04330008
+043400     MOVE BILL-DRG              TO B-DRG.                         04340008
+043500     MOVE BILL-LOS              TO B-LOS.                         04350008
+043600     MOVE BILL-DISCHARGE-DATE   TO B-DISCHARGE-DATE.              04360008
+043700     MOVE BILL-CHARGES-CLAIMED  TO B-CHARGES-CLAIMED.             04370008
+043800     MOVE BILL-OUTL-OCCUR-IND   TO B-OUTL-OCCUR-IND.              04380008
+043900     MOVE BILL-SRC-OF-ADMISSION TO B-SRC-OF-ADMISSION.            04390008
+044000     MOVE BILL-ECT-NO-OF-UNITS  TO B-ECT-NO-OF-UNITS.             04400008
+044100     MOVE BILL-OTHER-DIAG-DATA  TO B-OTHER-DIAG-DATA.             04410008
+044200     MOVE BILL-OTHER-PROC-DATA  TO B-OTHER-PROC-DATA.             04420008
+044300     MOVE BILL-PRIOR-DAYS       TO B-PRIOR-DAYS.                  04430008
+044400                                                                  04440008
+044500     IF  EOF-SW = 0                                               04450008
+044600         ADD 1 TO IPFBILL-CTR                                     04460008
+044700         PERFORM 0200-APPLY-YR  THRU 0200-EXIT                    04470008
+044800         PERFORM 1000-CALC-PAYMENT THRU 1000-EXIT                 04480008
+044900         PERFORM 1100-WRITE-IPFOUT THRU 1100-EXIT.                04490008
+045000                                                                  04500008
+045100 0100-EXIT.  EXIT.                                                04510008
+045200                                                                  04520008
+045300*----------------------------------------------------------------*04530008
+045400*- UPDATE THIS COUNTER WITH EVERY RELEASE                       -*04540008
+045500*----------------------------------------------------------------*04550008
+045600 0200-APPLY-YR.                                                   04560008
+045700*******************************************************           04570008
+045800****  OLD RECORDS BEFORE IPF STARTED                              04580008
+045900*******************************************************           04590008
+046000     IF BILL-DISCHARGE-DATE < 20050101                            04600008
+046100        MOVE 1 TO X4                                              04610008
+046200        ADD 1             TO COUNT-TOTAL (X4)                     04620008
+046300     ELSE                                                         04630008
+046400                                                                  04640008
+046500*******************************************************           04650008
+046600****  BETWEEN 01/01/2005 AND 07/01/2006    FOR 2005               04660008
+046700****       18 MONTHS                                              04670008
+046800*******************************************************           04680008
+046900     IF BILL-DISCHARGE-DATE < 20060701                            04690008
+047000        MOVE 2 TO X4                                              04700008
+047100        ADD 1             TO COUNT-TOTAL (X4)                     04710008
+047200     ELSE                                                         04720008
+047300                                                                  04730008
+047400*******************************************************           04740008
+047500****  BETWEEN 07/01/2006 AND 07/01/2007    FOR 2006               04750008
+047600****       12 MONTHS                                              04760008
+047700*******************************************************           04770008
+047800     IF BILL-DISCHARGE-DATE < 20070701                            04780008
+047900        MOVE 3 TO X4                                              04790008
+048000        ADD 1             TO COUNT-TOTAL (X4)                     04800008
+048100     ELSE                                                         04810008
+048200                                                                  04820008
+048300*******************************************************           04830008
+048400****  BETWEEN 07/01/2007 AND 10/01/2007    FOR 2007               04840008
+048500****        3 MONTHS                                              04850008
+048600*******************************************************           04860008
+048700     IF BILL-DISCHARGE-DATE < 20071001                            04870008
+048800        MOVE 4 TO X4                                              04880008
+048900        ADD 1             TO COUNT-TOTAL (X4)                     04890008
+049000     ELSE                                                         04900008
+049100                                                                  04910008
+049200*******************************************************           04920008
+049300****  BETWEEN 07/01/2007 AND 06/30/2008    FOR 2008               04930008
+049400****        3 MONTHS                                              04940008
+049500*******************************************************           04950008
+049600     IF BILL-DISCHARGE-DATE < 20080701                            04960008
+049700        MOVE 5 TO X4                                              04970008
+049800        ADD 1             TO COUNT-TOTAL (X4)                     04980008
+049900     ELSE                                                         04990008
+050000                                                                  05000008
+050100*******************************************************           05010008
+050200****  AFTER 06/30/08 - RATE   YEAR 2009 JUL - SEPT                05020008
+050300*******************************************************           05030008
+050400     IF BILL-DISCHARGE-DATE < 20081001                            05040008
+050500        MOVE 6 TO X4                                              05050008
+050600        ADD 1             TO COUNT-TOTAL (X4)                     05060008
+050700     ELSE                                                         05070008
+050800*******************************************************           05080008
+050900****  AFTER 09/30/08 - RATE   YEAR 2009-2 OCT08 - JUL09           05090008
+051000*******************************************************           05100008
+051100     IF BILL-DISCHARGE-DATE < 20090701                            05110008
+051200        MOVE 7 TO X4                                              05120008
+051300        ADD 1             TO COUNT-TOTAL (X4)                     05130008
+051400     ELSE                                                         05140008
+051500*******************************************************           05150008
+051600****  AFTER 06/30/09 - RATE   YEAR 2010   JUL - SEPT              05160008
+051700*******************************************************           05170008
+051800     IF BILL-DISCHARGE-DATE < 20091001                            05180008
+051900        MOVE 8 TO X4                                              05190008
+052000        ADD 1             TO COUNT-TOTAL (X4)                     05200008
+052100     ELSE                                                         05210008
+052200*******************************************************           05220008
+052300****  AFTER 09/30/09 - RATE   YEAR 2010-2 OCT09 - JUL10           05230008
+052400*******************************************************           05240008
+052500     IF BILL-DISCHARGE-DATE < 20100701                            05250008
+052600        MOVE 9 TO X4                                              05260008
+052700        ADD 1             TO COUNT-TOTAL (X4)                     05270008
+052800     ELSE                                                         05280008
+052900*******************************************************           05290008
+053000****  AFTER 06/30/10 - RATE   YEAR 2011 JUL10 - SEP11             05300008
+053100*******************************************************           05310008
+053200     IF BILL-DISCHARGE-DATE < 20101001                            05320008
+053300        MOVE 10 TO X4                                             05330008
+053400        ADD 1             TO COUNT-TOTAL (X4)                     05340008
+053500     ELSE                                                         05350008
+053600     IF BILL-DISCHARGE-DATE < 20110101                            05360008
+053700        MOVE 11 TO X4                                             05370008
+053800        ADD 1             TO COUNT-TOTAL (X4)                     05380008
+053900     ELSE                                                         05390008
+054000     IF BILL-DISCHARGE-DATE < 20110701                            05400008
+054010        MOVE 12 TO X4                                             05401008
+054020        ADD 1             TO COUNT-TOTAL (X4)                     05402008
+054030     ELSE                                                         05403008
+054040     IF BILL-DISCHARGE-DATE < 20111001                            05404008
+054050        MOVE 13 TO X4                                             05405008
+054060        ADD 1             TO COUNT-TOTAL (X4)                     05406008
+054070     ELSE                                                         05407008
+054080     IF BILL-DISCHARGE-DATE < 20121001                            05408008
+054090        MOVE 14 TO X4                                             05409008
+054091        ADD 1             TO COUNT-TOTAL (X4)                     05409108
+054092     ELSE                                                         05409208
+054093     IF BILL-DISCHARGE-DATE < 20131001                            05409308
+054094        MOVE 15 TO X4                                             05409408
+054095        ADD 1             TO COUNT-TOTAL (X4)                     05409508
+054096     ELSE                                                         05409608
+054097     IF BILL-DISCHARGE-DATE < 20141001                            05409708
+054098        MOVE 16 TO X4                                             05409808
+054099        ADD 1             TO COUNT-TOTAL (X4)                     05409908
+054100     ELSE                                                         05410008
+054110     IF BILL-DISCHARGE-DATE < 20151001                            05411008
+054111        MOVE 17 TO X4                                             05411108
+054112        ADD 1             TO COUNT-TOTAL (X4)                     05411208
+054113     ELSE                                                         05411308
+054114     IF BILL-DISCHARGE-DATE < 20161001                            05411408
+054115        MOVE 18 TO X4                                             05411508
+054116        ADD 1             TO COUNT-TOTAL (X4)                     05411608
+054117     ELSE                                                         05411708
+054118     IF BILL-DISCHARGE-DATE < 20171001                            05411808
+054119        MOVE 19 TO X4                                             05411908
+054120        ADD 1             TO COUNT-TOTAL (X4)                     05412008
+054130     ELSE                                                         05413008
+054131     IF BILL-DISCHARGE-DATE < 20181001                            05413108
+054132        MOVE 20 TO X4                                             05413208
+054133        ADD 1             TO COUNT-TOTAL (X4)                     05413308
+054134     ELSE                                                         05413408
+054135     IF BILL-DISCHARGE-DATE < 20191001                            05413508
+054136        MOVE 21 TO X4                                             05413608
+054137        ADD 1             TO COUNT-TOTAL (X4)                     05413708
+054138     ELSE                                                         05413808
+054139     IF BILL-DISCHARGE-DATE < 20201001                            05413908
+054140        MOVE 22 TO X4                                             05414008
+054141        ADD 1             TO COUNT-TOTAL (X4)                     05414108
+054142     ELSE                                                         05414208
+054143     IF BILL-DISCHARGE-DATE < 20211001                            05414308
+054144        MOVE 23 TO X4                                             05414408
+054145        ADD 1             TO COUNT-TOTAL (X4)                     05414508
+054146     ELSE                                                         05414608
+054147        MOVE 24 TO X4                                             05414708
+054148        ADD 1             TO COUNT-TOTAL (X4).                    05414808
+054149 0200-EXIT.  EXIT.                                                05414908
+054150                                                                  05415008
+054151                                                                  05415108
+054152 1000-CALC-PAYMENT.                                               05415208
+054153*******************************************************           05415308
+054154*    CALL TO THE PPS SUBROUTINE TO CALCULATE THE      *           05415408
+054155*    PAYMENT                                          *           05415508
+054156*******************************************************           05415608
+054157***************************************************************   05415708
+054158* OPTION (1)                                                  *   05415808
+054159*       (1)  MOVE 'S' TO PRICER-OPTION-SW.                    *   05415908
+054160*            CALL 'IPDRV___' USING BILL-INPUT-DATA            *   05416008
+054170*                                  IPF-DATA-VARIABLES         *   05417008
+054180*                                  IPF-ADDITIONAL-VARIABLES   *   05418008
+054190*                                  PRICER-OPT-VERS-SW.        *   05419008
+054200*        THIS PASSES THE STANDARD VARIABLES USED FOR PRICING. *   05420008
+054300*                        *  *  *  *                           *   05430008
+054400*                        *  *  *  *                           *   05440008
+054500* OPTION (2)                                                  *   05450008
+054600*       (2)  MOVE 'P' TO PRICER-OPTION-SW.                    *   05460008
+054700*            CALL 'IPDRV___' USING BILL-INPUT-DATA            *   05470008
+054710*                                  IPF-DATA-VARIABLES         *   05471008
+054720*                                  IPF-ADDITIONAL-VARIABLES   *   05472008
+054730*                                  PRICER-OPT-VERS-SW         *   05473008
+054740*                                  PROV-RECORD-FROM-USER.     *   05474008
+054750*        THIS PASSES THE STANDARD VARIABLES                   *   05475008
+054760*       AND ADDITIONAL VARIABLES USED FOR PRICING.            *   05476008
+054770*        THE PROVIDER RECORD FROM THE USER                    *   05477008
+054780*       USED FOR THIS BILL ONLY IS ALSO PASSED.               *   05478008
+054790*                        *  *  *  *                           *   05479008
+054800* OPTION (3)                                                  *   05480008
+054900*       (3)  MOVE 'B' TO PRICER-OPTION-SW.                    *   05490008
+055000*            CALL 'IPDRV___' USING BILL-INPUT-DATA            *   05500008
+055100*                                  IPF-DATA-VARIABLES         *   05510008
+055200*                                  IPF-ADDITIONAL-VARIABLES   *   05520008
+055300*                                  PRICER-OPT-VERS-SW         *   05530008
+055400*                                  PROV-RECORD-FROM-USER      *   05540008
+055500*                                  MSAX-TABLE-FROM-USER.      *   05550008
+055600*        THIS IS THE ONLINE COMPATIBLE INTERFACE.             *   05560008
+055700*        THIS PASSES THE STANDARD VARIIABLES AND THE          *   05570008
+055800*      ADDITIONAL VARIABLES USED FOR PRICING.                 *   05580008
+055900*        THE PROVIDER RECORD AND THE WAGE INDEX TABLE FROM    *   05590008
+056000*      THE USERS ARE PASSED.                                  *   05600008
+056100***************************************************************   05610008
+056200                                                                  05620008
+056300*** OPTION (1)                                                    05630008
+056400     MOVE 'S' TO PRICER-OPTION-SW.                                05640008
+056500     CALL  IPOPN220   USING BILL-INPUT-DATA                       05650012
+056600                            IPF-DATA-VARIABLES                    05660008
+056700                            IPF-ADDITIONAL-VARIABLES              05670008
+056800                            PRICER-OPT-VERS-SW.                   05680008
+056900*** OPTION (2)                                                    05690008
+057000*    MOVE 'P' TO PRICER-OPTION-SW.                                05700008
+057100*    CALL  IPDRV072   USING BILL-INPUT-DATA                       05710008
+057200*                           IPF-DATA-VARIABLES                    05720008
+057300*                           IPF-ADDITIONAL-VARIABLES              05730008
+057400*                           PRICER-OPT-VERS-SW                    05740008
+057500*                           PROV-RECORD-FROM-USER.                05750008
+057600*** OPTION (3)                                                    05760008
+057700*    MOVE 'B' TO PRICER-OPTION-SW.                                05770008
+057800*    CALL  IPDRV072   USING BILL-INPUT-DATA                       05780008
+057900*                           IPF-DATA-VARIABLES                    05790008
+058000*                           IPF-ADDITIONAL-VARIABLES              05800008
+058100*                           PRICER-OPT-VERS-SW                    05810008
+058200*                           PROV-RECORD-FROM-USER                 05820008
+058300*                           MSAX-TABLE-FROM-USER                  05830008
+058400*                           CBSA-TABLE-FROM-USER.                 05840008
+058500                                                                  05850008
+058600 1000-EXIT.  EXIT.                                                05860008
+058700                                                                  05870008
+058800 1100-WRITE-IPFOUT.                                               05880008
+058900******************************************************************05890008
+059000*    PRINT OPERATING PROSPECTIVE PAYMENT TEST DATA DETAIL         05900008
+059100*    REPORT AND WRITE TEST PAYMENT RECORD ROUTINE                 05910008
+059200******************************************************************05920008
+059300     IF  OPERLINE-CTR > 54                                        05930008
+059400         PERFORM 1200-PPS-HEADINGS THRU 1200-EXIT.                05940008
+059500     MOVE SPACES               TO  IPF-DETAIL-LINE.               05950008
+059600     MOVE B-PROVIDER-NO        TO  PRT-PROV.                      05960008
+059700     MOVE B-HIC-NO             TO  PRT-HIC.                       05970008
+059800     MOVE B-DISCHARGE-DATE     TO  PRT-DISCHG-DATE.               05980008
+059900     MOVE B-DRG                TO  PRT-GRP-DRG.                   05990008
+060000     MOVE B-AGE                TO  PRT-AGE.                       06000008
+060100     MOVE B-LOS                TO  PRT-LOS.                       06010008
+060200     MOVE B-ECT-NO-OF-UNITS    TO  PRT-ECT-UNITS.                 06020008
+060300     MOVE B-PATIENT-STATUS     TO  PRT-PATIENT-STATUS.            06030008
+060400     MOVE B-OUTL-OCCUR-IND     TO  PRT-OUTL-OCCUR-IND.            06040008
+060500     MOVE IPF-DRG-FACTOR       TO  PRT-DRG-FACTOR.                06050008
+060600     MOVE IPF-RTC              TO  PRT-PPS-RTC.                   06060008
+060700     MOVE IPF-WAGE-INDEX       TO PRT-WAGE-INDEX.                 06070008
+060800     MOVE IPF-TOT-PAYMENT      TO  PRT-TOT-PAY.                   06080008
+060900     MOVE IPF-FAC-PAYMENT      TO  PRT-FAC-PAY.                   06090008
+061000     MOVE IPF-OUTLIER-PAYMENT  TO  PRT-OUTLIER-PAY.               06100008
+061100     MOVE IPF-ECT-PAYMENT      TO  PRT-ECT-PAY.                   06110008
+061200     IF BILL-DISCHARGE-DATE > 20060630                            06120008
+061300        MOVE IPF-CBSA TO PRT-MSA-CBSA                             06130008
+061400     ELSE                                                         06140008
+061500        MOVE IPF-MSA  TO  PRT-MSA-CBSA.                           06150008
+061600     MOVE IPF-100PCT-STOPLOS-AMT TO PRT-STOPLOSS-AMT.             06160008
+061700                                                                  06170008
+061800     WRITE IPFPRT-LINE FROM IPF-DETAIL-LINE                       06180008
+061900                             AFTER ADVANCING 1.                   06190008
+062000     IF OPR-STAT1 > 0 DISPLAY ' BAD4 WRITE ON IPFPRT FILE'.       06200008
+062100     ADD 1 TO OPERLINE-CTR.                                       06210008
+062200                                                                  06220008
+062300        WRITE OUT-REC FROM BILL-WORK.                             06230008
+062400                                                                  06240008
+062500     IF UT2-STAT1 > 0 DISPLAY ' BAD1 WRITE ON IPFOUT  FILE'.      06250008
+062600     ADD 1 TO IPFOUT-CTR.                                         06260008
+062700                                                                  06270008
+062800**************************************************************    06280008
+062900 1100-EXIT.  EXIT.                                                06290008
+063000                                                                  06300008
+063100 1200-PPS-HEADINGS.                                               06310008
+063200*    WRITE IPFPRT-LINE FROM PPS-HEAD1                             06320008
+063300*                            AFTER ADVANCING PAGE.                06330008
+063400*    IF OPR-STAT1 > 0 DISPLAY ' BAD5 WRITE ON IPFPRT FILE'.       06340008
+063500*    WRITE IPFPRT-LINE FROM PPS-HEAD2-OPER                        06350008
+063600*                            AFTER ADVANCING 1.                   06360008
+063700     WRITE IPFPRT-LINE FROM PPS-HEAD2-OPER                        06370008
+063800                             AFTER ADVANCING PAGE.                06380008
+063900     IF OPR-STAT1 > 0 DISPLAY ' BAD6 WRITE ON IPFPRT FILE'.       06390008
+064000     WRITE IPFPRT-LINE FROM PPS-HEAD3-OPER                        06400008
+064100                             AFTER ADVANCING 2.                   06410008
+064200     IF OPR-STAT1 > 0 DISPLAY ' BAD7 WRITE ON IPFPRT FILE'.       06420008
+064300     WRITE IPFPRT-LINE FROM PPS-HEAD4-OPER                        06430008
+064400                             AFTER ADVANCING 1.                   06440008
+064500     IF OPR-STAT1 > 0 DISPLAY ' BAD8 WRITE ON IPFPRT FILE'.       06450008
+064600     MOVE ALL '  -' TO IPFPRT-LINE.                               06460008
+064700     WRITE IPFPRT-LINE AFTER ADVANCING 1.                         06470008
+064800     IF OPR-STAT1 > 0 DISPLAY ' BAD9 WRITE ON IPFPRT FILE'.       06480008
+064900     MOVE 5 TO OPERLINE-CTR.                                      06490008
+065000                                                                  06500008
+065100 1200-EXIT.  EXIT.                                                06510008
+065200                                                                  06520008
+065300                                                                  06530008
+065400*1300-PRINT-COUNTERS.                                             06540008
+065500*******************************************************           06550008
+065600*    PRINT COUNTERS TABLE ROUTINES AT EOJ             *           06560008
+065700*******************************************************           06570008
+065800*    WRITE IPFPRT-LINE FROM PRT-HDG AFTER ADVANCING PAGE.         06580008
+065900*    IF OPR-STAT1 > 0 DISPLAY ' BAD10 WRITE ON IPFPRT FILE'.      06590008
+066000                                                                  06600008
+066100*    MOVE '  TOTAL RECORDS PROCESSED' TO PRT-HDG.                 06610008
+066200*    WRITE IPFPRT-LINE FROM PRT-HDG AFTER ADVANCING 3.            06620008
+066300*    IF OPR-STAT1 > 0 DISPLAY ' BAD13 WRITE ON IPFPRT FILE'.      06630008
+066400                                                                  06640008
+066500*    MOVE SPACES TO PRT-LINE.                                     06650008
+066600*    MOVE COUNT-TOTAL (X4) TO PRT-CNT (1).                        06660008
+066700*    WRITE IPFPRT-LINE FROM PRT-LINE AFTER ADVANCING 1.           06670008
+066800*    IF OPR-STAT1 > 0 DISPLAY ' BAD14 WRITE ON IPFPRT FILE'.      06680008
+066900                                                                  06690008
+067000*1300-EXIT.  EXIT.                                                06700008
+067100                                                                  06710008
+067200**===================================================**           06720008
+067300**           LAST STATEMENT                          **           06730008
+067400**===================================================**           06740008
+

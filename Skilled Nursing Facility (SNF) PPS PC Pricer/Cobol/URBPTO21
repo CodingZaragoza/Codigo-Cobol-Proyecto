@@ -1,0 +1,43 @@
+      ****************************************************
+      *        PT/TO URBAN RATE TABLE                    *
+      *     FOR USE WITH THE PDPM FINAL RULE             *
+      *      REVISED 08/05/2020 (FY 2021)                *
+      ****************************************************
+       01  PDPM-PTOT-TABLE-U.
+         02  PDPM-PTOT-DATA-U.
+          05  FILLER  PIC X(29) VALUE 'A 009492 009305 008605 008436'.
+          05  FILLER  PIC X(29) VALUE 'B 010547 010339 009413 009229'.
+          05  FILLER  PIC X(29) VALUE 'C 011664 011434 009760 009569'.
+          05  FILLER  PIC X(29) VALUE 'D 011912 011677 008836 008663'.
+          05  FILLER  PIC X(29) VALUE 'E 008810 008636 008143 007983'.
+          05  FILLER  PIC X(29) VALUE 'F 009988 009792 009240 009059'.
+          05  FILLER  PIC X(29) VALUE 'G 010361 010157 009471 009286'.
+          05  FILLER  PIC X(29) VALUE 'H 007197 007055 006641 006511'.
+          05  FILLER  PIC X(29) VALUE 'I 007011 006873 006815 006681'.
+          05  FILLER  PIC X(29) VALUE 'J 008810 008636 008374 008210'.
+          05  FILLER  PIC X(29) VALUE 'K 009430 009245 008894 008719'.
+          05  FILLER  PIC X(29) VALUE 'L 006762 006629 006410 006285'.
+          05  FILLER  PIC X(29) VALUE 'M 007879 007724 007508 007361'.
+          05  FILLER  PIC X(29) VALUE 'N 009182 009001 008663 008493'.
+          05  FILLER  PIC X(29) VALUE 'O 009616 009427 008951 008776'.
+          05  FILLER  PIC X(29) VALUE 'P 006700 006569 006295 006172'.
+
+           02  PDPM-PTOT-DATA2-U REDEFINES PDPM-PTOT-DATA-U
+                  OCCURS 16 TIMES
+                     ASCENDING KEY IS PDPM-PTOT-GROUP-U
+                        INDEXED BY PDPM-PTOT-IDX-U.
+                   10  PDPM-PTOT-DATA-TAB-U.
+                       15  PDPM-PTOT-GROUP-U   PIC X(01).
+                       15  FILLER              PIC X(01).
+                       15  PDPM-RATE-PT-U      PIC 9999V99.
+                       15  FILLER              PIC X(01).
+                       15  PDPM-QRATE-PT-U     PIC 9999V99.
+                       15  FILLER              PIC X(01).
+                       15  PDPM-RATE-OT-U      PIC 9999V99.
+                       15  FILLER              PIC X(01).
+                       15  PDPM-QRATE-OT-U     PIC 9999V99.
+      ****************************************************
+      *     END OF COPYBOOK FROM PTOT URBAN RATES        *
+      ****************************************************
+
+

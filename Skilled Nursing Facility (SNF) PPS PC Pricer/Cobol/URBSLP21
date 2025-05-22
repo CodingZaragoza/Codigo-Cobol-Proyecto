@@ -1,0 +1,36 @@
+      ****************************************************
+      *      SLP URBAN RATE TABLE                        *
+      * FOR USE WITH THE PDPM FINAL RULE                 *
+      * REVISED 08/05/2020 (FY 2021)                     *
+      ****************************************************
+       01  PDPM-SLP-TABLE-U.
+           02  PDPM-SLP-DATA-U.
+               05  FILLER   PIC X(15)  VALUE     'A 001575 001544'.
+               05  FILLER   PIC X(15)  VALUE     'B 004215 004131'.
+               05  FILLER   PIC X(15)  VALUE     'C 006184 006061'.
+               05  FILLER   PIC X(15)  VALUE     'D 003381 003314'.
+               05  FILLER   PIC X(15)  VALUE     'E 005419 005312'.
+               05  FILLER   PIC X(15)  VALUE     'F 006902 006765'.
+               05  FILLER   PIC X(15)  VALUE     'G 004725 004631'.
+               05  FILLER   PIC X(15)  VALUE     'H 006624 006492'.
+               05  FILLER   PIC X(15)  VALUE     'I 008175 008013'.
+               05  FILLER   PIC X(15)  VALUE     'J 006925 006787'.
+               05  FILLER   PIC X(15)  VALUE     'K 008569 008399'.
+               05  FILLER   PIC X(15)  VALUE     'L 009750 009557'.
+
+           02  PDPM-SLP-DATA2-U REDEFINES PDPM-SLP-DATA-U
+                 OCCURS 12 TIMES
+                    ASCENDING KEY IS PDPM-SLP-GROUP-U
+                       INDEXED BY PDPM-SLP-IDX-U.
+                   10  PDPM-SLP-DATA-TAB-U.
+                       15  PDPM-SLP-GROUP-U   PIC X(01).
+                       15  FILLER             PIC X(01).
+                       15  PDPM-RATE-SLP-U    PIC 9999V99.
+                       15  FILLER             PIC X(01).
+                       15  PDPM-QRATE-SLP-U   PIC 9999V99.
+
+      ****************************************************
+      *     END OF COPYBOOK FROM SLP URBAN RATES         *
+      ****************************************************
+
+

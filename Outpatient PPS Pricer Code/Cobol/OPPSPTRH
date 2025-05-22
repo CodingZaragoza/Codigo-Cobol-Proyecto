@@ -1,0 +1,22 @@
+       01  W-PTRH-HCPCS-FILLS.
+           03                          PIC X(42)   VALUE
+               'A95202013100120151231A95822010010120111231'.
+           03                          PIC X(42)   VALUE
+               'A95842012010120131231A95862015010120171231'.
+           03                          PIC X(42)   VALUE
+               'C12042013100120131231C92472009040120091231'.
+           03                          PIC X(42)   VALUE
+               'C94062011070120111231C94582016010120160630'.
+           03                          PIC X(42)   VALUE
+               'C94592016010120160630C94612016040120181231'.
+           03                          PIC X(42)   VALUE
+               'Q99822016070120181231Q99832016070120181231'.
+       01  W-PTRH-HCPCS-TABLE REDEFINES W-PTRH-HCPCS-FILLS.
+           03  PTRH-ENTRY OCCURS 12 TIMES
+                   ASCENDING KEY IS PTRH-PTRADIO-HCPCS
+                   INDEXED BY PTRH-INDX.
+               05  PTRH-PTRADIO-HCPCS  PIC X(5).
+               05  PTRH-EFF-DATE       PIC 9(8).
+               05  PTRH-TERM-DATE      PIC 9(8).
+       01  PTRH-MAX                    PIC S9(7)   COMP-3
+                                       VALUE +12.

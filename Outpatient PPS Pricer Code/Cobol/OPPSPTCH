@@ -1,0 +1,24 @@
+       01  W-PTCH-HCPCS-FILLS.
+           03                          PIC X(42)   VALUE
+               'A95812010010120101231A95832010010120111231'.
+           03                          PIC X(42)   VALUE
+               'C92462009010120091231C92752011010120131231'.
+           03                          PIC X(42)   VALUE
+               'C93492015010120161231C94572015100120151231'.
+           03                          PIC X(42)   VALUE
+               'Q41212014040120161231Q41222013070120151231'.
+           03                          PIC X(42)   VALUE
+               'Q41272013040120151231Q41312013010120141231'.
+           03                          PIC X(42)   VALUE
+               'Q41322013010120141231Q41332013010120141231'.
+           03                          PIC X(21)   VALUE
+               'Q99502015100120171231'.
+       01  W-PTCH-HCPCS-TABLE REDEFINES W-PTCH-HCPCS-FILLS.
+           03  PTCH-ENTRY OCCURS 13 TIMES
+                   ASCENDING KEY IS PTCH-PTCONTR-HCPCS
+                   INDEXED BY PTCH-INDX.
+               05  PTCH-PTCONTR-HCPCS  PIC X(5).
+               05  PTCH-EFF-DATE       PIC 9(8).
+               05  PTCH-TERM-DATE      PIC 9(8).
+       01  PTCH-MAX                    PIC S9(7)   COMP-3
+                                       VALUE +13.

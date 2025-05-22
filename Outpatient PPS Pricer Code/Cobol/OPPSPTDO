@@ -1,0 +1,42 @@
+       01  W-PTDO-OFFSET-FILLS.
+           03                          PIC X(35)   VALUE
+               'C1749001430000000002010100120121231'.
+           03                          PIC X(35)   VALUE
+               'C1749001580000000002010100120121231'.
+           03                          PIC X(35)   VALUE
+               'C1830000030000000002011100120131231'.
+           03                          PIC X(35)   VALUE
+               'C1840002340000104812012010120121231'.
+           03                          PIC X(35)   VALUE
+               'C1840002340000093222013010120131231'.
+           03                          PIC X(35)   VALUE
+               'C1840002460000221712011100120111231'.
+           03                          PIC X(35)   VALUE
+               'C1841006720000000002013100120151231'.
+           03                          PIC X(35)   VALUE
+               'C1841006730000174242015010120151231'.
+           03                          PIC X(35)   VALUE
+               'C1886004150000197432012010120121231'.
+           03                          PIC X(35)   VALUE
+               'C1886004150000055972013010120131231'.
+           03                          PIC X(35)   VALUE
+               'C2613000050000024832015070120151231'.
+           03                          PIC X(35)   VALUE
+               'C2623000830000000002015040120151231'.
+           03                          PIC X(35)   VALUE
+               'C2623002290000000002015040120151231'.
+           03                          PIC X(35)   VALUE
+               'C2623003190000000002015040120151231'.
+           03                          PIC X(35)   VALUE
+               'C2624000800000310452015010120151231'.
+       01  W-PTDO-OFFSET-TABLE REDEFINES W-PTDO-OFFSET-FILLS.
+           03  PTDO-ENTRY OCCURS 15 TIMES
+                   ASCENDING KEY IS PTDO-DEV-HCPCS
+                   INDEXED BY PTDO-INDX.
+               05  PTDO-DEV-HCPCS      PIC X(5).
+               05  PTDO-PROC-APC       PIC X(5).
+               05  PTDO-OFFSET-AMT     PIC 9(7)V99.
+               05  PTDO-EFF-DATE       PIC 9(8).
+               05  PTDO-TERM-DATE      PIC 9(8).
+       01  PTDO-MAX                    PIC S9(7)   COMP-3
+                                       VALUE +15.

@@ -1,0 +1,103 @@
+000100*******************************************************
+000200*                                                     *
+000200*               COPYBOOK SNF300P                      *
+000200*                                                     *
+000300*        SNF PDPM FY2021 RECORD LAYOUT                *
+000400*       (WITH SUPPLEMENTAL WAGE INDEX DATA)           *
+000500*                                                     *
+000600*    SNF PDPM RECORD FORMAT PASSED TO SNFPR PROGRAM   *
+000700*                                                     *
+000800*        EFFECTIVE DATE OCTOBER 1, 2020               *
+000900*                                                     *
+001000*******************************************************
+001100 01  SNF-DATA.
+001200     05  SNF-INPUT-DATA.
+001300         10  SNF-MSA                     PIC X(04).
+001400         10  SNF-CBSA.
+001500             15  SNF-CBSA-1ST            PIC XXX.
+001600                 88  SNF-CBSA-RURAL          VALUE '   '
+001700                                                   '999'.
+001800             15  SNF-CBSA-2ND            PIC XX.
+001900
+002000         10  SNF-SPEC-WI-IND             PIC X.
+002100             88  SNF-SPEC-WI-IND-VALUES      VALUE '1'.
+002200         10  SNF-SPEC-WI                 PIC 9(02)V9(04).
+002300         10  SNF-SPEC-WI-X     REDEFINES
+002400                               SNF-SPEC-WI   PIC X(06).
+002500
+002600         10  SNF-HIPPS-CODE              PIC X(05).
+002700
+002800         10  SNF-FROM-DATE.
+002900             15  SNF-FROM-CC             PIC XX.
+003000             15  SNF-FROM-YYMMDD.
+003100                 25  SNF-FROM-YY
+003200                                         PIC XX.
+003300                 25  SNF-FROM-MM
+003400                                         PIC XX.
+003500                 25  SNF-FROM-DD
+003600                                         PIC XX.
+003700
+003800
+003900         10  SNF-THRU-DATE.
+004000             15  SNF-THRU-CC             PIC XX.
+004100             15  SNF-THRU-YYMMDD.
+004200                 25  SNF-THRU-YY         PIC XX.
+004300                 25  SNF-THRU-MM         PIC XX.
+004400                 25  SNF-THRU-DD         PIC XX.
+004500
+004600         10  SNF-FED-BLEND     PIC X.
+004700             88  SNF-FED-BLEND-VALUES
+004800                                             VALUE '0' '1'
+004900                                                   '2' '3'
+005000                                                   '4'.
+005100
+005200         10  SNF-FACILITY-RATE           PIC 9(05)V9(02).
+005300
+005400         10  SNF-DIAGNOSIS-CODES.
+005500             15  SNF-PRIN-DIAG-CODE      PIC X(07).
+005600             15  SNF-OTHER-DIAG-CODE2    PIC X(07).
+005700             15  SNF-OTHER-DIAG-CODE3    PIC X(07).
+005800             15  SNF-OTHER-DIAG-CODE4    PIC X(07).
+005900             15  SNF-OTHER-DIAG-CODE5    PIC X(07).
+006000             15  SNF-OTHER-DIAG-CODE6    PIC X(07).
+006100             15  SNF-OTHER-DIAG-CODE7    PIC X(07).
+006200             15  SNF-OTHER-DIAG-CODE8    PIC X(07).
+006300             15  SNF-OTHER-DIAG-CODE9    PIC X(07).
+006400             15  SNF-OTHER-DIAG-CODE10   PIC X(07).
+006500             15  SNF-OTHER-DIAG-CODE11   PIC X(07).
+006600             15  SNF-OTHER-DIAG-CODE12   PIC X(07).
+006700             15  SNF-OTHER-DIAG-CODE13   PIC X(07).
+006800             15  SNF-OTHER-DIAG-CODE14   PIC X(07).
+006900             15  SNF-OTHER-DIAG-CODE15   PIC X(07).
+007000             15  SNF-OTHER-DIAG-CODE16   PIC X(07).
+007100             15  SNF-OTHER-DIAG-CODE17   PIC X(07).
+007200             15  SNF-OTHER-DIAG-CODE18   PIC X(07).
+007300             15  SNF-OTHER-DIAG-CODE19   PIC X(07).
+007400             15  SNF-OTHER-DIAG-CODE20   PIC X(07).
+007500             15  SNF-OTHER-DIAG-CODE21   PIC X(07).
+007600             15  SNF-OTHER-DIAG-CODE22   PIC X(07).
+007700             15  SNF-OTHER-DIAG-CODE23   PIC X(07).
+007800             15  SNF-OTHER-DIAG-CODE24   PIC X(07).
+007900             15  SNF-OTHER-DIAG-CODE25   PIC X(07).
+008000
+008100         10  SNF-PAY-RTC.
+008200             15  SNF-PAYMENT-RATE        PIC 9(06)V9(02).
+008300             15  SNF-RTC                 PIC 99.
+008400
+008500         10  VBP-DATA.
+008600             15  VBP-MULTIPLIER          PIC S9V9(11).
+008700             15  VBP-PAY-DIFF            PIC S9(06)V9(02).
+008800
+008900         10  PDPM-DATA.
+009000             15  SNF-PDPM-UNITS          PIC 99.
+009100             15  SNF-PDPM-PRIOR-DAYS     PIC 999.
+009200
+009300         10  SNF-SUPP-WI-DATA.
+009500             15  SNF-SUPP-WI-IND         PIC X.
+009600                 88  SNF-SUPP-WI-IND-PRIOR-YEAR
+009700                                             VALUE '1'.
+009800             15  SNF-SUPP-WI             PIC 9(02)V9(04).
+009900
+010000         10  FILLER                      PIC X(38).
+010100
+

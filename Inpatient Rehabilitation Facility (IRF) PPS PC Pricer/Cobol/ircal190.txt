@@ -1,0 +1,1062 @@
+000100 IDENTIFICATION DIVISION.
+000200 PROGRAM-ID.    IRCAL190.
+000300*AUTHOR.        PBG/DDS.
+000400*REMARKS.       CMS.
+000500
+000600 DATE-COMPILED.
+000610******************************************************************
+000620* CHANGES FOR 2019 - EFFECTIVE 10/01/2018                        *
+000630*----------------------------------------------------------------*
+000631* UPDATED CMG-TABLE                                              *
+000632* UPDATED 0100-INITIAL-ROUTINE                                   *
+000633*                                                                *
+000634*   MOVE .70500 TO PPS-NAT-LABOR-PCT.                            *
+000635*   MOVE .29500 TO PPS-NAT-NONLABOR-PCT.                         *
+000636*   MOVE  9402  TO PPS-NAT-THRESHOLD-ADJ.                        *
+000637*   IF P-NEW-CBSA-HOSP-QUAL-IND IS EQUAL TO '1'                  *
+000638*      MOVE 16021  TO PPS-BDGT-NEUT-CONV-AMT                     *
+000639*   ELSE                                                         *
+000640*      MOVE 15705  TO PPS-BDGT-NEUT-CONV-AMT                     *
+000641*   END-IF.                                                      *
+000642*                                                                *
+000643* NO CHANGE 3000-CALC-PAYMENT                                    *
+000644*   NO CHANGE TO LOW INCOME PATIENT (LIP) ADJ = 0.3177           *
+000645*   NO CHANGE TO TEACHING ADJ = 1.10163                          *
+000646* NO CHANGE 3510-CHECK-RURAL-ADJ                                 *
+000647*   IF W-NEW-CBSA (1:3) = '   '                                  *
+000648*     MOVE 1.1490 TO PPS-RURAL-ADJUSTMENT                        *
+000649*   ELSE                                                         *
+000650*     MOVE 1.0000 TO PPS-RURAL-ADJUSTMENT.                       *
+000660******************************************************************
+000670     EJECT
+000671 ENVIRONMENT DIVISION.
+000672 CONFIGURATION SECTION.
+000673 SOURCE-COMPUTER.            IBM-370.
+000674 OBJECT-COMPUTER.            IBM-370.
+000675 INPUT-OUTPUT  SECTION.
+000676 FILE-CONTROL.
+000677
+000678 DATA DIVISION.
+000679 FILE SECTION.
+000680
+000690 WORKING-STORAGE SECTION.
+000700 01  W-STORAGE-REF                  PIC X(46)  VALUE
+000800     'IRCAL190      - W O R K I N G   S T O R A G E'.
+000900 01  CAL-VERSION                    PIC X(05)  VALUE 'V19.0'.
+001000     EJECT
+001100***************************************************************
+001110*    LAYUP TABLE AREA FOR FY2019 CMGS                         *
+001120***************************************************************
+001130 01  CMG-TABLE.
+001131     05  CMG-TABLE-DATA.
+001132         10                      PIC X(32)   VALUE
+001133           '01010846507365067470645108110908'.
+001134         10                      PIC X(32)   VALUE
+001135           '01021070609315085330815911121010'.
+001136         10                      PIC X(32)   VALUE
+001137           '01031239110781098760944312131112'.
+001138         10                      PIC X(32)   VALUE
+001139           '01041293811257103120986012131212'.
+001140         10                      PIC X(32)   VALUE
+001150           '01051487112938118521133314141413'.
+001160         10                      PIC X(32)   VALUE
+001170           '01061662814467132531267316161515'.
+001180         10                      PIC X(32)   VALUE
+001190           '01071865316229148671421618181616'.
+001200         10                      PIC X(32)   VALUE
+001300           '01082305620060183761757222212020'.
+001400         10                      PIC X(32)   VALUE
+001500           '01092085718147166241589619191818'.
+001600         10                      PIC X(32)   VALUE
+001700           '01102765524060220412107626262323'.
+001710         10                      PIC X(32)   VALUE
+001720           '02010823506628059220552709090807'.
+001730         10                      PIC X(32)   VALUE
+001731           '02021150809263082750772410111010'.
+001732         10                      PIC X(32)   VALUE
+001733           '02031272310240091490853913131110'.
+001734         10                      PIC X(32)   VALUE
+001735           '02041384111141099530929013131111'.
+001736         10                      PIC X(32)   VALUE
+001737           '02051633013143117431096014151313'.
+001738         10                      PIC X(32)   VALUE
+001739           '02061966115825141391319618181515'.
+001740         10                      PIC X(32)   VALUE
+001741           '02072486320012178791668730221918'.
+001742         10                      PIC X(32)   VALUE
+001743           '03011172709483087030813511111010'.
+001744         10                      PIC X(32)   VALUE
+001745           '03021434711603106480995312131212'.
+001746         10                      PIC X(32)   VALUE
+001747           '03031657213402123001149615141313'.
+001748         10                      PIC X(32)   VALUE
+001749           '03042120317147157371470920191616'.
+001750         10                      PIC X(32)   VALUE
+001751           '04011004008097074900685510100909'.
+001752         10                      PIC X(32)   VALUE
+001753           '04021487311996110961015514131312'.
+001754         10                      PIC X(32)   VALUE
+001755           '04032368819105176731617525221918'.
+001756         10                      PIC X(32)   VALUE
+001757           '04044037732566301252757145363130'.
+001758         10                      PIC X(32)   VALUE
+001759           '04053617529177269892470126352926'.
+001760         10                      PIC X(32)   VALUE
+001761           '05010917107145066050607009100808'.
+001762         10                      PIC X(32)   VALUE
+001763           '05021218209491087740806311111010'.
+001764         10                      PIC X(32)   VALUE
+001765           '05031515611809109161003114131212'.
+001766         10                      PIC X(32)   VALUE
+001767           '05041742613577125511153316141413'.
+001768         10                      PIC X(32)   VALUE
+001769           '05051995715550143741320918171615'.
+001770         10                      PIC X(32)   VALUE
+001771           '05062699621034194431786726232120'.
+001772         10                      PIC X(32)   VALUE
+001773           '06011073608242076240694809090908'.
+001774         10                      PIC X(32)   VALUE
+001775           '06021392010686098840900812121110'.
+001776         10                      PIC X(32)   VALUE
+001777           '06031712413146121591108214141313'.
+001778         10                      PIC X(32)   VALUE
+001779           '06042214817003157271433419171616'.
+001780         10                      PIC X(32)   VALUE
+001781           '07011028008387079480717110100909'.
+001782         10                      PIC X(32)   VALUE
+001783           '07021308310674101150912712121211'.
+001784         10                      PIC X(32)   VALUE
+001785           '07031560012728120621088314141413'.
+001786         10                      PIC X(32)   VALUE
+001787           '07041990716242153921388818181716'.
+001788         10                      PIC X(32)   VALUE
+001789           '08010839106841061850575408080807'.
+001790         10                      PIC X(32)   VALUE
+001791           '08021076608777079360738211090909'.
+001792         10                      PIC X(32)   VALUE
+001793           '08031412311514104100968413131211'.
+001794         10                      PIC X(32)   VALUE
+001795           '08041272710376093810872712121110'.
+001796         10                      PIC X(32)   VALUE
+001797           '08051516912367111811040114141212'.
+001798         10                      PIC X(32)   VALUE
+001799           '08061869115238137771281617171514'.
+001800         10                      PIC X(32)   VALUE
+001801           '09011028308073074810689411100908'.
+001802         10                      PIC X(32)   VALUE
+001803           '09021303010230094790873612121110'.
+001804         10                      PIC X(32)   VALUE
+001805           '09031626212768118311090314141312'.
+001806         10                      PIC X(32)   VALUE
+001807           '09042037215995148211365917171615'.
+001808         10                      PIC X(32)   VALUE
+001809           '10011094109260082260758411111009'.
+001810         10                      PIC X(32)   VALUE
+001811           '10021398411835105130969313131212'.
+001812         10                      PIC X(32)   VALUE
+001813           '10032024717136152221403418181615'.
+001814         10                      PIC X(32)   VALUE
+001815           '11011361810044100440883212111111'.
+001816         10                      PIC X(32)   VALUE
+001817           '11021920814167141671245817151513'.
+001818         10                      PIC X(32)   VALUE
+001819           '12011112509541087100787711101009'.
+001820         10                      PIC X(32)   VALUE
+001821           '12021409212085110320997813131212'.
+001822         10                      PIC X(32)   VALUE
+001823           '12031706714637133611208415161514'.
+001824         10                      PIC X(32)   VALUE
+001825           '13011097709523088930834210101010'.
+001826         10                      PIC X(32)   VALUE
+001827           '13021435512454116301090912131312'.
+001828         10                      PIC X(32)   VALUE
+001829           '13031733715041140461317514171515'.
+001830         10                      PIC X(32)   VALUE
+001831           '14010922607511067720610309080807'.
+001832         10                      PIC X(32)   VALUE
+001833           '14021237910079090860818911111010'.
+001834         10                      PIC X(32)   VALUE
+001835           '14031475212011108280975913131211'.
+001836         10                      PIC X(32)   VALUE
+001837           '14041858115129136391229217161513'.
+001838         10                      PIC X(32)   VALUE
+001839           '15011014508753079270759609100908'.
+001840         10                      PIC X(32)   VALUE
+001841           '15021297011191101340971111111011'.
+001842         10                      PIC X(32)   VALUE
+001843           '15031539113280120261152414131212'.
+001844         10                      PIC X(32)   VALUE
+001845           '15041939516735151551452219161514'.
+001846         10                      PIC X(32)   VALUE
+001847           '16011212309280088140795409111010'.
+001848         10                      PIC X(32)   VALUE
+001849           '16021536111758111691007911121212'.
+001850         10                      PIC X(32)   VALUE
+001851           '16031863714266135511222812161514'.
+001852         10                      PIC X(32)   VALUE
+001853           '17011282509724091030819614111010'.
+001854         10                      PIC X(32)   VALUE
+001855           '17021551011760110090991214141211'.
+001856         10                      PIC X(32)   VALUE
+001857           '17031809713722128461156515151413'.
+001858         10                      PIC X(32)   VALUE
+001859           '17042309717513163951476120191716'.
+001860         10                      PIC X(32)   VALUE
+001861           '18011128510063085040794312111010'.
+001862         10                      PIC X(32)   VALUE
+001863           '18021663914838125391171216171413'.
+001864         10                      PIC X(32)   VALUE
+001865           '18032614523315197031840330252019'.
+001866         10                      PIC X(32)   VALUE
+001867           '19011400010049094400909615131111'.
+001868         10                      PIC X(32)   VALUE
+001869           '19022465117694166221601724211818'.
+001870         10                      PIC X(32)   VALUE
+001871           '19034266930627287722772546313030'.
+001872         10                      PIC X(32)   VALUE
+001873           '20010969307709071600650009090808'.
+001874         10                      PIC X(32)   VALUE
+001875           '20021259710018093060844812111010'.
+001876         10                      PIC X(32)   VALUE
+001877           '20031548412314114381038414141212'.
+001878         10                      PIC X(32)   VALUE
+001879           '20041973415695145781323418171515'.
+001880         10                      PIC X(32)   VALUE
+001881           '21011907515493149631316822161614'.
+001882         10                      PIC X(32)   VALUE
+001883           '50010000000000000000159900000002'.
+001884         10                      PIC X(32)   VALUE
+001885           '51010000000000000000753900000008'.
+001886         10                      PIC X(32)   VALUE
+001887           '51020000000000000001649300000018'.
+001888         10                      PIC X(32)   VALUE
+001889           '51030000000000000000809100000008'.
+001890         10                      PIC X(32)   VALUE
+001891           '51040000000000000002114500000021'.
+001892         10                      PIC X(32)   VALUE
+001893           '99990000000000000000000000000000'.
+001894     05  W-CMG-TABLE REDEFINES CMG-TABLE-DATA.
+001895         10  CMG-DATA            OCCURS 93 TIMES
+001896                                 ASCENDING KEY IS CMG-NUM
+001897                                 INDEXED BY DX6.
+001898             15  CMG-NUM         PIC X(4).
+001899             15  CMG-NUM-REDEF REDEFINES CMG-NUM.
+001900                 20  CMG-RIC     PIC XX.
+001901                 20  FILLER      PIC XX.
+001902             15  B-REL-WGT       PIC 9(1)V9(4).
+001903             15  C-REL-WGT       PIC 9(1)V9(4).
+001904             15  D-REL-WGT       PIC 9(1)V9(4).
+001905             15  A-REL-WGT       PIC 9(1)V9(4).
+001906             15  B-LOS-TABLE     PIC 9(2).
+001907             15  C-LOS-TABLE     PIC 9(2).
+001908             15  D-LOS-TABLE     PIC 9(2).
+001909             15  A-LOS-TABLE     PIC 9(2).
+001910     EJECT
+001911 01  HOLD-PPS-COMPONENTS.
+001912     05  H-LOS                        PIC 9(05).
+001913     05  H-WK-DSH                     PIC 9(01)V9(04).
+001914     05  H-TEACH-PCT                  PIC 9(01)V9(04).
+001915     05  H-LABOR-PORTION              PIC 9(07)V9(06).
+001916     05  H-NONLABOR-PORTION           PIC 9(07)V9(06).
+001917     05  H-OUTLIER-LABOR-PORTION      PIC 9(07)V9(06).
+001918     05  H-OUTLIER-NONLABOR-PORTION   PIC 9(07)V9(06).
+001919     05  H-FP-OUTLIER-THRESHOLD       PIC 9(07)V9(06).
+001920     05  H-OUTLIER-THRESHOLD          PIC 9(07)V9(06).
+001930     05  H-CHG-OUTLIER-THRESHOLD      PIC 9(07)V9(04).
+001940     05  H-FY-BEGIN-DATE              PIC 9(08).
+001950     05  H-DISCHARGE-DATE             PIC 9(08).
+001960
+001970 LINKAGE SECTION.
+001980**************************************************************
+001990*      THIS IS THE BILL-RECORD THAT WILL BE PASSED FROM      *
+002000*      THE IRCAL___ PROGRAM                                  *
+002100**************************************************************
+002200 01  BILL-NEW-DATA.
+002300         10  B-NPI10.
+002400             15  B-NPI8             PIC X(08).
+002500             15  B-NPI-FILLER       PIC X(02).
+002600         10  B-PROVIDER-NO          PIC X(06).
+002700         10  B-PATIENT-STATUS       PIC X(02).
+002800         10  B-CMG-CODE             PIC X(05).
+002900         10  B-LOS                  PIC 9(03).
+003000         10  B-COV-DAYS             PIC 9(03).
+003100         10  B-LTR-DAYS             PIC 9(02).
+003200         10  B-SPEC-PAY-IND         PIC X(01).
+003300         10  B-DISCHARGE-DATE.
+003400             15  B-DISCHG-CC        PIC 9(02).
+003500             15  B-DISCHG-YY        PIC 9(02).
+003600             15  B-DISCHG-MM        PIC 9(02).
+003700             15  B-DISCHG-DD        PIC 9(02).
+003800         10  B-COV-CHARGES          PIC 9(07)V9(02).
+003900         10  FILLER                 PIC X(11).
+004000
+004100***************************************************************
+004200*    THIS DATA IS CALCULATED BY THIS IRCAL SUBROUTINE         *
+004300*    AND PASSED BACK TO THE CALLING PROGRAM                   *
+004400*            RETURN CODE VALUES (PPS-RTC)                     *
+004500*                                                             *
+004600*     ****   PPS-RTC 00-49 = HOW THE BILL WAS PAID            *
+004700*              00 = PAID NORMAL CMG PAYMENT WITHOUT OUTLIER   *
+004800*                                                             *
+004900*              01 = PAID NORMAL CMG PAYMENT WITH OUTLIER      *
+005000*                                                             *
+005100*              02 = TRANSFER PAID ON A PERDIEM BASIS WITHOUT  *
+005200*                   OUTLIER                                   *
+005300*              03 = TRANSFER PAID ON A PERDIEM BASIS WITH     *
+005400*                   OUTLIER                                   *
+005500*              04 = BLENDED CMG PAYMENT -- 2/3 FEDERAL PPS    *
+005600*                   RATE + 1/3 PROVIDER SPECIFIC RATE --      *
+005700*                   WITHOUT OUTLIER                           *
+005800*              05 = BLENDED CMG PAYMENT -- 2/3 FEDERAL PPS    *
+005900*                   RATE + 1/3 PROVIDER SPECIFIC RATE --      *
+006000*                   WITH OUTLIER                              *
+006100*              06 = BLENDED TRANSFER PAYMENT -- 2/3 FEDERAL   *
+006200*                   PPS TRANSFER RATE + 1/3 PROVIDER SPECIFIC *
+006300*                   RATE -- WITHOUT OUTLIER                   *
+006400*              07 = BLENDED TRANSFER PAYMENT -- 2/3 FEDERAL   *
+006500*                   PPS TRANSFER RATE + 1/3 PROVIDER SPECIFIC *
+006600*                   RATE -- WITH OUTLIER                      *
+006700*       **** NEW RT CODES FOR PAYMENT WITH PENALTIES          *
+006800*              10 = PAID NORMAL CMG PAYMENT WITH PENALTY      *
+006900*                   WITHOUT OUTLIER                           *
+007000*              11 = PAID NORMAL CMG PAYMENT WITH PENALTY      *
+007100*                   WITH OUTLIER                              *
+007200*              12 = TRANSFER PAID ON A PERDIEM BASIS WITH     *
+007300*                   PENALTY WITHOUT OUTLIER                   *
+007400*              13 = TRANSFER PAID ON A PERDIEM BASIS WITH     *
+007500*                   PENALTY WITH OUTLIER                      *
+007600*              14 = BLENDED CMG PAYMENT -- 2/3 FEDERAL PPS    *
+007700*                   RATE + 1/3 PROVIDER SPECIFIC RATE --      *
+007800*                   WITH PENALTY WITHOUT OUTLIER              *
+007900*              15 = BLENDED CMG PAYMENT -- 2/3 FEDERAL PPS    *
+008000*                   RATE + 1/3 PROVIDER SPECIFIC RATE --      *
+008100*                   WITH PENALTY WITH OUTLIER                 *
+008200*              16 = BLENDED TRANSFER PAYMENT -- 2/3 FEDERAL   *
+008300*                   PPS TRANSFER RATE + 1/3 PROVIDER SPECIFIC *
+008400*                   RATE -- WITH PENALTY WITHOUT OUTLIER      *
+008500*              17 = BLENDED TRANSFER PAYMENT -- 2/3 FEDERAL   *
+008600*                   PPS TRANSFER RATE + 1/3 PROVIDER SPECIFIC *
+008700*                   RATE -- WITH PENALTY WITH OUTLIER         *
+008800*                                                             *
+008900*      ****  PPS-RTC 50-99 = WHY THE BILL WAS NOT PAID        *
+009000*              50 = PROVIDER SPECIFIC RATE NOT NUMERIC        *
+009100*              51 = PROVIDER RECORD TERMINATED                *
+009200*              52 = INVALID WAGE INDEX                        *
+009300*              53 = WAIVER STATE - NOT CALCULATED BY PPS      *
+009400*              54 = CMG ON CLAIM NOT FOUND IN TABLE           *
+009500*              55 = DISCHARGE DATE < PROVIDER EFF START DATE  *
+009600*                                      OR                     *
+009700*                   DISCHARGE DATE < MSA EFF START DATE       *
+009800*                   FOR PPS                                   *
+009900*              56 = INVALID LENGTH OF STAY                    *
+010000*              57 = PROVIDER SPECIFIC RATE ZERO WHEN BLENDED  *
+010100*                   PAYMENT REQUESTED                         *
+010200*              58 = TOTAL COVERED CHARGES NOT NUMERIC         *
+010300*              59 = PROVIDER SPECIFIC RECORD NOT FOUND        *
+010400*              60 = MSA WAGE INDEX RECORD NOT FOUND           *
+010500*              61 = LIFETIME RESERVE DAYS NOT NUMERIC         *
+010600*                   OR BILL-LTR-DAYS > 60                     *
+010700*              62 = INVALID NUMBER OF COVERED DAYS            *
+010800*              65 = OPERATING COST-TO-CHARGE RATIO NOT NUMERIC*
+010900*              67 = COST OUTLIER WITH LOS > COVERED DAYS      *
+011000*                   OR COST OUTLIER THRESHOLD CALCULATION     *
+011100*              72 = INVALID BLEND INDICATOR (NOT 3 OR 4)      *
+011200*              73 = DISCHARGED BEFORE PROVIDER FY BEGIN       *
+011300*              74 = PROVIDER FY BEGIN DATE NOT IN 2002        *
+011400***************************************************************
+011500 01  PPS-DATA-ALL.
+011600     05  PPS-RTC                      PIC 9(02).
+011700     05  PPS-DATA.
+011800         10  PPS-MSA                  PIC X(04).
+011900         10  PPS-WAGE-INDEX           PIC 9(02)V9(04).
+012000         10  PPS-AVG-LOS              PIC 9(02).
+012100         10  PPS-RELATIVE-WGT         PIC 9(01)V9(04).
+012200         10  PPS-TOTAL-PAY-AMT        PIC 9(07)V9(02).
+012300         10  PPS-FED-PAY-AMT          PIC 9(07)V9(02).
+012400         10  PPS-FAC-SPEC-PAY-AMT     PIC 9(07)V9(02).
+012500         10  PPS-OUTLIER-PAY-AMT      PIC 9(07)V9(02).
+012600         10  PPS-LIP-PAY-AMT          PIC 9(07)V9(02).
+012700         10  PPS-LIP-PCT              PIC 9(01)V9(04).
+012800         10  PPS-LOS                  PIC 9(03).
+012900         10  PPS-REG-DAYS-USED        PIC 9(03).
+013000         10  PPS-LTR-DAYS-USED        PIC 9(03).
+013100         10  PPS-TRANSFER-PCT         PIC 9(01)V9(04).
+013200         10  PPS-FAC-SPEC-RT-PREBLEND PIC 9(05)V9(02).
+013300         10  PPS-STANDARD-PAY-AMT     PIC 9(07)V9(02).
+013400         10  PPS-FAC-COSTS            PIC 9(07)V9(02).
+013500         10  PPS-OUTLIER-THRESHOLD    PIC 9(07)V9(02).
+013600         10  PPS-CHG-OUTLIER-THRESHOLD PIC 9(07)V9(02).
+013700         10  PPS-TOTAL-PENALTY-AMT    PIC 9(07)V9(02).
+013800         10  PPS-FED-PENALTY-AMT      PIC 9(07)V9(02).
+013900         10  PPS-LIP-PENALTY-AMT      PIC 9(07)V9(02).
+014000         10  PPS-OUT-PENALTY-AMT      PIC 9(07)V9(02).
+014100         10  PPS-SUBM-CMG-CODE        PIC X(05).
+014200         10  PPS-CMG-CODE-REDEF REDEFINES PPS-SUBM-CMG-CODE.
+014300            15  PPS-CMG-ALPHA         PIC X(01).
+014400            15  PPS-CMG-NUMERIC.
+014500               20  PPS-CMG-RIC        PIC X(02).
+014600               20  FILLER             PIC X(02).
+014700         10  PPS-PRICED-CMG-CODE      PIC X(05).
+014800         10  PPS-CALC-VERS-CD         PIC X(05).
+014900         10  PPS-CBSA                 PIC X(05).
+015000         10  FILLER                   PIC X(08).
+015100     05  PPS-OTHER-DATA.
+015200         10  PPS-NAT-LABOR-PCT        PIC 9(01)V9(05).
+015300         10  PPS-NAT-NONLABOR-PCT     PIC 9(01)V9(05).
+015400         10  PPS-NAT-THRESHOLD-ADJ    PIC 9(05)V9(02).
+015500         10  PPS-BDGT-NEUT-CONV-AMT   PIC 9(05)V9(02).
+015600         10  PPS-FED-RATE-PCT         PIC 9(01)V9(04).
+015700         10  PPS-FAC-RATE-PCT         PIC 9(01)V9(04).
+015800         10  PPS-RURAL-ADJUSTMENT     PIC 9(01)V9(04).
+015900         10  PPS-TEACH-PAY-AMT        PIC 9(07)V9(02).
+016000         10  PPS-TEACH-PENALTY-AMT    PIC 9(07)V9(02).
+016100         10  FILLER                   PIC X(02).
+016200     05  PPS-PC-DATA.
+016300         10  PPS-COT-IND              PIC X(01).
+016400         10  FILLER                   PIC X(20).
+016500
+016600******************************************************************
+016700*            THESE ARE THE VERSIONS OF THE IRDRV___
+016800*           PROGRAMS THAT WILL BE PASSED BACK----
+016900*          ASSOCIATED WITH THE BILL BEING PROCESSED
+017000******************************************************************
+017100 01  PRICER-OPT-VERS-SW.
+017200     05  PRICER-OPTION-SW          PIC X(01).
+017300         88  ALL-TABLES-PASSED          VALUE 'A'.
+017400         88  PROV-RECORD-PASSED         VALUE 'P'.
+017500     05  PPS-VERSIONS.
+017600         10  PPDRV-VERSION         PIC X(05).
+017700
+017800**************************************************************
+017900*      THIS IS THE PROV-RECORD THAT WILL BE PASSED BY        *
+018000*      THE IRCAL___ PROGRAM                                  *
+018100**************************************************************
+018200 01  PROV-NEW-HOLD.
+018300     02  PROV-NEWREC-HOLD1.
+018400         05  P-NEW-NPI10.
+018500             10  P-NEW-NPI8             PIC X(08).
+018600             10  P-NEW-NPI-FILLER       PIC X(02).
+018700         05  P-NEW-PROVIDER-NO.
+018800             10  P-NEW-STATE            PIC 9(02).
+018900             10  FILLER                 PIC X(04).
+019000         05  P-NEW-DATE-DATA.
+019100             10  P-NEW-EFF-DATE.
+019200                 15  P-NEW-EFF-DT-CC    PIC 9(02).
+019300                 15  P-NEW-EFF-DT-YY    PIC 9(02).
+019400                 15  P-NEW-EFF-DT-MM    PIC 9(02).
+019500                 15  P-NEW-EFF-DT-DD    PIC 9(02).
+019600             10  P-NEW-FY-BEGIN-DATE.
+019700                 15  P-NEW-FY-BEG-DT-CC PIC 9(02).
+019800                 15  P-NEW-FY-BEG-DT-YY PIC 9(02).
+019900                 15  P-NEW-FY-BEG-DT-MM PIC 9(02).
+020000                 15  P-NEW-FY-BEG-DT-DD PIC 9(02).
+020100             10  P-NEW-REPORT-DATE.
+020200                 15  P-NEW-REPORT-DT-CC PIC 9(02).
+020300                 15  P-NEW-REPORT-DT-YY PIC 9(02).
+020400                 15  P-NEW-REPORT-DT-MM PIC 9(02).
+020500                 15  P-NEW-REPORT-DT-DD PIC 9(02).
+020600             10  P-NEW-TERMINATION-DATE.
+020700                 15  P-NEW-TERM-DT-CC   PIC 9(02).
+020800                 15  P-NEW-TERM-DT-YY   PIC 9(02).
+020900                 15  P-NEW-TERM-DT-MM   PIC 9(02).
+021000                 15  P-NEW-TERM-DT-DD   PIC 9(02).
+021100         05  P-NEW-WAIVER-CODE          PIC X(01).
+021200             88  P-NEW-WAIVER-STATE       VALUE 'Y'.
+021300         05  P-NEW-INTER-NO             PIC 9(05).
+021400         05  P-NEW-PROVIDER-TYPE        PIC X(02).
+021500         05  P-NEW-CURRENT-CENSUS-DIV   PIC 9(01).
+021600         05  P-NEW-CURRENT-DIV   REDEFINES
+021700                    P-NEW-CURRENT-CENSUS-DIV   PIC 9(01).
+021800         05  P-NEW-MSA-DATA.
+021900             10  P-NEW-CHG-CODE-INDEX       PIC X.
+022000             10  P-NEW-GEO-LOC-MSAX         PIC X(04) JUST RIGHT.
+022100             10  P-NEW-GEO-LOC-MSA9   REDEFINES
+022200                             P-NEW-GEO-LOC-MSAX  PIC 9(04).
+022300             10  P-NEW-WAGE-INDEX-LOC-MSA   PIC X(04) JUST RIGHT.
+022400             10  P-NEW-STAND-AMT-LOC-MSA    PIC X(04) JUST RIGHT.
+022500             10  P-NEW-STAND-AMT-LOC-MSA9
+022600                 REDEFINES P-NEW-STAND-AMT-LOC-MSA.
+022700                 15  P-NEW-RURAL-1ST.
+022800                     20  P-NEW-STAND-RURAL  PIC XX.
+022900                         88  P-NEW-STD-RURAL-CHECK VALUE '  '.
+023000                 15  P-NEW-RURAL-2ND        PIC XX.
+023100         05  P-NEW-SOL-COM-DEP-HOSP-YR PIC XX.
+023200         05  P-NEW-LUGAR                    PIC X.
+023300         05  P-NEW-TEMP-RELIEF-IND          PIC X.
+023400         05  P-NEW-FED-PPS-BLEND-IND        PIC X.
+023500         05  FILLER                         PIC X(05).
+023600     02  PROV-NEWREC-HOLD2.
+023700         05  P-NEW-VARIABLES.
+023800             10  P-NEW-FAC-SPEC-RATE     PIC  9(05)V9(02).
+023900             10  P-NEW-COLA              PIC  9(01)V9(03).
+024000             10  P-NEW-INTERN-RATIO      PIC  9(01)V9(04).
+024100             10  P-NEW-BED-SIZE          PIC  9(05).
+024200             10  P-NEW-OPER-CSTCHG-RATIO PIC  9(01)V9(03).
+024300             10  P-NEW-CMI               PIC  9(01)V9(04).
+024400             10  P-NEW-SSI-RATIO         PIC  V9(04).
+024500             10  P-NEW-MEDICAID-RATIO    PIC  V9(04).
+024600             10  P-NEW-PPS-BLEND-YR-IND  PIC  9(01).
+024700             10  P-NEW-PRUF-UPDTE-FACTOR PIC  9(01)V9(05).
+024800             10  P-NEW-DSH-PERCENT       PIC  V9(04).
+024900             10  P-NEW-FYE-DATE          PIC  X(08).
+025000         05  P-NEW-CBSA-DATA.
+025100             10  P-NEW-CBSA-SPEC-PAY-IND   PIC X.
+025200             10  P-NEW-CBSA-HOSP-QUAL-IND  PIC X.
+025300             10  P-NEW-CBSA-GEO-LOC        PIC X(05) JUST RIGHT.
+025400             10  P-NEW-CBSA-RECLASS-LOC    PIC X(05) JUST RIGHT.
+025500             10  P-NEW-CBSA-STAND-AMT-LOC  PIC X(05) JUST RIGHT.
+025600             10  P-NEW-CBSA-STAND-AMT-LOC9
+025700                 REDEFINES P-NEW-CBSA-STAND-AMT-LOC.
+025800                 15  P-NEW-CBSA-RURAL-1ST.
+025900                     20  P-NEW-CBSA-STAND-RURAL PIC 999.
+026000                 15  P-NEW-CBSA-RURAL-2ND       PIC 99.
+026100             10  P-NEW-CBSA-SPEC-WAGE-INDEX     PIC 9(02)V9(04).
+026200     02  PROV-NEWREC-HOLD3.
+026300         05  P-NEW-PASS-AMT-DATA.
+026400             10  P-NEW-PASS-AMT-CAPITAL    PIC 9(04)V99.
+026500             10  P-NEW-PASS-AMT-DIR-MED-ED PIC 9(04)V99.
+026600             10  P-NEW-PASS-AMT-ORGAN-ACQ  PIC 9(04)V99.
+026700             10  P-NEW-PASS-AMT-PLUS-MISC  PIC 9(04)V99.
+026800         05  P-NEW-CAPI-DATA.
+026900             15  P-NEW-CAPI-PPS-PAY-CODE   PIC X.
+027000             15  P-NEW-CAPI-HOSP-SPEC-RATE PIC 9(04)V99.
+027100             15  P-NEW-CAPI-OLD-HARM-RATE  PIC 9(04)V99.
+027200             15  P-NEW-CAPI-NEW-HARM-RATIO PIC 9(01)V9999.
+027300             15  P-NEW-CAPI-CSTCHG-RATIO   PIC 9V999.
+027400             15  P-NEW-CAPI-NEW-HOSP       PIC X.
+027500             15  P-NEW-CAPI-IME            PIC 9V9999.
+027600             15  P-NEW-CAPI-EXCEPTIONS     PIC 9(04)V99.
+027700             15  P-VAL-BASED-PURCH-SCORE   PIC 9V999.
+027800         05  FILLER                        PIC X(18).
+027900******************************************************************
+028000*                   THIS IS THE WAGE-INDEX
+028100*          ASSOCIATED WITH THE BILL BEING PROCESSED
+028200*
+028300******************************************************************
+028400 01  WAGE-NEW-INDEX-RECORD-CBSA.
+028500     05  W-NEW-CBSA                    PIC X(5).
+028600*       88  VALID-RURAL-CBSA    VALUE
+028700*             '50001' '50007' '50016' '50020' '50031'
+028800*             '50036' '50054' '50060' '50067' '50087'
+028900*             '50089' '50091' '50092' '50100' '50104'
+029000*             '50108' '50114' '50121' '50125' '50140'
+029100*             '50145' '50152' '50164' '50170' '50192'
+029200*             '50199' '50206' '50210' '50214' '50218'
+029300*             '50222' '50225' '50226' '50231' '50234'
+029400*             '50237' '50243' '50248' '50250' '50255'
+029500*             '50256' '50257' '50260' '50261' '50262'
+029600*             '50263' '50266' '50268' '50272' '50275'
+029700*             '50281' '50286' '50293' '50313' '50314'
+029800*             '50316' '50325' '50326' '50327' '50329'
+029900*             '50336' '50344' '50352'.
+030000     05  W-NEW-EFF-DATE-C              PIC X(8).
+030100     05  W-NEW-WAGE-INDEX-C            PIC S9(02)V9(04).
+030200
+030300 PROCEDURE DIVISION  USING BILL-NEW-DATA
+030400                           PPS-DATA-ALL
+030500                           PRICER-OPT-VERS-SW
+030600                           PROV-NEW-HOLD
+030700                           WAGE-NEW-INDEX-RECORD-CBSA.
+030800***************************************************************
+030900*    PROCESSING:                                              *
+031000*        A. WILL PROCESS CLAIMS BASED ON DISCHARGE DATE       *
+031100*        B. INITIALIZE IRCAL HOLD VARIABLES.                  *
+031200*        C. EDIT THE DATA PASSED FROM THE CLAIM BEFORE        *
+031300*           ATTEMPTING TO CALCULATE PPS. IF THIS CLAIM        *
+031400*           CANNOT BE PROCESSED, SET A RETURN CODE AND        *
+031500*           GOBACK.                                           *
+031600*        D. ASSEMBLE PRICING COMPONENTS.                      *
+031700*        E. CALCULATE THE PRICE.                              *
+031800*        F. CALCULATE OUTLIERS IF APPLICABLE.                 *
+031900***************************************************************
+032000
+032100 0000-MAINLINE-CONTROL.
+032400
+032500     PERFORM 0100-INITIAL-ROUTINE
+032600        THRU 0100-EXIT.
+032700
+032800     PERFORM 1000-EDIT-THE-BILL-INFO
+032900        THRU 1000-EXIT.
+033000
+033100     IF PPS-RTC = 00
+033200        PERFORM 1700-EDIT-CMG-CODE
+033300           THRU 1700-EXIT.
+033400
+033500     IF PPS-RTC = 00
+033600        PERFORM 2000-ASSEMBLE-PPS-VARIABLES
+033700           THRU 2000-EXIT.
+033800
+033900     IF PPS-RTC = 00
+034000        PERFORM 3000-CALC-PAYMENT
+034100           THRU 3000-EXIT
+034200        PERFORM 3500-CONTINUE-CALC
+034300           THRU 3500-EXIT
+034400        PERFORM 4000-CALC-OUTLIER
+034500           THRU 4000-EXIT
+034600        PERFORM 5000-FINAL-PAYMENTS
+034700           THRU 5000-EXIT.
+034800
+034900     PERFORM 9000-MOVE-RESULTS
+035000        THRU 9000-EXIT.
+035100
+035200     GOBACK.
+035300
+035400 0100-INITIAL-ROUTINE.
+035500
+035600     MOVE ZEROS TO PPS-RTC.
+035700     INITIALIZE PPS-DATA.
+035800     INITIALIZE PPS-OTHER-DATA.
+035900     INITIALIZE HOLD-PPS-COMPONENTS.
+036000***************************************************************
+036100*    UPDATE THE VALUES BELOW FOR EACH FY RELEASE              *
+036200*     - VALUES PER POLICY                                     *
+036300***************************************************************
+036400     MOVE .70500 TO PPS-NAT-LABOR-PCT.
+036500     MOVE .29500 TO PPS-NAT-NONLABOR-PCT.
+036600     MOVE  9402  TO PPS-NAT-THRESHOLD-ADJ.
+036700     IF P-NEW-CBSA-HOSP-QUAL-IND IS EQUAL TO '1'
+036800        MOVE 16021  TO PPS-BDGT-NEUT-CONV-AMT
+036900     ELSE
+037000        MOVE 15705  TO PPS-BDGT-NEUT-CONV-AMT
+037100     END-IF.
+037200
+037300 0100-EXIT.
+037400      EXIT.
+037500
+037600 1000-EDIT-THE-BILL-INFO.
+037700***************************************************************
+037800*    BILL DATA EDITS IF ANY FAIL SET PPS-RTC                  *
+037900*    AND DO NOT ATTEMPT TO PRICE.                             *
+038000***************************************************************
+038100
+038200     MOVE B-CMG-CODE TO PPS-SUBM-CMG-CODE.
+038300
+038400     IF (B-LOS NUMERIC) AND (B-LOS > 0)
+038500        MOVE B-LOS TO H-LOS
+038600     ELSE
+038700        IF B-LOS = 0
+038800           MOVE 1 TO H-LOS
+038900        ELSE
+039000           MOVE 56 TO PPS-RTC.
+039100
+039200     MOVE P-NEW-FY-BEGIN-DATE TO H-FY-BEGIN-DATE.
+039300     IF H-FY-BEGIN-DATE (5:2) < 11
+039400       COMPUTE H-FY-BEGIN-DATE = H-FY-BEGIN-DATE + 10200
+039500     ELSE
+039600       COMPUTE H-FY-BEGIN-DATE = H-FY-BEGIN-DATE + 19000.
+039700     MOVE B-DISCHARGE-DATE TO H-DISCHARGE-DATE.
+039800     IF (H-DISCHARGE-DATE > H-FY-BEGIN-DATE)
+039900        OR (P-NEW-FY-BEGIN-DATE > 20020930 AND
+040000            P-NEW-FY-BEGIN-DATE < 20030101)
+040100        MOVE '4' TO P-NEW-FED-PPS-BLEND-IND.
+040200     IF P-NEW-FY-BEGIN-DATE > 20011231
+040300        IF (P-NEW-FY-BEGIN-DATE <= B-DISCHARGE-DATE)
+040400           IF P-NEW-FED-PPS-BLEND-IND = '4'
+040500              MOVE 1.0000 TO PPS-FED-RATE-PCT
+040600              MOVE 0.0000 TO PPS-FAC-RATE-PCT
+040700           ELSE
+040800             IF P-NEW-FED-PPS-BLEND-IND = '3'
+040900                MOVE .6667 TO PPS-FED-RATE-PCT
+041000                MOVE .3333 TO PPS-FAC-RATE-PCT
+041100             ELSE
+041200               MOVE 72 TO PPS-RTC
+041300        ELSE
+041400           MOVE 73 TO PPS-RTC
+041500     ELSE
+041600        MOVE 74 TO PPS-RTC.
+041700
+041800     IF PPS-RTC = 00
+041900       IF P-NEW-WAIVER-STATE
+042000          MOVE 53 TO PPS-RTC.
+042100
+042200     IF PPS-RTC = 00
+042300         IF ((B-DISCHARGE-DATE < P-NEW-EFF-DATE) OR
+042400            (B-DISCHARGE-DATE < W-NEW-EFF-DATE-C))
+042500            MOVE 55 TO PPS-RTC.
+042600
+042700     IF PPS-RTC = 00
+042800         IF P-NEW-TERMINATION-DATE > 00000000
+042900            IF B-DISCHARGE-DATE >= P-NEW-TERMINATION-DATE
+043000               MOVE 51 TO PPS-RTC.
+043100
+043200     IF PPS-RTC = 00
+043300         IF B-COV-CHARGES NOT NUMERIC
+043400            MOVE 58 TO PPS-RTC.
+043500
+043600     IF PPS-RTC = 00
+043700        IF B-LTR-DAYS NOT NUMERIC OR B-LTR-DAYS > 60
+043800           MOVE 61 TO PPS-RTC
+043900        ELSE
+044000           MOVE B-LTR-DAYS TO PPS-LTR-DAYS-USED.
+044100
+044200     IF PPS-RTC = 00
+044300        IF B-COV-DAYS NOT NUMERIC
+044400             MOVE 62 TO PPS-RTC
+044500        ELSE
+044600          IF B-COV-DAYS = 0 AND H-LOS > 0
+044700             MOVE 62 TO PPS-RTC.
+044800
+044900     IF PPS-RTC = 00
+045000        IF B-LTR-DAYS  > B-COV-DAYS
+045100           MOVE 62 TO PPS-RTC
+045200        ELSE
+045300           COMPUTE PPS-REG-DAYS-USED = B-COV-DAYS - B-LTR-DAYS.
+045400
+045500     IF PPS-RTC = 00
+045600        IF PPS-REG-DAYS-USED > 0
+045700           IF PPS-REG-DAYS-USED > H-LOS
+045800              MOVE H-LOS TO PPS-REG-DAYS-USED
+045900           ELSE
+046000              NEXT SENTENCE
+046100        ELSE
+046200           IF B-LTR-DAYS > H-LOS
+046300              MOVE H-LOS TO PPS-LTR-DAYS-USED
+046400           ELSE
+046500              MOVE B-LTR-DAYS TO PPS-LTR-DAYS-USED.
+046600
+046700 1000-EXIT.
+046800      EXIT.
+046900
+047000***************************************************************
+047100*    FINDS THE CMG CODE IN THE TABLE                          *
+047200***************************************************************
+047300 1700-EDIT-CMG-CODE.
+047400* 01/2010 - ADDED 5001 PER C.R. # 6699
+047500
+047600     IF PPS-CMG-NUMERIC = '9999' OR '5001'
+047700        NEXT SENTENCE
+047800     ELSE
+047900        IF PPS-CMG-NUMERIC < '2103'
+048000           NEXT SENTENCE
+048100        ELSE
+048200           MOVE 54 TO PPS-RTC.
+048300
+048400     IF PPS-RTC = 00
+048500        SEARCH ALL CMG-DATA
+048600           AT END
+048700             MOVE 54 TO PPS-RTC
+048800        WHEN CMG-NUM (DX6) = PPS-CMG-NUMERIC
+048900             PERFORM 1750-FIND-VALUE
+049000                THRU 1750-EXIT
+049100        END-SEARCH.
+049200
+049300 1700-EXIT.
+049400      EXIT.
+049500
+049600***************************************************************
+049700*    FINDS THE VALUE IN THE CMG CODE IN THE TABLE             *
+049800***************************************************************
+049900 1750-FIND-VALUE.
+050000
+050100      IF PPS-CMG-ALPHA = 'A'
+050200         MOVE A-REL-WGT (DX6) TO PPS-RELATIVE-WGT
+050300         MOVE A-LOS-TABLE (DX6) TO PPS-AVG-LOS
+050400      ELSE
+050500         IF PPS-CMG-ALPHA = 'B'
+050600            MOVE B-REL-WGT (DX6) TO PPS-RELATIVE-WGT
+050700            MOVE B-LOS-TABLE (DX6) TO PPS-AVG-LOS
+050800         ELSE
+050900            IF PPS-CMG-ALPHA = 'C'
+051000               MOVE C-REL-WGT (DX6) TO PPS-RELATIVE-WGT
+051100               MOVE C-LOS-TABLE (DX6) TO PPS-AVG-LOS
+051200            ELSE
+051300               IF PPS-CMG-ALPHA = 'D'
+051400                  MOVE D-REL-WGT (DX6) TO PPS-RELATIVE-WGT
+051500                  MOVE D-LOS-TABLE (DX6) TO PPS-AVG-LOS
+051600               ELSE
+051700                  MOVE 54 TO PPS-RTC.
+051800
+051900 1750-EXIT.
+052000      EXIT.
+052100
+052200***************************************************************
+052300*    THE APPROPRIATE SET OF THESE PPS VARIABLES ARE SELECTED  *
+052400*    DEPENDING ON THE BILL DISCHARGE DATE AND EFFECTIVE DATE  *
+052500*    OF THAT VARIABLE.                                        *
+052600***************************************************************
+052700***  GET THE PROVIDER SPECIFIC VARIABLE AND WAGE INDEX
+052800***************************************************************
+052900 2000-ASSEMBLE-PPS-VARIABLES.
+053000
+053100     IF P-NEW-FAC-SPEC-RATE NUMERIC
+053200        MOVE P-NEW-FAC-SPEC-RATE TO PPS-FAC-SPEC-RT-PREBLEND
+053300     ELSE
+053400        MOVE 50 TO PPS-RTC
+053500        GO TO 2000-EXIT.
+053600
+053700     IF P-NEW-FED-PPS-BLEND-IND = '3'
+053800        IF PPS-FAC-SPEC-RT-PREBLEND = 0
+053900          MOVE 57 TO PPS-RTC
+054000          GO TO 2000-EXIT.
+054100
+054200     IF W-NEW-WAGE-INDEX-C NUMERIC
+054300            AND W-NEW-WAGE-INDEX-C > 0
+054400        MOVE W-NEW-WAGE-INDEX-C TO PPS-WAGE-INDEX
+054500     ELSE
+054600        MOVE 52 TO PPS-RTC
+054700        GO TO 2000-EXIT.
+054800
+054900     IF P-NEW-OPER-CSTCHG-RATIO NOT NUMERIC
+055000        MOVE 65 TO PPS-RTC.
+055100
+055200 2000-EXIT.
+055300      EXIT.
+055400
+055500***************************************************************
+055600*    IF THE BILL DATA HAS PASSED ALL EDITS (RTC=00)           *
+055700*        CALCULATE THE FEDERAL PORTION.                       *
+055800*        CALCULATE THE HOSPITAL PORTION.                      *
+055900*        CALCULATE THE COST-OUTLIER PORTION.                  *
+056000*        CALCULATE THE LIP ADJUSTMENT PERCENTAGE.             *
+056100*-------------------------------------------------------------*
+056200*    NO CHANGE TO LIP FROM 2014 AT  .3177                     *
+056300*    NO CHANGE TO TCH FROM 2014 AT 1.0163                     *
+056400***************************************************************
+056500 3000-CALC-PAYMENT.
+056600
+056700***  LIP ( LOW INCOME PATIENT ) CALCULATION                   *
+056800
+056900      COMPUTE H-WK-DSH = (P-NEW-SSI-RATIO
+057000                           + P-NEW-MEDICAID-RATIO).
+057100
+057200      COMPUTE PPS-LIP-PCT ROUNDED =
+057300            ((1 + H-WK-DSH) ** .3177) - 1.
+057400
+057500      COMPUTE H-TEACH-PCT ROUNDED =
+057600            ((1 + P-NEW-CAPI-IME) ** 1.0163) - 1.
+057700
+057800***************************************************************
+057900
+058000     MOVE 1.0000 TO PPS-TRANSFER-PCT.
+058100
+058200     IF B-PATIENT-STATUS =
+058300          '02' OR '03' OR '61' OR '62' OR '63' OR '64' OR
+058400          '82' OR '83' OR '89' OR '90' OR '91' OR '92'
+058500        IF H-LOS < PPS-AVG-LOS
+058600           COMPUTE PPS-TRANSFER-PCT =
+058700               ((H-LOS + .5) / PPS-AVG-LOS)
+058800           MOVE PPS-SUBM-CMG-CODE TO PPS-PRICED-CMG-CODE
+058900           GO TO 3000-EXIT.
+059000
+059100     IF H-LOS > 3
+059200        NEXT SENTENCE
+059300     ELSE
+059400        MOVE 'A5001' TO PPS-PRICED-CMG-CODE
+059500        SET DX6 TO 88
+059600        MOVE A-REL-WGT (DX6) TO PPS-RELATIVE-WGT
+059700        GO TO 3000-EXIT.
+059800
+059900     IF B-PATIENT-STATUS = '20'
+060000        NEXT SENTENCE
+060100     ELSE
+060200        MOVE PPS-SUBM-CMG-CODE TO PPS-PRICED-CMG-CODE
+060300        GO TO 3000-EXIT.
+060400
+060500     IF PPS-CMG-RIC = ('07' OR '08' OR '09')
+060600        IF H-LOS < 14
+060700           MOVE 'A5101' TO PPS-PRICED-CMG-CODE
+060800           SET DX6 TO 89
+060900           MOVE A-REL-WGT (DX6) TO PPS-RELATIVE-WGT
+061000        ELSE
+061100           MOVE 'A5102' TO PPS-PRICED-CMG-CODE
+061200           SET DX6 TO 90
+061300           MOVE A-REL-WGT (DX6) TO PPS-RELATIVE-WGT
+061400     ELSE
+061500        IF H-LOS < 16
+061600           MOVE 'A5103' TO PPS-PRICED-CMG-CODE
+061700           SET DX6 TO 91
+061800           MOVE A-REL-WGT (DX6) TO PPS-RELATIVE-WGT
+061900        ELSE
+062000           MOVE 'A5104' TO PPS-PRICED-CMG-CODE
+062100           SET DX6 TO 92
+062200           MOVE A-REL-WGT (DX6) TO PPS-RELATIVE-WGT.
+062300
+062400 3000-EXIT.
+062500      EXIT.
+062600
+062700 3500-CONTINUE-CALC.
+062800
+062900     COMPUTE PPS-STANDARD-PAY-AMT =
+063000            (PPS-TRANSFER-PCT * PPS-RELATIVE-WGT
+063100                      * PPS-BDGT-NEUT-CONV-AMT).
+063200
+063300***************************************************************
+063400*      CHANGE RURAL ADJUSTMENT AMOUNT IF NECESSARY            *
+063500***************************************************************
+063600     PERFORM 3510-CHECK-RURAL-ADJ         THRU 3510-EXIT.
+063700
+063800***************************************************************
+063900*      CHANGE RURAL ADJUSTMENT BASED ON RELIEF INDICATOR      *
+064000*       IF NECESSARY - PER CHANGE REQUEST                     *
+064100***************************************************************
+064200** REMOVED FOR 2008 RELEASE
+064300**   IF P-NEW-TEMP-RELIEF-IND = 'Y'
+064400**      MOVE 1.0638 TO PPS-RURAL-ADJUSTMENT.
+064500
+064600     COMPUTE H-LABOR-PORTION =
+064700        (PPS-STANDARD-PAY-AMT * PPS-NAT-LABOR-PCT)
+064800          * PPS-WAGE-INDEX.
+064900
+065000     COMPUTE H-NONLABOR-PORTION =
+065100        (PPS-STANDARD-PAY-AMT * PPS-NAT-NONLABOR-PCT).
+065200
+065300     COMPUTE PPS-FED-PAY-AMT ROUNDED =
+065400        ((H-LABOR-PORTION + H-NONLABOR-PORTION) *
+065500         PPS-RURAL-ADJUSTMENT).
+065600
+065700     COMPUTE PPS-LIP-PAY-AMT ROUNDED =
+065800        (PPS-FED-PAY-AMT * PPS-LIP-PCT).
+065900
+066000     COMPUTE PPS-TEACH-PAY-AMT ROUNDED =
+066100        (PPS-FED-PAY-AMT * H-TEACH-PCT).
+066200
+066300 3500-EXIT.
+066400      EXIT.
+066500
+066600***************************************************************
+066700* EFFECTIVE FY2018, REMOVED RURAL-TO-URBAN CODING             *
+066800***************************************************************
+066900 3510-CHECK-RURAL-ADJ.
+067000
+067100     MOVE 1.0000          TO PPS-RURAL-ADJUSTMENT
+067200
+067300     IF W-NEW-CBSA (1:3) = '   '
+067400        MOVE 1.1490 TO PPS-RURAL-ADJUSTMENT
+067500     ELSE
+067600        MOVE 1.0000 TO PPS-RURAL-ADJUSTMENT.
+067700
+067800 3510-EXIT.
+067900      EXIT.
+068000
+068100 4000-CALC-OUTLIER.
+068200
+068300     COMPUTE PPS-FAC-COSTS ROUNDED =
+068400         (B-COV-CHARGES * P-NEW-OPER-CSTCHG-RATIO).
+068500
+068600     COMPUTE H-OUTLIER-LABOR-PORTION =
+068700        (PPS-NAT-THRESHOLD-ADJ * PPS-NAT-LABOR-PCT)
+068800              * PPS-WAGE-INDEX.
+068810
+068820     COMPUTE H-OUTLIER-NONLABOR-PORTION =
+068830        (PPS-NAT-THRESHOLD-ADJ * PPS-NAT-NONLABOR-PCT).
+068840
+068850     COMPUTE H-FP-OUTLIER-THRESHOLD ROUNDED =
+068860        ((H-OUTLIER-LABOR-PORTION + H-OUTLIER-NONLABOR-PORTION) *
+068870         PPS-RURAL-ADJUSTMENT * (PPS-LIP-PCT + H-TEACH-PCT + 1)).
+068880
+068890     COMPUTE H-OUTLIER-THRESHOLD ROUNDED =
+068900        (PPS-FED-PAY-AMT + H-FP-OUTLIER-THRESHOLD +
+069000         PPS-LIP-PAY-AMT + PPS-TEACH-PAY-AMT).
+069100
+069200     IF PPS-FAC-COSTS > H-OUTLIER-THRESHOLD
+069300        COMPUTE PPS-OUTLIER-PAY-AMT ROUNDED =
+069400           ((PPS-FAC-COSTS - H-OUTLIER-THRESHOLD) * .8).
+069500
+069600     COMPUTE H-CHG-OUTLIER-THRESHOLD ROUNDED =
+069700         H-OUTLIER-THRESHOLD / P-NEW-OPER-CSTCHG-RATIO.
+069800
+069900
+070000 4000-EXIT.
+070100      EXIT.
+070200
+070300 5000-FINAL-PAYMENTS.
+070400
+070500     IF B-SPEC-PAY-IND = '1' OR '3'
+070600         MOVE ZEROES TO PPS-OUTLIER-PAY-AMT.
+070700
+070800     IF PPS-FED-RATE-PCT = 1.0000
+070900         MOVE 0 TO PPS-FAC-SPEC-PAY-AMT
+071000     ELSE
+071100         COMPUTE PPS-FED-PAY-AMT ROUNDED =
+071200           (PPS-FED-RATE-PCT * PPS-FED-PAY-AMT)
+071300         COMPUTE PPS-FAC-SPEC-PAY-AMT ROUNDED =
+071400           (PPS-FAC-RATE-PCT * PPS-FAC-SPEC-RT-PREBLEND)
+071500         COMPUTE PPS-OUTLIER-PAY-AMT ROUNDED =
+071600           (PPS-FED-RATE-PCT * PPS-OUTLIER-PAY-AMT)
+071700         COMPUTE PPS-TEACH-PAY-AMT ROUNDED =
+071800           (PPS-FED-RATE-PCT * PPS-TEACH-PAY-AMT)
+071900         COMPUTE PPS-LIP-PAY-AMT ROUNDED =
+072000           (PPS-FED-RATE-PCT * PPS-LIP-PAY-AMT).
+072100
+072200*    IF B-SPEC-PAY-IND = '2' OR '3'
+072300*       COMPUTE PPS-FED-PENALTY-AMT ROUNDED =
+072400*          (PPS-FED-PAY-AMT * .25)
+072500*       COMPUTE PPS-FED-PAY-AMT =
+072600*          (PPS-FED-PAY-AMT - PPS-FED-PENALTY-AMT)
+072700*       COMPUTE PPS-LIP-PENALTY-AMT ROUNDED =
+072800*          (PPS-LIP-PAY-AMT * .25)
+072900*       COMPUTE PPS-LIP-PAY-AMT =
+073000*          (PPS-LIP-PAY-AMT - PPS-LIP-PENALTY-AMT)
+073100*       COMPUTE PPS-OUT-PENALTY-AMT ROUNDED =
+073200*          (PPS-OUTLIER-PAY-AMT * .25)
+073300*       COMPUTE PPS-OUTLIER-PAY-AMT =
+073400*          (PPS-OUTLIER-PAY-AMT - PPS-OUT-PENALTY-AMT)
+073500*       COMPUTE PPS-TEACH-PENALTY-AMT ROUNDED =
+073600*          (PPS-TEACH-PAY-AMT * .25)
+073700*       COMPUTE PPS-TEACH-PAY-AMT =
+073800*          (PPS-TEACH-PAY-AMT - PPS-TEACH-PENALTY-AMT)
+073900*       COMPUTE PPS-TOTAL-PENALTY-AMT =
+074000*          (PPS-FED-PENALTY-AMT + PPS-LIP-PENALTY-AMT
+074100*          + PPS-OUT-PENALTY-AMT + PPS-TEACH-PENALTY-AMT).
+074200
+074300     COMPUTE PPS-TOTAL-PAY-AMT ROUNDED =
+074400        (PPS-FED-PAY-AMT + PPS-FAC-SPEC-PAY-AMT
+074500         + PPS-OUTLIER-PAY-AMT + PPS-LIP-PAY-AMT +
+074600         PPS-TEACH-PAY-AMT).
+074700
+074800     IF PPS-FED-RATE-PCT = 1.0000
+074900        IF PPS-TRANSFER-PCT = 1.0000
+075000           IF PPS-OUTLIER-PAY-AMT > 0.0
+075100              MOVE 01 TO PPS-RTC
+075200           ELSE
+075300              MOVE 00 TO PPS-RTC
+075400        ELSE
+075500           IF PPS-OUTLIER-PAY-AMT > 0.0
+075600              MOVE 03 TO PPS-RTC
+075700           ELSE
+075800              MOVE 02 TO PPS-RTC
+075900     ELSE
+076000        IF PPS-TRANSFER-PCT = 1.0000
+076100           IF PPS-OUTLIER-PAY-AMT > 0.0
+076200              MOVE 05 TO PPS-RTC
+076300           ELSE
+076400              MOVE 04 TO PPS-RTC
+076500        ELSE
+076600           IF PPS-OUTLIER-PAY-AMT > 0.0
+076700              MOVE 07 TO PPS-RTC
+076800           ELSE
+076900              MOVE 06 TO PPS-RTC.
+077000
+077100     IF B-SPEC-PAY-IND = '2' OR '3'
+077200        COMPUTE PPS-RTC = PPS-RTC + 10.
+077300     IF PPS-RTC = (01 OR 03 OR 05 OR 07
+077400                OR 11 OR 13 OR 15 OR 17)
+077500        IF ((PPS-REG-DAYS-USED + PPS-LTR-DAYS-USED) < H-LOS)
+077600           OR PPS-COT-IND = 'Y'
+077700            MOVE 67 TO PPS-RTC.
+077800
+077900 5000-EXIT.
+078000      EXIT.
+078100
+078200 9000-MOVE-RESULTS.
+078300
+078400     IF PPS-RTC < 50
+078500      MOVE H-LOS                   TO  PPS-LOS
+078600      MOVE H-OUTLIER-THRESHOLD     TO  PPS-OUTLIER-THRESHOLD
+078700      MOVE H-CHG-OUTLIER-THRESHOLD TO PPS-CHG-OUTLIER-THRESHOLD
+078800      MOVE W-NEW-CBSA              TO  PPS-CBSA
+078900      MOVE 'V19.0'                 TO  PPS-CALC-VERS-CD
+079000     ELSE
+079100       INITIALIZE PPS-DATA
+079200       INITIALIZE PPS-OTHER-DATA
+079300       MOVE 'V19.0'                TO  PPS-CALC-VERS-CD.
+079400
+079500     IF PPS-RTC = 67
+079600       MOVE H-CHG-OUTLIER-THRESHOLD TO PPS-CHG-OUTLIER-THRESHOLD.
+079700
+079800 9000-EXIT.
+079900      EXIT.
+080000***************************************************************
+080100******        L A S T   S O U R C E   S T A T E M E N T   *****
+080200***************************************************************
+

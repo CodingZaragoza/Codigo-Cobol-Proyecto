@@ -1,0 +1,1046 @@
+000100 IDENTIFICATION DIVISION.
+000200 PROGRAM-ID.    IPDRV222.
+000300******************************************************************
+000400* THIS PROGRAM CALLS THE IP CALC PROGRAM
+000500******************************************************************
+000600*--------- FY 2022.2 UPDATE --------------------------------------
+000700* ENABLE THE WAGE INDEX CAPPING LOGIC AND SUPPLEMENTAL WAGE INDEX
+000710* LOGIC/EDITS
+000720* ONLY APPLY TO FY 2021 CLAIMS (10/1/2020 - 9/30/2021)
+000800******************************************************************
+000900 DATE-COMPILED.
+001000 ENVIRONMENT DIVISION.
+001100 CONFIGURATION SECTION.
+001200 SOURCE-COMPUTER.            IBM-370.
+001300 OBJECT-COMPUTER.            IBM-370.
+001400 INPUT-OUTPUT  SECTION.
+001500 FILE-CONTROL.
+001600 DATA DIVISION.
+001700 FILE SECTION.
+001800
+001900 WORKING-STORAGE SECTION.
+002000 01  FILLER                PIC X(40)  VALUE
+002100     'IPDRV222 - W O R K I N G   S T O R A G E'.
+002200 01  DRV-VERSION           PIC X(05) VALUE 'D22.2'.
+002300 01  IPCAL221              PIC X(08) VALUE 'IPCAL221'.
+002400 01  IPCAL210              PIC X(08) VALUE 'IPCAL210'.
+002500 01  IPCAL202              PIC X(08) VALUE 'IPCAL202'.
+002600 01  IPCAL191              PIC X(08) VALUE 'IPCAL191'.
+002700 01  IPCAL180              PIC X(08) VALUE 'IPCAL180'.
+002800 01  IPCAL170              PIC X(08) VALUE 'IPCAL170'.
+002900 01  IPCAL161              PIC X(08) VALUE 'IPCAL161'.
+003000 01  IPCAL150              PIC X(08) VALUE 'IPCAL150'.
+003100 01  IPCAL140              PIC X(08) VALUE 'IPCAL140'.
+003200 01  IPCAL130              PIC X(08) VALUE 'IPCAL130'.
+003300 01  IPCAL121              PIC X(08) VALUE 'IPCAL121'.
+003400 01  IPCAL120              PIC X(08) VALUE 'IPCAL120'.
+003500 01  IPCAL112              PIC X(08) VALUE 'IPCAL112'.
+003600 01  IPCAL111              PIC X(08) VALUE 'IPCAL111'.
+003700 01  IPCAL110              PIC X(08) VALUE 'IPCAL110'.
+003800 01  IPCAL102              PIC X(08) VALUE 'IPCAL102'.
+003900 01  IPCAL100              PIC X(08) VALUE 'IPCAL100'.
+004000 01  IPCAL094              PIC X(08) VALUE 'IPCAL094'.
+004100 01  IPCAL09A              PIC X(08) VALUE 'IPCAL09A'.
+004200 01  IPCAL08A              PIC X(08) VALUE 'IPCAL08A'.
+004300 01  IPCAL086              PIC X(08) VALUE 'IPCAL086'.
+004400 01  IPCAL076              PIC X(08) VALUE 'IPCAL076'.
+004500 01  IPCAL057              PIC X(08) VALUE 'IPCAL057'.
+004600 01  W-WI-PCT-REDUC-FY2020 PIC S9(01)V9(02) VALUE -0.05.
+004700 01  W-WI-PCT-ADJ-FY2020   PIC 9(01)V9(02)  VALUE 0.95.
+004800 01  W-FY2021-BEGIN-DT     PIC 9(08) VALUE 20201001.
+004900 01  W-FY2021-END-DT       PIC 9(08) VALUE 20210930.
+005000 01  TABLES-LOADED-SW      PIC 9(01)  VALUE 0.
+005100 01  EOF-SW                PIC 9(01)  VALUE 0.
+005200 01  PROV-STAT.
+005300     02  PROV-STAT1     PIC X.
+005400     02  PROV-STAT2     PIC X.
+005500
+005600 01  MSAX-STAT.
+005700     02  MSAX-STAT1     PIC X.
+005800     02  MSAX-STAT2     PIC X.
+005900
+006000 01  CBSA-STAT.
+006100     02  CBSA-STAT1     PIC X.
+006200     02  CBSA-STAT2     PIC X.
+006300
+006400 01  HOLD-PROV-MSAX.
+006500         10  H-MSAX-PROV-BLANK   PIC X(2).
+006600         10  H-MSAX-PROV-STATE.
+006700             15  FILLER          PIC X.
+006800             15  H-MSAX-LAST-POS PIC X.
+006900
+007000 01  HOLD-PROV-CBSA.
+007100         10  H-CBSA-PROV-BLANK   PIC X(3).
+007200         10  H-CBSA-PROV-STATE.
+007300             15  FILLER          PIC X.
+007400             15  H-CBSA-LAST-POS PIC X.
+007500
+007600**================================================================
+007700*      THIS IS THE WAGE-INDEX RECORD THAT WILL BE PASSED TO   *
+007800*      THE IPCAL056 PROGRAM FOR PROCESSING
+007900**================================================================
+008000 01  WAGE-NEW-INDEX-RECORD.
+008100     05  W-NEW-MSA               PIC 9(4).
+008200     05  W-NEW-SIZE              PIC X(01).
+008300         88  NEW-LARGE-URBAN       VALUE 'L'.
+008400         88  NEW-OTHER-URBAN       VALUE 'O'.
+008500         88  NEW-ALL-RURAL         VALUE 'R'.
+008600     05  W-NEW-EFF-DATE.
+008700          10  W-NEW-EFF-DATE-CC   PIC 9(2).
+008800          10  W-NEW-EFF-DATE-YMD.
+008900              15  W-NEW-EFF-DATE-YY   PIC 9(2).
+009000              15  W-NEW-EFF-DATE-MM   PIC 9(2).
+009100              15  W-NEW-EFF-DATE-DD   PIC 9(2).
+009200     05  FILLER              PIC X.
+009300     05  W-NEW-INDEX-RECORD      PIC S9(02)V9(04).
+009400     05  FILLER                  PIC S9(02)V9(04).
+009500
+009600**================================================================
+009700*      THIS IS THE WAGE-INDEX RECORD THAT WILL BE PASSED TO   *
+009800*      THE IPCAL    PROGRAM FOR PROCESSING
+009900**================================================================
+010000 01  CBSA-WAGE-INDEX-RECORD.
+010100     05  W-CBSA               PIC 9(5).
+010200     05  W-CBSA-X  REDEFINES W-CBSA PIC X(05).
+010300     05  W-CBSA-SIZE             PIC X(01).
+010400         88  W-CBSA-LARGE-URBAN       VALUE 'L'.
+010500         88  W-CBSA-OTHER-URBAN       VALUE 'O'.
+010600         88  W-CBSA-ALL-RURAL         VALUE 'R'.
+010700     05  W-CBSA-EFF-DATE.
+010800          10  W-CBSA-EFF-DATE-CC       PIC 9(2).
+010900          10  W-CBSA-EFF-DATE-YMD.
+011000              15  W-CBSA-EFF-DATE-YY   PIC 9(2).
+011100              15  W-CBSA-EFF-DATE-MM   PIC 9(2).
+011200              15  W-CBSA-EFF-DATE-DD   PIC 9(2).
+011300     05  FILLER             PIC X.
+011400     05  W-CBSA-INDEX       PIC S9(02)V9(04).
+011500     05  FILLER             PIC S9(02)V9(04).
+011600
+011700
+011800**==============================================================**
+011900*   MSAX RECORD PASSED OPTION B
+012000**==============================================================**
+012100 01  MSAX-TABLE-FROM-USER.
+012200     05  FILLER                     PIC X(32000).
+012300     05  FILLER                     PIC X(30000).
+012400     05  FILLER                     PIC X(30000).
+012500
+012600**==============================================================**
+012700*   CBSA RECORD PASSED OPTION B
+012800**==============================================================**
+012900 01  CBSA-TABLE-FROM-USER.
+013000     05  FILLER                     PIC X(32000).
+013100     05  FILLER                     PIC X(30000).
+013200     05  FILLER                     PIC X(30000).
+013300
+013400**==============================================================**
+013500*   PROV RECORD PASSED OPTION P
+013600**==============================================================**
+013700 01  PROV-NEW-HOLD.
+013800     02  PROV-NEWREC-HOLD1.
+013900         05  P-NEW-NPI10.
+014000             10  P-NEW-NPI8             PIC X(08).
+014100             10  P-NEW-NPI-FILLER       PIC X(02).
+014200         05  P-NEW-PROVIDER-NO.
+014300             10  P-NEW-STATE            PIC 9(02).
+014400             10  FILLER                 PIC X(04).
+014500         05  P-NEW-DATE-DATA.
+014600             10  P-NEW-EFF-DATE.
+014700                 15  P-NEW-EFF-DT-CC    PIC 9(02).
+014800                 15  P-NEW-EFF-DT-YY    PIC 9(02).
+014900                 15  P-NEW-EFF-DT-MM    PIC 9(02).
+015000                 15  P-NEW-EFF-DT-DD    PIC 9(02).
+015100             10  P-NEW-FY-BEGIN-DATE.
+015200                 15  P-NEW-FY-BEG-DT-CC PIC 9(02).
+015300                 15  P-NEW-FY-BEG-DT-YY PIC 9(02).
+015400                 15  P-NEW-FY-BEG-DT-MM PIC 9(02).
+015500                 15  P-NEW-FY-BEG-DT-DD PIC 9(02).
+015600             10  P-NEW-REPORT-DATE.
+015700                 15  P-NEW-REPORT-DT-CC PIC 9(02).
+015800                 15  P-NEW-REPORT-DT-YY PIC 9(02).
+015900                 15  P-NEW-REPORT-DT-MM PIC 9(02).
+016000                 15  P-NEW-REPORT-DT-DD PIC 9(02).
+016100             10  P-NEW-TERMINATION-DATE.
+016200                 15  P-NEW-TERM-DT-CC   PIC 9(02).
+016300                 15  P-NEW-TERM-DT-YY   PIC 9(02).
+016400                 15  P-NEW-TERM-DT-MM   PIC 9(02).
+016500                 15  P-NEW-TERM-DT-DD   PIC 9(02).
+016600         05  P-NEW-WAIVER-CODE          PIC X(01).
+016700             88  P-NEW-WAIVER-STATE       VALUE 'Y'.
+016800         05  P-NEW-INTER-NO             PIC 9(05).
+016900         05  P-NEW-PROVIDER-TYPE        PIC X(02).
+017000             88  P-N-SOLE-COMMUNITY-PROV    VALUE '01' '11'.
+017100             88  P-N-REFERRAL-CENTER        VALUE '07' '11'
+017200                                                  '15' '17'
+017300                                                  '22'.
+017400             88  P-N-INDIAN-HEALTH-SERVICE  VALUE '08'.
+017500             88  P-N-REDESIGNATED-RURAL-YR1 VALUE '09'.
+017600             88  P-N-REDESIGNATED-RURAL-YR2 VALUE '10'.
+017700             88  P-N-SOLE-COM-REF-CENT      VALUE '11'.
+017800             88  P-N-MDH-REBASED-FY90       VALUE '14' '15'.
+017900             88  P-N-MDH-RRC-REBASED-FY90   VALUE '15'.
+018000             88  P-N-SCH-REBASED-FY90       VALUE '16' '17'.
+018100             88  P-N-SCH-RRC-REBASED-FY90   VALUE '17'.
+018200             88  P-N-MEDICAL-ASSIST-FACIL   VALUE '18'.
+018300             88  P-N-EACH                   VALUE '21' '22'.
+018400             88  P-N-EACH-REFERRAL-CENTER   VALUE '22'.
+018500             88  P-N-NHCMQ-II-SNF           VALUE '32'.
+018600             88  P-N-NHCMQ-III-SNF          VALUE '33'.
+018700         05  P-NEW-CURRENT-CENSUS-DIV   PIC 9(01).
+018800             88  P-N-NEW-ENGLAND            VALUE  1.
+018900             88  P-N-MIDDLE-ATLANTIC        VALUE  2.
+019000             88  P-N-SOUTH-ATLANTIC         VALUE  3.
+019100             88  P-N-EAST-NORTH-CENTRAL     VALUE  4.
+019200             88  P-N-EAST-SOUTH-CENTRAL     VALUE  5.
+019300             88  P-N-WEST-NORTH-CENTRAL     VALUE  6.
+019400             88  P-N-WEST-SOUTH-CENTRAL     VALUE  7.
+019500             88  P-N-MOUNTAIN               VALUE  8.
+019600             88  P-N-PACIFIC                VALUE  9.
+019700         05  P-NEW-CURRENT-DIV   REDEFINES
+019800                    P-NEW-CURRENT-CENSUS-DIV   PIC 9(01).
+019900             88  P-N-VALID-CENSUS-DIV    VALUE 1 THRU 9.
+020000         05  P-NEW-MSA-DATA.
+020100             10  P-NEW-CHG-CODE-INDEX       PIC X.
+020200             10  P-NEW-GEO-LOC-MSAX         PIC X(04) JUST RIGHT.
+020300             10  P-NEW-GEO-LOC-MSA9   REDEFINES
+020400                             P-NEW-GEO-LOC-MSAX  PIC 9(04).
+020500             10  P-NEW-GEO-LOC-MSA-AST REDEFINES
+020600                             P-NEW-GEO-LOC-MSA9.
+020700                 15  P-NEW-GEO-MSA-1ST    PIC X.
+020800                 15  P-NEW-GEO-MSA-2ND    PIC X.
+020900                 15  P-NEW-GEO-MSA-3RD    PIC X.
+021000                 15  P-NEW-GEO-MSA-4TH    PIC X.
+021100             10  P-NEW-WAGE-INDEX-LOC-MSA   PIC X(04) JUST RIGHT.
+021200             10  P-NEW-STAND-AMT-LOC-MSA    PIC X(04) JUST RIGHT.
+021300             10  P-NEW-STAND-AMT-LOC-MSA9
+021400       REDEFINES P-NEW-STAND-AMT-LOC-MSA.
+021500                 15  P-NEW-RURAL-1ST.
+021600                     20  P-NEW-STAND-RURAL  PIC XX.
+021700                         88  P-NEW-STD-RURAL-CHECK VALUE '  '.
+021800                 15  P-NEW-RURAL-2ND        PIC XX.
+021900         05  P-NEW-SOL-COM-DEP-HOSP-YR PIC XX.
+022000                 88  P-NEW-SCH-YRBLANK    VALUE   '  '.
+022100                 88  P-NEW-SCH-YR82       VALUE   '82'.
+022200                 88  P-NEW-SCH-YR87       VALUE   '87'.
+022300         05  P-NEW-LUGAR                    PIC X.
+022400         05  P-NEW-TEMP-RELIEF-IND          PIC X.
+022500             88  P-NEW-LOW-VOL25PCT     VALUE 'Y'.
+022600***          Y = LOW VOLUME PERCENTAGE  25 % ADD ON
+022700         05  P-NEW-FED-PPS-BLEND-IND        PIC X.
+022800         05  FILLER                         PIC X(05).
+022900     02  PROV-NEWREC-HOLD2.
+023000         05  P-NEW-VARIABLES.
+023100             10  P-NEW-CMI-ADJ-CPD       PIC  9(05)V9(02).
+023200             10  P-NEW-COLA              PIC  9(01)V9(03).
+023300             10  P-NEW-INTERN-RATIO      PIC  9(01)V9(04).
+023400             10  P-NEW-BED-SIZE          PIC  9(05).
+023500             10  P-NEW-CCR               PIC  9(01)V9(03).
+023600             10  P-NEW-CMI               PIC  9(01)V9(04).
+023700             10  P-NEW-SSI-RATIO         PIC  V9(04).
+023800             10  P-NEW-MEDICAID-RATIO    PIC  V9(04).
+023900             10  P-NEW-PPS-BLEND-YR-IND  PIC  X(01).
+024000             10  P-NEW-PRUP-UPDTE-FACTOR PIC  9(01)V9(05).
+024100             10  P-NEW-DSH-PERCENT       PIC  V9(04).
+024200             10  P-NEW-FYE-DATE.
+024300                 15  P-NEW-FYE-CC        PIC 99.
+024400                 15  P-NEW-FYE-YY        PIC 99.
+024500                 15  P-NEW-FYE-MM        PIC 99.
+024600                 15  P-NEW-FYE-DD        PIC 99.
+024700         05  P-NEW-CBSA-DATA.
+024800             10  P-NEW-CBSA-SPEC-PAY-IND    PIC X.
+024900                 88  P-NEW-CBSA-WI-GEO        VALUE 'N'.
+025000                 88  P-NEW-CBSA-WI-RECLASS    VALUE 'Y'.
+025100                 88  P-NEW-CBSA-WI-SPECIAL    VALUE '1' '2'.
+025200***                  1 = ANYTHING OR HOLD HARMLESS WITH SPEC WI
+025300***                  2 = RECLASS WITH SPEC WI
+025400             10  P-NEW-CBSA-HOSP-QUAL-IND  PIC X.
+025500                 88  P-NEW-CBSA-HOSP-QUAL-MET   VALUE '1'.
+025600                 88  P-NEW-CBSA-HOSP-QUAL-25PER VALUE '2'.
+025700                 88  P-NEW-CBSA-HOSP-QUAL-BOTH  VALUE '3'.
+025800             10  P-NEW-CBSA-GEO-LOC        PIC X(05) JUST RIGHT.
+025900             10  P-NEW-CBSA-GEO-LOC9  REDEFINES
+026000                             P-NEW-CBSA-GEO-LOC  PIC 9(05).
+026100             10  P-NEW-CBSA-GEO-LOC-AST REDEFINES
+026200                             P-NEW-CBSA-GEO-LOC9.
+026300                 15  P-NEW-CBSA-GEO-1ST    PIC X.
+026400                 15  P-NEW-CBSA-GEO-2ND    PIC X.
+026500                 15  P-NEW-CBSA-GEO-3RD    PIC X.
+026600                 15  P-NEW-CBSA-GEO-4TH    PIC X.
+026700                 15  P-NEW-CBSA-GEO-5TH    PIC X.
+026800             10  P-NEW-CBSA-RECLASS-LOC    PIC X(05) JUST RIGHT.
+026900             10  P-NEW-CBSA-STAND-AMT-LOC  PIC X(05) JUST RIGHT.
+027000             10  P-NEW-CBSA-STAND-AMT-LOC-MSA9
+027100       REDEFINES P-NEW-CBSA-STAND-AMT-LOC.
+027200               15  P-NEW-CBSA-RURAL-1ST.
+027300                   20  P-NEW-CBSA-STAND-RURAL  PIC XXX.
+027400                      88  P-NEW-CBSA-STD-RURAL-CHECK VALUE '   '.
+027500               15  P-NEW-CBSA-RURAL-2ND    PIC XX.
+027600             10  P-NEW-CBSA-SPEC-WI          PIC 9(02)V9(04).
+027700             10  P-NEW-CBSA-SPEC-WI-N  REDEFINES
+027800                 P-NEW-CBSA-SPEC-WI          PIC 9(06).
+027900     02  PROV-NEWREC-HOLD3.
+028000         05  P-NEW-PASS-AMT-DATA.
+028100             10  P-NEW-PASS-AMT-CAPITAL    PIC 9(04)V99.
+028200             10  P-NEW-PASS-AMT-DIR-MED-ED PIC 9(04)V99.
+028300             10  P-NEW-PASS-AMT-ORGAN-ACQ  PIC 9(04)V99.
+028400             10  P-NEW-PASS-AMT-PLUS-MISC  PIC 9(04)V99.
+028500         05  P-NEW-CAPI-DATA.
+028600             15  P-NEW-CAPI-PPS-PAY-CODE   PIC X.
+028700             15  P-NEW-CAPI-HOSP-SPEC-RATE PIC 9(04)V99.
+028800             15  P-NEW-CAPI-OLD-HARM-RATE  PIC 9(04)V99.
+028900             15  P-NEW-CAPI-NEW-HARM-RATIO PIC 9(01)V9999.
+029000             15  P-NEW-CAPI-CSTCHG-RATIO   PIC 9V999.
+029100             15  P-NEW-CAPI-NEW-HOSP       PIC X.
+029200             15  P-NEW-CAPI-IME            PIC 9V9999.
+029300             15  P-NEW-CAPI-EXCEPTIONS     PIC 9(04)V99.
+029400             15  P-VAL-BASED-PURCH-SCORE    PIC 9V999.
+029500*-----------------------------------------------------------------
+029600*                SUPPLEMENTAL WAGE INDEX
+029700*    1=PRIOR YEAR WAGE INDEX
+029800*    2=CURRENT YEAR IPPS-COMPARABLE WAGE INDEX (LTCHS ONLY)
+029900*    3=FUTURE USE
+030000*    4=FUTURE USE
+030100         05  P-NEW-SUPPLEMENTAL-WI.
+030200             10  P-NEW-SUPP-WI-IND         PIC X.
+030300                 88 SUPP-WI-PRIOR-YEAR     VALUE '1'.
+030400             10  P-NEW-SUPP-WI             PIC 9(2)V9(04).
+030500         05  FILLER                        PIC X(11).
+030600**================================================================
+030700
+030800 LINKAGE SECTION.
+030900
+031000**========================================================
+031100*    PASSED AND RETURNED BY IPCAL                     *
+031200**==============================*========================*
+031300 01  BILL-INPUT-DATA.
+031400     05  BILL-IN-DATA.
+031500         10  BILL-NPI-NUMBER.
+031600             15  BILL-NPI            PIC X(08).
+031700             15  BILL-NPI-FILLER     PIC X(02).
+031800         10  BILL-PROVIDER-NO        PIC X(06).
+031900         10  BILL-HIC-NO             PIC X(12).
+032000         10  BILL-DISCHARGE-DATE.
+032100             15  BILL-D-CC           PIC 9(02).
+032200             15  BILL-D-YY           PIC 9(02).
+032300             15  BILL-D-MM           PIC 9(02).
+032400             15  BILL-D-DD           PIC 9(02).
+032500         10  BILL-PATIENT-STATUS     PIC X(02).
+032600         10  BILL-AGE                PIC 9(03).
+032700         10  BILL-DRG                PIC 9(03).
+032800         10  BILL-LOS                PIC 9(05).
+032900         10  BILL-OUTL-OCCUR-IND     PIC X(01).
+033000         10  BILL-SRC-OF-ADMISSION   PIC X(01).
+033100         10  BILL-ECT-NO-OF-UNITS    PIC 9(03).
+033200         10  BILL-CHARGES-CLAIMED    PIC 9(07)V9(02).
+033300         10  BILL-OTHER-DIAG-DATA    PIC X(175).
+033400         10  BILL-OTHER-PROC-DATA    PIC X(175).
+033500         10  BILL-PRIOR-DAYS         PIC 9(03).
+033600**========================================================
+033700*    PASSED AND RETURNED BY IPCAL                     *
+033800**======================================================**
+033900 01  IPF-DATA-VARIABLES.
+034000         10  IPF-RTC                 PIC 9(02).
+034100         10  IPF-MSA-CBSA            PIC X(05).
+034200         10  IPF-MSA-CODE REDEFINES IPF-MSA-CBSA.
+034300             15  IPF-MSA             PIC X(04).
+034400             15  FILLER              PIC X.
+034500         10  IPF-CBSA-CODE REDEFINES IPF-MSA-CBSA.
+034600             15  IPF-CBSA            PIC X(05).
+034700         10  IPF-WAGE-INDX           PIC 9(02)V9(04).
+034800         10  IPF-LABOR-SHARE         PIC 9(01)V9(05).
+034900         10  IPF-NLABOR-SHARE        PIC 9(01)V9(05).
+035000         10  IPF-COLA                PIC 9(01)V9(03).
+035100         10  IPF-STD-FACTOR          PIC 9(01)V9(05).
+035200         10  IPF-COMORB-FACTOR       PIC 9(01)V9(05).
+035300         10  IPF-AGE-ADJ             PIC 9(01)V9(02).
+035400         10  IPF-DRG-FACTOR          PIC 9(01)V9(02).
+035500         10  IPF-GEO-RURAL-ADJ       PIC 9(01)V9(02).
+035600         10  IPF-EMERG-ADJ           PIC 9(01)V9(02).
+035700         10  IPF-TEACH-ADJ           PIC 9(01)V9(02).
+035800         10  IPF-FED-PPS-BLEND-IND   PIC X.
+035900         10  IPF-CAL-VERSION         PIC X(05).
+036000         10  IPF-CSTCHG-RATIO        PIC 9(01)V9(03).
+036100         10  FILLER                  PIC X(08).
+036200
+036300**======================================================**
+036400*    PASSED AND RETURNED BY IPCAL                     *
+036500**======================================================**
+036600 01  IPF-ADDITIONAL-VARIABLES.
+036700     02  IPF-MF-VARIABLES.
+036800         10  IPF-100PCT-STOPLOS-AMT     PIC 9(07)V9(02).
+036900         10  IPF-TOT-PAYMENT            PIC 9(07)V9(02).
+037000         10  IPF-FED-PAYMENT            PIC 9(07)V9(02).
+037100         10  IPF-FAC-PAYMENT            PIC 9(07)V9(02).
+037200         10  IPF-ECT-PAYMENT            PIC 9(07)V9(02).
+037300         10  IPF-OUTLIER-PAYMENT        PIC 9(07)V9(02).
+037400         10  IPF-OUTL-COST              PIC 9(07)V9(02).
+037500         10  IPF-OUTL-ADJ-COST          PIC 9(07)V9(02).
+037600         10  IPF-OUTL-PER-DIEM-AMT      PIC 9(07)V9(02).
+037700         10  IPF-OUTL-THRES-AMT         PIC 9(07)V9(02).
+037800         10  IPF-OUTL-THRES-ADJ-AMT     PIC 9(07)V9(02).
+037900         10  IPF-ADJUSTED-PER-DIEM-AMT  PIC 9(07)V9(02).
+038000         10  IPF-WAGE-ADJ-AMT           PIC 9(07)V9(02).
+038100         10  IPF-LABOR-BASE-AMT         PIC 9(07)V9(05).
+038200         10  IPF-NLABOR-BASE-AMT        PIC 9(07)V9(05).
+038300         10  IPF-OUTL-LABOR-BASE-AMT    PIC 9(07)V9(05).
+038400         10  IPF-OUTL-NLABOR-BASE-AMT   PIC 9(07)V9(05).
+038500         10  IPF-BUDGNUT-RATE-AMT       PIC 9(05)V9(02).
+038600         10  IPF-ECT-RATE-AMT           PIC 9(05)V9(02).
+038700         10  IPF-TEACH-PAYMENT          PIC 9(07)V9(02).
+038800         10  FILLER                     PIC X(01).
+038900      02 IPF-PC-VARIABLES.
+039000         10  IPF-PC-DATA                PIC X(44).
+039100
+039200 01  PRICER-OPT-VERS-SW.
+039300     02  PRICER-OPTION-SW               PIC X(01).
+039400         88  VARIABLES                  VALUE 'S'.
+039500         88  PROV-RECORD-PASSED         VALUE 'P'.
+039600         88  ALL-TABLES-PASSED          VALUE 'B'.
+039700     02  IPF-VERSIONS.
+039800         10  IPDRV-VERSION              PIC X(05).
+039900
+040000**===============================================================*
+040100* THE PROVIDER SPECIFIC PASSED FROM CALLING PROGRAM              *
+040200**===============================================================*
+040300 01  PROV-RECORD-FROM-USER.
+040400     02  PROV-FROM-USER-HOLD1           PIC X(80).
+040500     02  PROV-FROM-USER-HOLD2           PIC X(80).
+040600     02  PROV-FROM-USER-HOLD3           PIC X(80).
+040700
+040800 01  MSAX-WI-TABLE.
+040900     05  M-MSAX-DATA                OCCURS 4000
+041000                                    INDEXED BY MU1 MU2 MU3.
+041100         10  M-MSAX-MSA             PIC X(4).
+041200         10  M-MSAX-SIZE            PIC X(01).
+041300         10  M-MSAX-EFF-DATE        PIC X(08).
+041400         10  M-MSAX-WAGE-INDX1      PIC S9(02)V9(04).
+041500         10  M-MSAX-WAGE-INDX2      PIC S9(02)V9(04).
+041600
+041700 01  CBSA-WI-TABLE.
+041800     05  TB-CBSA-DATA                OCCURS 7000
+041900                                    INDEXED BY MA1 MA2 MA3.
+042000         10  TB-CBSA                PIC X(5).
+042100         10  TB-CBSA-SIZE           PIC X(01).
+042200         10  TB-CBSA-EFF-DATE       PIC X(08).
+042300         10  TB-CBSA-WAGE-INDX1     PIC S9(02)V9(04).
+042400         10  TB-CBSA-WAGE-INDX2     PIC S9(02)V9(04).
+042500
+042600**============================================================
+042700 PROCEDURE DIVISION  USING BILL-INPUT-DATA
+042800                           IPF-DATA-VARIABLES
+042900                           IPF-ADDITIONAL-VARIABLES
+043000                           PRICER-OPT-VERS-SW
+043100                           PROV-RECORD-FROM-USER
+043200                           MSAX-WI-TABLE
+043300                           CBSA-WI-TABLE.
+043400
+043500**==============================================================**
+043600*    PROCESSING:
+043700*        A. THIS MODULE WILL CALL THE IPCAL MODULES.
+043800*        B. THIS MODULE WILL LOAD ALL TABLES THE FIRST TIME THIS
+043900*           SUBROUTINE IS CALLED.
+044000*        C. THE PROV-RECORD AND WAGE-INDEX-RECORD ASSOCIATED WITH*
+044100*           EACH BILL WILL BE PASSED TO THE IPCAL PROGRAMS.
+044200*        D. CALL COMORBIDITY GROUPER AND RETURN A
+044300*           APPLIED COMORBIDITY ADJUSTER
+044400**==============================================================**
+044500
+044600     MOVE DRV-VERSION TO IPDRV-VERSION.
+044700
+044800     MOVE ALL '0' TO IPF-ADDITIONAL-VARIABLES
+044900                     IPF-DATA-VARIABLES.
+045000
+045100**==============================================================**
+045200***     RTC = 98 >> A BILL LESS THEN 20050101
+045300
+045400     IF BILL-DISCHARGE-DATE < 20050101
+045500             MOVE ALL '0' TO  IPF-ADDITIONAL-VARIABLES
+045600                              IPF-DATA-VARIABLES
+045700             MOVE 98 TO IPF-RTC
+045800             GOBACK.
+045900**==============================================================**
+046000
+046100 0010-PROCESS-RECORDS.
+046200**==============================================================**
+046300***  GET THE PROVIDER RECORD
+046400
+046500     MOVE PROV-RECORD-FROM-USER TO PROV-NEW-HOLD.
+046600     IF PROV-RECORD-FROM-USER <= SPACES
+046700        MOVE 51 TO IPF-RTC
+046800        MOVE ALL '0' TO  IPF-ADDITIONAL-VARIABLES
+046900        GOBACK
+047000     END-IF.
+047100
+047200     PERFORM 1350-N-CHECK-MSA THRU 1350-N-EXIT.
+047300
+047400     IF BILL-DISCHARGE-DATE < P-NEW-EFF-DATE
+047500        MOVE 55 TO IPF-RTC
+047600        GOBACK.
+047700
+047800     IF BILL-DISCHARGE-DATE > 20060630 AND
+047900        P-NEW-EFF-DATE < 20060701
+048000        MOVE 55 TO IPF-RTC
+048100        GOBACK.
+048200
+048300     IF P-NEW-EFF-DATE < 20060701
+048400        PERFORM 0500-GET-MSA THRU 0500-EXIT
+048500     ELSE
+048600        PERFORM 0550-GET-CBSA THRU 0550-EXIT.
+048700
+048800***     RTC = 52  --  WAGE-INDEX NOT FOUND
+048900
+049000     IF IPF-RTC = 52
+049100          MOVE ALL '0' TO  IPF-ADDITIONAL-VARIABLES
+049200          GOBACK.
+049300
+049400**==============================================================**
+049500** MAKE SURE DATE IS CODED THE DAY BEFORE THE EFFECTIVE DATE    **
+049600**==============================================================**
+049700** THIS NEXT CALL WILL PROCESS 2022 BILLS WITH
+049800**      A DISCHARGE DATE ON OR AFTER 20211001
+049900**==============================================================**
+050000     IF BILL-DISCHARGE-DATE
+050100              > 20210930
+050200         CALL  IPCAL221 USING BILL-INPUT-DATA
+050300                              IPF-DATA-VARIABLES
+050400                              IPF-ADDITIONAL-VARIABLES
+050500                              PRICER-OPT-VERS-SW
+050600                              PROV-NEW-HOLD
+050700                              CBSA-WAGE-INDEX-RECORD
+050800         GOBACK.
+050900**==============================================================**
+051000**          THIS NEXT CALL WILL PROCESS 2021 BILLS WITH
+051100**              A DISCHARGE DATE ON OR AFTER 20201001
+051200**==============================================================**
+051300     IF BILL-DISCHARGE-DATE
+051400              > 20200930
+051500         CALL  IPCAL210 USING BILL-INPUT-DATA
+051600                              IPF-DATA-VARIABLES
+051700                              IPF-ADDITIONAL-VARIABLES
+051800                              PRICER-OPT-VERS-SW
+051900                              PROV-NEW-HOLD
+052000                              CBSA-WAGE-INDEX-RECORD
+052100         GOBACK.
+052200**==============================================================**
+052300**          THIS NEXT CALL WILL PROCESS 2020 BILLS WITH
+052400**              A DISCHARGE DATE ON OR AFTER 20191001
+052500**==============================================================**
+052600     IF BILL-DISCHARGE-DATE
+052700              > 20190930
+052800         CALL  IPCAL202 USING BILL-INPUT-DATA
+052900                              IPF-DATA-VARIABLES
+053000                              IPF-ADDITIONAL-VARIABLES
+053100                              PRICER-OPT-VERS-SW
+053200                              PROV-NEW-HOLD
+053300                              CBSA-WAGE-INDEX-RECORD
+053400         GOBACK.
+053500
+053600**==============================================================**
+053700**          THIS NEXT CALL WILL PROCESS 2019 BILLS WITH
+053800**              A DISCHARGE DATE ON OR AFTER 20181001
+053900**==============================================================**
+054000     IF BILL-DISCHARGE-DATE
+054100              > 20180930
+054200         CALL  IPCAL191 USING BILL-INPUT-DATA
+054300                              IPF-DATA-VARIABLES
+054400                              IPF-ADDITIONAL-VARIABLES
+054500                              PRICER-OPT-VERS-SW
+054600                              PROV-NEW-HOLD
+054700                              CBSA-WAGE-INDEX-RECORD
+054800         GOBACK.
+054900**==============================================================**
+055000**          THIS NEXT CALL WILL PROCESS 2018 BILLS WITH
+055100**              A DISCHARGE DATE ON OR AFTER 20171001
+055200**==============================================================**
+055300     IF BILL-DISCHARGE-DATE
+055400              > 20170930
+055500         CALL  IPCAL180 USING BILL-INPUT-DATA
+055600                              IPF-DATA-VARIABLES
+055700                              IPF-ADDITIONAL-VARIABLES
+055800                              PRICER-OPT-VERS-SW
+055900                              PROV-NEW-HOLD
+056000                              CBSA-WAGE-INDEX-RECORD
+056100         GOBACK.
+056200**==============================================================**
+056300**          THIS NEXT CALL WILL PROCESS 2017 BILLS WITH
+056400**              A DISCHARGE DATE ON OR AFTER 20161001
+056500**==============================================================**
+056600     IF BILL-DISCHARGE-DATE
+056700              > 20160930
+056800         CALL  IPCAL170 USING BILL-INPUT-DATA
+056900                              IPF-DATA-VARIABLES
+057000                              IPF-ADDITIONAL-VARIABLES
+057100                              PRICER-OPT-VERS-SW
+057200                              PROV-NEW-HOLD
+057300                              CBSA-WAGE-INDEX-RECORD
+057400         GOBACK.
+057500**==============================================================**
+057600**          THIS NEXT CALL WILL PROCESS 2016 BILLS WITH
+057700**              A DISCHARGE DATE ON OR AFTER 20151001
+057800**==============================================================**
+057900     IF BILL-DISCHARGE-DATE
+058000              > 20150930
+058100         CALL  IPCAL161 USING BILL-INPUT-DATA
+058200                              IPF-DATA-VARIABLES
+058300                              IPF-ADDITIONAL-VARIABLES
+058400                              PRICER-OPT-VERS-SW
+058500                              PROV-NEW-HOLD
+058600                              CBSA-WAGE-INDEX-RECORD
+058700         GOBACK.
+058800**==============================================================**
+058900**          THIS NEXT CALL WILL PROCESS 2015 BILLS WITH
+059000**              A DISCHARGE DATE ON OR AFTER 20141001
+059100**==============================================================**
+059200     IF BILL-DISCHARGE-DATE
+059300              > 20140930
+059400         CALL  IPCAL150 USING BILL-INPUT-DATA
+059500                              IPF-DATA-VARIABLES
+059600                              IPF-ADDITIONAL-VARIABLES
+059700                              PRICER-OPT-VERS-SW
+059800                              PROV-NEW-HOLD
+059900                              CBSA-WAGE-INDEX-RECORD
+060000         GOBACK.
+060100**==============================================================**
+060200**          THIS NEXT CALL WILL PROCESS 2014 BILLS WITH
+060300**              A DISCHARGE DATE ON OR AFTER 20131001
+060400**==============================================================**
+060500     IF BILL-DISCHARGE-DATE
+060600              > 20130930
+060700         CALL  IPCAL140 USING BILL-INPUT-DATA
+060800                              IPF-DATA-VARIABLES
+060900                              IPF-ADDITIONAL-VARIABLES
+061000                              PRICER-OPT-VERS-SW
+061100                              PROV-NEW-HOLD
+061200                              CBSA-WAGE-INDEX-RECORD
+061300         GOBACK.
+061400**==============================================================**
+061500**          THIS NEXT CALL WILL PROCESS 2013 BILLS WITH
+061600**              A DISCHARGE DATE ON OR AFTER 20121001
+061700**==============================================================**
+061800     IF BILL-DISCHARGE-DATE
+061900              > 20120930
+062000         CALL  IPCAL130 USING BILL-INPUT-DATA
+062100                              IPF-DATA-VARIABLES
+062200                              IPF-ADDITIONAL-VARIABLES
+062300                              PRICER-OPT-VERS-SW
+062400                              PROV-NEW-HOLD
+062500                              CBSA-WAGE-INDEX-RECORD
+062600         GOBACK.
+062700**==============================================================**
+062800**          THIS NEXT CALL WILL PROCESS 2012 BILLS WITH
+062900**              A DISCHARGE DATE ON OR AFTER 20111001
+063000**==============================================================**
+063100     IF BILL-DISCHARGE-DATE
+063200              > 20110930
+063300         CALL  IPCAL121 USING BILL-INPUT-DATA
+063400                              IPF-DATA-VARIABLES
+063500                              IPF-ADDITIONAL-VARIABLES
+063600                              PRICER-OPT-VERS-SW
+063700                              PROV-NEW-HOLD
+063800                              CBSA-WAGE-INDEX-RECORD
+063900         GOBACK.
+064000**==============================================================**
+064100**          THIS NEXT CALL WILL PROCESS 2011 BILLS WITH
+064200**              A DISCHARGE DATE ON OR AFTER 20110701
+064300**==============================================================**
+064400     IF BILL-DISCHARGE-DATE
+064500              > 20110630
+064600         CALL  IPCAL120 USING BILL-INPUT-DATA
+064700                              IPF-DATA-VARIABLES
+064800                              IPF-ADDITIONAL-VARIABLES
+064900                              PRICER-OPT-VERS-SW
+065000                              PROV-NEW-HOLD
+065100                              CBSA-WAGE-INDEX-RECORD
+065200         GOBACK.
+065300**==============================================================**
+065400**          THIS NEXT CALL WILL PROCESS 2011 BILLS WITH
+065500**              A DISCHARGE DATE ON OR AFTER 20110101
+065600**==============================================================**
+065700     IF BILL-DISCHARGE-DATE
+065800              > 20101231
+065900         CALL  IPCAL112 USING BILL-INPUT-DATA
+066000                              IPF-DATA-VARIABLES
+066100                              IPF-ADDITIONAL-VARIABLES
+066200                              PRICER-OPT-VERS-SW
+066300                              PROV-NEW-HOLD
+066400                              CBSA-WAGE-INDEX-RECORD
+066500         GOBACK.
+066600**==============================================================**
+066700**          THIS NEXT CALL WILL PROCESS 2010 BILLS  WITH
+066800**              A DISCHARGE DATE ON OR AFTER 20101001
+066900**              TO TAKE ADVANTAGE OF THE DRG' CHANGES EFFECTIVE
+067000**              USES THE CBSA FOR WAGE INDEXES
+067100**      FOR RY 2011 10/01/2010 TO 06/30/2011
+067200**==============================================================**
+067300     IF BILL-DISCHARGE-DATE
+067400              > 20100930
+067500         CALL  IPCAL111 USING BILL-INPUT-DATA
+067600                              IPF-DATA-VARIABLES
+067700                              IPF-ADDITIONAL-VARIABLES
+067800                              PRICER-OPT-VERS-SW
+067900                              PROV-NEW-HOLD
+068000                              CBSA-WAGE-INDEX-RECORD
+068100         GOBACK.
+068200
+068300**==============================================================**
+068400**          THIS NEXT CALL WILL PROCESS 2010 BILLS  WITH
+068500**              A DISCHARGE DATE ON OR AFTER 20101001
+068600**              TO TAKE ADVANTAGE OF THE DRG' CHANGES EFFECTIVE
+068700**              USES THE CBSA FOR WAGE INDEXES
+068800**      FOR RY 2011 07/01/2010 TO 06/30/2011
+068900**==============================================================**
+069000     IF BILL-DISCHARGE-DATE
+069100              > 20100630
+069200         CALL  IPCAL110 USING BILL-INPUT-DATA
+069300                              IPF-DATA-VARIABLES
+069400                              IPF-ADDITIONAL-VARIABLES
+069500                              PRICER-OPT-VERS-SW
+069600                              PROV-NEW-HOLD
+069700                              CBSA-WAGE-INDEX-RECORD
+069800         GOBACK.
+069900**==============================================================**
+070000**          THIS NEXT CALL WILL PROCESS 2009 BILLS  WITH
+070100**              A DISCHARGE DATE ON OR AFTER 20091001
+070200**              TO TAKE ADVANTAGE OF THE DRG' CHANGES EFFECTIVE
+070300**              USES THE CBSA FOR WAGE INDEXES
+070400**      FOR RY 2010 10/01/2010 TO 06/30/2010
+070500**==============================================================**
+070600     IF BILL-DISCHARGE-DATE
+070700              > 20090930
+070800         CALL  IPCAL102 USING BILL-INPUT-DATA
+070900                              IPF-DATA-VARIABLES
+071000                              IPF-ADDITIONAL-VARIABLES
+071100                              PRICER-OPT-VERS-SW
+071200                              PROV-NEW-HOLD
+071300                              CBSA-WAGE-INDEX-RECORD
+071400         GOBACK.
+071500**==============================================================**
+071600**          THIS NEXT CALL WILL PROCESS 2009 BILLS  WITH
+071700**              A DISCHARGE DATE ON OR AFTER 20090701
+071800**              TO TAKE ADVANTAGE OF THE DRG' CHANGES EFFECTIVE
+071900**              USES THE CBSA FOR WAGE INDEXES
+072000**      FOR RY 2010 07/01/2009 TO 06/30/2010
+072100**==============================================================**
+072200     IF BILL-DISCHARGE-DATE
+072300              > 20090630
+072400         CALL  IPCAL100 USING BILL-INPUT-DATA
+072500                              IPF-DATA-VARIABLES
+072600                              IPF-ADDITIONAL-VARIABLES
+072700                              PRICER-OPT-VERS-SW
+072800                              PROV-NEW-HOLD
+072900                              CBSA-WAGE-INDEX-RECORD
+073000         GOBACK.
+073100**==============================================================**
+073200**          THIS NEXT CALL WILL PROCESS 2009 BILLS  WITH
+073300**              A DISCHARGE DATE ON OR AFTER 20080930
+073400**              TO TAKE ADVANTAGE OF THE DRG' CHANGES EFFECTIVE
+073500**              USES THE CBSA FOR WAGE INDEXES
+073600**      FOR RY 2009 10/01/2008 TO 06/30/2009
+073700**==============================================================**
+073800     IF BILL-DISCHARGE-DATE
+073900              > 20080930
+074000         CALL  IPCAL094 USING BILL-INPUT-DATA
+074100                              IPF-DATA-VARIABLES
+074200                              IPF-ADDITIONAL-VARIABLES
+074300                              PRICER-OPT-VERS-SW
+074400                              PROV-NEW-HOLD
+074500                              CBSA-WAGE-INDEX-RECORD
+074600         GOBACK.
+074700**==============================================================**
+074800**          THIS NEXT CALL WILL PROCESS 2009 BILLS  WITH
+074900**              A DISCHARGE DATE ON OR AFTER 20080630
+075000**              TO TAKE ADVANTAGE OF THE DRG' CHANGES EFFECTIVE
+075100**              USES THE CBSA FOR WAGE INDEXES
+075200**      FOR RY 2009 07/01/2008 TO 09/30/2009
+075300**==============================================================**
+075400     IF BILL-DISCHARGE-DATE
+075500              > 20080630
+075600         CALL  IPCAL09A USING BILL-INPUT-DATA
+075700                              IPF-DATA-VARIABLES
+075800                              IPF-ADDITIONAL-VARIABLES
+075900                              PRICER-OPT-VERS-SW
+076000                              PROV-NEW-HOLD
+076100                              CBSA-WAGE-INDEX-RECORD
+076200         GOBACK.
+076300**==============================================================**
+076400**          THIS NEXT CALL WILL PROCESS 2008 BILLS  WITH
+076500**              A DISCHARGE DATE ON OR AFTER 20070630
+076600**              TO TAKE ADVANTAGE OF THE DRG' CHANGES EFFECTIVE
+076700**              USES THE CBSA FOR WAGE INDEXES
+076800**      FOR RY 2008 10/01/2007 TO 07/01/2008
+076900**==============================================================**
+077000     IF BILL-DISCHARGE-DATE
+077100              > 20070930
+077200         CALL  IPCAL086 USING BILL-INPUT-DATA
+077300                              IPF-DATA-VARIABLES
+077400                              IPF-ADDITIONAL-VARIABLES
+077500                              PRICER-OPT-VERS-SW
+077600                              PROV-NEW-HOLD
+077700                              CBSA-WAGE-INDEX-RECORD
+077800         GOBACK.
+077900**==============================================================**
+078000**          THIS NEXT CALL WILL PROCESS 2008 BILLS  WITH
+078100**              A DISCHARGE DATE ON OR AFTER 20070630
+078200**              BUT BEFORE 20071001 WHEN DRG'S ARE REVISED
+078300**              USES THE CBSA FOR WAGE INDEXES
+078400**      FOR RY 2008 07/01/2007 TO 10/01/2007
+078500**==============================================================**
+078600     IF BILL-DISCHARGE-DATE
+078700              > 20070630
+078800         CALL  IPCAL08A USING BILL-INPUT-DATA
+078900                              IPF-DATA-VARIABLES
+079000                              IPF-ADDITIONAL-VARIABLES
+079100                              PRICER-OPT-VERS-SW
+079200                              PROV-NEW-HOLD
+079300                              CBSA-WAGE-INDEX-RECORD
+079400         GOBACK.
+079500**==============================================================**
+079600**          THIS NEXT CALL WILL PROCESS 2007 BILLS  WITH
+079700**              A DISCHARGE DATE ON OR AFTER 20060630
+079800**              USES THE CBSA FOR WAGE INDEXES
+079900**      FOR RY 2007
+080000**==============================================================**
+080100     IF BILL-DISCHARGE-DATE
+080200              > 20060630
+080300         CALL  IPCAL076 USING BILL-INPUT-DATA
+080400                              IPF-DATA-VARIABLES
+080500                              IPF-ADDITIONAL-VARIABLES
+080600                              PRICER-OPT-VERS-SW
+080700                              PROV-NEW-HOLD
+080800                              CBSA-WAGE-INDEX-RECORD
+080900         GOBACK.
+081000**==============================================================**
+081100**          THIS NEXT CALL WILL PROCESS 2005 BILLS  WITH
+081200**              A DISCHARGE DATE ON OR AFTER 20050101
+081300**              USES MSA FILE FOR WAGE INDEX
+081400**==============================================================**
+081500     IF BILL-DISCHARGE-DATE
+081600              > 20041231
+081700         CALL  IPCAL057 USING BILL-INPUT-DATA
+081800                              IPF-DATA-VARIABLES
+081900                              IPF-ADDITIONAL-VARIABLES
+082000                              PRICER-OPT-VERS-SW
+082100                              PROV-NEW-HOLD
+082200                              WAGE-NEW-INDEX-RECORD
+082300         GOBACK.
+082400**==============================================================**
+082500     MOVE 98 TO IPF-RTC.
+082600     GOBACK.
+082700
+082800 0100-GET-MSA.
+082900     SET MU1 TO 1.
+083000
+083100     SEARCH M-MSAX-DATA VARYING MU1
+083200     AT END
+083300          MOVE 999999 TO P-NEW-PROVIDER-NO
+083400          MOVE 52     TO IPF-RTC
+083500          GO TO 0100-EXIT
+083600     WHEN M-MSAX-MSA (MU1) = HOLD-PROV-MSAX
+083700          SET MU2 TO MU1.
+083800
+083900 0100-EXIT.  EXIT.
+084000
+084100 0150-GET-CBSA.
+084200     SET MA1 TO 1.
+084300
+084400     SEARCH TB-CBSA-DATA VARYING MA1
+084500     AT END
+084600          MOVE 999999 TO P-NEW-PROVIDER-NO
+084700          MOVE 52     TO IPF-RTC
+084800          GO TO 0150-EXIT
+084900     WHEN TB-CBSA (MA1) = HOLD-PROV-CBSA
+085000          SET MA2 TO MA1.
+085100
+085200 0150-EXIT.  EXIT.
+085300
+085400 0500-GET-MSA.
+085500     IF P-NEW-CHG-CODE-INDEX = 'Y'
+085600        MOVE P-NEW-WAGE-INDEX-LOC-MSA TO HOLD-PROV-MSAX
+085700                                         IPF-MSA
+085800     ELSE
+085900        MOVE P-NEW-GEO-LOC-MSA9 TO HOLD-PROV-MSAX
+086000                                   IPF-MSA.
+086100
+086200     PERFORM 0100-GET-MSA THRU 0100-EXIT.
+086300
+086400***     RTC = 52  --  MSA NOT FOUND
+086500     IF IPF-RTC = 52    GOBACK.
+086600
+086700     IF IPF-RTC = 00
+086800        PERFORM 0600-N-GET-WAGE-INDX
+086900           THRU 0600-N-EXIT VARYING MU2
+087000           FROM MU1 BY 1 UNTIL
+087100           M-MSAX-MSA (MU2) NOT = HOLD-PROV-MSAX.
+087200
+087300***     RTC = 52  --  WAGE-INDEX NOT FOUND
+087400     IF IPF-RTC = 52    GOBACK.
+087500
+087600     IF W-NEW-INDEX-RECORD = 00.0000
+087700        MOVE 52 TO IPF-RTC.
+087800
+087900***  GET THE WAGE-SIZE
+088000
+088100     MOVE P-NEW-STAND-AMT-LOC-MSA TO HOLD-PROV-MSAX.
+088200
+088300     PERFORM 0100-GET-MSA THRU 0100-EXIT.
+088400
+088500     IF IPF-RTC = 00
+088600         PERFORM 0700-N-GET-WAGE-SIZE
+088700           THRU 0700-N-EXIT VARYING MU2
+088800           FROM MU1 BY 1 UNTIL
+088900           M-MSAX-MSA (MU2) NOT = HOLD-PROV-MSAX.
+089000
+089100***     RTC = 52  --  PR-WAGE-INDEX NOT FOUND
+089200     IF IPF-RTC = 52
+089300          MOVE ALL '0' TO  IPF-ADDITIONAL-VARIABLES
+089400          GOBACK.
+089500
+089600 0500-EXIT.  EXIT.
+089700
+089800 0550-GET-CBSA.
+089900
+090000     MOVE P-NEW-CBSA-GEO-LOC TO HOLD-PROV-CBSA
+090100                                IPF-CBSA.
+090200
+090300*    SPECIAL WAGE INDEX EDIT
+090400
+090500     IF (P-NEW-CBSA-WI-SPECIAL AND
+090600         P-NEW-CBSA-SPEC-WI-N NOT NUMERIC)
+090700         MOVE 52 TO IPF-RTC
+090800         GOBACK.
+090900
+091000     IF (P-NEW-CBSA-WI-SPECIAL AND
+091100         P-NEW-CBSA-SPEC-WI-N = ZEROES)
+091200         MOVE 52 TO IPF-RTC
+091300         GOBACK.
+091400
+091500     IF P-NEW-CBSA-WI-SPECIAL
+091600        MOVE 'SPEC*'  TO W-CBSA-X
+091700        MOVE P-NEW-EFF-DATE TO W-CBSA-EFF-DATE
+091800        MOVE P-NEW-CBSA-SPEC-WI TO W-CBSA-INDEX
+091900        GO TO 0550-EXIT.
+092000
+092100*    SUPPLEMENTAL WAGE INDEX EDIT
+092200
+092300     IF  BILL-DISCHARGE-DATE >= W-FY2021-BEGIN-DT
+092400     AND BILL-DISCHARGE-DATE <= W-FY2021-END-DT
+092500        IF P-NEW-SUPP-WI-IND = '1'
+092600           IF P-NEW-SUPP-WI  > ZERO
+092700               NEXT SENTENCE
+092800           ELSE
+092900               MOVE 52 TO IPF-RTC
+093000               GOBACK.
+093100
+092300     IF  BILL-DISCHARGE-DATE >= W-FY2021-BEGIN-DT
+092400     AND BILL-DISCHARGE-DATE <= W-FY2021-END-DT
+093400        IF P-NEW-SUPP-WI-IND = '1'
+093500           IF P-NEW-EFF-DATE < W-FY2021-BEGIN-DT
+093600           OR P-NEW-EFF-DATE > W-FY2021-END-DT
+093700               MOVE 52 TO IPF-RTC
+093800               GOBACK.
+093900
+094000*    RETRIEVE THE CBSA DATA
+094100
+094200     PERFORM 0150-GET-CBSA THRU 0150-EXIT.
+094300
+094400***     RTC = 52  --  CBSA NOT FOUND
+094500     IF IPF-RTC = 52    GOBACK.
+094600
+094700     IF IPF-RTC = 00
+094800        PERFORM 0650-N-GET-WAGE-INDX
+094900           THRU 0650-N-EXIT VARYING MA2
+095000           FROM MA1 BY 1 UNTIL
+095100           TB-CBSA (MA2) NOT = HOLD-PROV-CBSA.
+095200
+095300***     RTC = 52  --  WAGE-INDEX NOT FOUND
+095400     IF IPF-RTC = 52    GOBACK.
+095500
+095600     IF W-CBSA-INDEX       = 00.0000
+095700        MOVE 52 TO IPF-RTC.
+095800***  CHECK IF SUPPLMENTAL WAGE INDEX SHOULD BE USED
+095900***  TO CALCULATE THE EFFECTIVE WAGE INDEX
+096000***           ONLY FOR FY20201
+096100
+096200     IF IPF-RTC = 00
+092300        IF  BILL-DISCHARGE-DATE >= W-FY2021-BEGIN-DT
+092400        AND BILL-DISCHARGE-DATE <= W-FY2021-END-DT
+096500           PERFORM 0560-SUPP-WAGE-INDEX THRU 0560-EXIT.
+096600
+096700 0550-EXIT.  EXIT.
+096800
+096900 0560-SUPP-WAGE-INDEX.
+097000
+097100     IF SUPP-WI-PRIOR-YEAR
+097200
+097300        IF (( W-CBSA-INDEX - P-NEW-SUPP-WI) / P-NEW-SUPP-WI )
+097400            < W-WI-PCT-REDUC-FY2020
+097500
+097600            COMPUTE W-CBSA-INDEX ROUNDED = P-NEW-SUPP-WI *
+097700                                           W-WI-PCT-ADJ-FY2020
+097800            END-COMPUTE
+097900
+098000        END-IF
+098100
+098200     END-IF.
+098300
+098400 0560-EXIT.  EXIT.
+098500
+098600 0600-N-GET-WAGE-INDX.
+098700
+098800     IF  BILL-DISCHARGE-DATE NOT < M-MSAX-EFF-DATE (MU2)
+098900         MOVE M-MSAX-MSA        (MU2) TO W-NEW-MSA
+099000         MOVE M-MSAX-EFF-DATE   (MU2) TO W-NEW-EFF-DATE
+099100         MOVE M-MSAX-WAGE-INDX1 (MU2) TO W-NEW-INDEX-RECORD
+099200         IF P-NEW-CHG-CODE-INDEX  = 'Y'
+099300            MOVE M-MSAX-WAGE-INDX2 (MU2) TO W-NEW-INDEX-RECORD.
+099400
+099500 0600-N-EXIT.  EXIT.
+099600
+099700 0650-N-GET-WAGE-INDX.
+099800
+099900     IF  BILL-DISCHARGE-DATE NOT < TB-CBSA-EFF-DATE (MA2)
+100000         MOVE TB-CBSA            (MA2) TO W-CBSA
+100100         MOVE TB-CBSA-EFF-DATE   (MA2) TO W-CBSA-EFF-DATE
+100200         MOVE TB-CBSA-WAGE-INDX1 (MA2) TO W-CBSA-INDEX.
+100300
+100400 0650-N-EXIT.  EXIT.
+100500
+100600
+100700 0700-N-GET-WAGE-SIZE.
+100800
+100900     IF  BILL-DISCHARGE-DATE NOT < M-MSAX-EFF-DATE (MU2)
+101000         IF  P-NEW-STD-RURAL-CHECK
+101100             MOVE 'R' TO W-NEW-SIZE
+101200         ELSE
+101300         IF  M-MSAX-SIZE (MU2) = 'L'
+101400             MOVE 'L' TO W-NEW-SIZE
+101500         ELSE
+101600             MOVE 'O' TO W-NEW-SIZE.
+101700
+101800 0700-N-EXIT.  EXIT.
+101900
+102000 1350-N-CHECK-MSA.
+102100     IF P-NEW-EFF-DATE < 20050701
+102200        IF (P-NEW-WAGE-INDEX-LOC-MSA = '    ' OR
+102300            P-NEW-WAGE-INDEX-LOC-MSA = '0000')
+102400            MOVE P-NEW-GEO-LOC-MSA9 TO P-NEW-WAGE-INDEX-LOC-MSA.
+102500     IF P-NEW-EFF-DATE < 20050701
+102600        IF (P-NEW-STAND-AMT-LOC-MSA = '    ' OR
+102700            P-NEW-STAND-AMT-LOC-MSA = '0000')
+102800            MOVE P-NEW-GEO-LOC-MSA9 TO P-NEW-STAND-AMT-LOC-MSA.
+102900
+103000     IF P-NEW-EFF-DATE < 20050701
+103100        IF (P-NEW-CBSA-RECLASS-LOC = '     ' OR
+103200            P-NEW-CBSA-RECLASS-LOC = '00000')
+103300            MOVE P-NEW-CBSA-GEO-LOC9 TO P-NEW-CBSA-RECLASS-LOC.
+103400     IF P-NEW-EFF-DATE < 20050701
+103500        IF (P-NEW-CBSA-STAND-AMT-LOC = '     ' OR
+103600            P-NEW-CBSA-STAND-AMT-LOC = '00000')
+103700            MOVE P-NEW-CBSA-GEO-LOC9 TO P-NEW-CBSA-STAND-AMT-LOC.
+103800
+103900 1350-N-EXIT.  EXIT.
+104000
+104100**==============================================================**
+104200**           L A S T   S O U R C E   S T A T E M E N T          **
+104300**==============================================================**
+

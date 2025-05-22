@@ -1,0 +1,83 @@
+************************************************************************00001027
+*                                                                      *00002027
+*                           MANIFEST LIST                              *00003027
+*                                                                      *00003127
+* DATASET NAME:        MU00.@BFN2699.IPNDM220                          *00003232
+* PRICER:              INPATIENT PSYCH PAYMENT SYSTEM (IPF)            *00003327
+* VERSION:             2022.0                                          *00003432
+* CR#:                 12417                                           *00003532
+*                                                                      *00003627
+* IMPLEMENTATION DATE: 10/01/2021                                      *00003732
+* BETA/PRODUCTION:     PRODUCTION                                      *00003827
+* RELEASE DATE:        08/13/2021                                      *00003935
+*                                                                      *00004027
+*----------------------------------------------------------------------*00005027
+* TOTAL NUMBER OF MEMBERS ASSOCIATED WITH THIS PRICER: 40              *00006034
+*                                                                      *00007027
+*     - NUMBER OF MEMBERS INCLUDED IN THIS DATASET: 6                  *00008033
+*       - NEW MEMBERS: 4                                               *00009033
+*         (LISTED BELOW UNDER "NON-PAIRED NEW FILE MEMBERS")           *00010027
+*       - MEMBERS WITH CHANGES: 2                                      *00011027
+*         (LISTED BELOW WITH "**" IN THE "CHNG" COLUMN)                *00012027
+*                                                                      *00013027
+*     - NUMBER OF MEMBERS NOT INCLUDED IN THIS DATASET: 34             *00014034
+*       - MEMBERS WITH NO CHANGES: 34                                  *00014134
+*         (LISTED BELOW WITH NOTHING IN THE "CHNG" COLUMN)             *00014227
+*                                                                      *00014327
+************************************************************************00014427
+                                                                        00014527
+ NEW: MU00.@BFN2699.IPFPRICE.V220                                       00014633
+ OLD: MU00.@BFN2699.IPFPRICE.V210                                       00014733
+                                                                        00014827
+                                                                        00014927
+                       MEMBER SUMMARY LISTING (LINE COMPARE)            00015027
+                                                                        00016027
+ CHNG MEMBERS-COMPARED NEW-PROC OLD-PROC  MATCHED NEW-INS OLD-DEL REFM-L00017027
+                                                                        00018027
+      COMORB16             5115     5115     5115                       00019027
+      COMORB17             5132     5132     5132                       00020027
+      COMORB18             5139     5139     5139                       00030027
+      COMORB19             5173     5173     5173                       00040027
+      COMORB20             5258     5258     5258                       00050027
+      COMORB21             5257     5257     5257                       00060027
+      COMOR220             5257     5257     5257                       00061033
+      IPCAL057             1320     1320     1320                       00070027
+      IPCAL076             1366     1366     1366                       00080027
+      IPCAL08A             1366     1366     1366                       00090027
+      IPCAL086             1421     1421     1421                       00100027
+      IPCAL09A             1418     1418     1418                       00110027
+      IPCAL094             1461     1461     1461                       00120027
+      IPCAL100             1465     1465     1465                       00130027
+      IPCAL102             1473     1473     1473                       00140027
+      IPCAL110             1485     1485     1485                       00150027
+      IPCAL111             1485     1485     1485                       00160027
+      IPCAL112             1517     1517     1517                       00170027
+      IPCAL120             1514     1514     1514                       00180027
+      IPCAL121             1513     1513     1513                       00190027
+      IPCAL130             1518     1518     1518                       00200027
+      IPCAL140             1556     1556     1556                       00210027
+      IPCAL150             1550     1550     1550                       00220027
+      IPCAL161             1474     1474     1474                       00230027
+      IPCAL170             1475     1475     1475                       00240027
+      IPCAL180             1457     1457     1457                       00250027
+      IPCAL190             1462     1462     1462                       00260027
+      IPCAL191             1380     1380     1380                       00270027
+      IPCAL200             1386     1386     1386                       00280027
+      IPCAL201             1375     1375     1375                       00290027
+      IPCAL210             1375     1375     1375                       00291033
+ **   MANIFEST               79       79       72       7       7       00300027
+ **   README                 58       36       17      41      19       00310027
+      R2UPROVS               18       18       18                       00320027
+                                                                        00330027
+1  ISRSUPC   -   MVS/PDF FILE/LINE/WORD/BYTE/SFOR COMPARE UTILITY- ISPF 00340027
+                                                                        00350027
+                       MEMBER SUMMARY LISTING (LINE COMPARE)            00360027
+                                                                        00370027
+    NON-PAIRED NEW FILE MEMBERS         ³   NON-PAIRED OLD FILE MEMBERS 00380027
+                                                                        00390027
+        CBSAV220                        ³                               00400033
+        COMOR220                        ³                               00410033
+        IPCAL220                        ³                               00430033
+        IPDRV220                        ³                               00440033
+                                                                        00450027
+

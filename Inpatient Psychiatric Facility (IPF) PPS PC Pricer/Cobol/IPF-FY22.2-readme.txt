@@ -1,0 +1,35 @@
+************************************************************************
+*                                                                      *
+*                           README                                     *
+*                                                                      *
+* DATASET NAME:        MU00.@BFN2699.IPNDM222                          *
+* PRICER:              INPATIENT PSYCH PAYMENT SYSTEM (IPF)            *
+* VERSION:             2022.2                                          *
+* CR#:                 12417                                           *
+*                                                                      *
+* IMPLEMENTATION DATE: 10/01/2021                                      *
+* BETA/PRODUCTION:     PRODUCTION                                      *
+* RELEASE DATE:        10/28/2021                                      *
+*                                                                      *
+************************************************************************
+
+DESCRIPTION:
+
+******************************************************************
+*  CHANGES/UPDATES FOR FY2022.2                                  *
+******************************************************************
+*================================================================*
+*  IPDRV222 -                                                    *
+*  ENABLE THE WAGE INDEX CAPPING LOGIC AND SUPPLEMENTAL WAGE     *
+*  INDEX LOGIC/EDITS                                             *
+*  ONLY APPLY TO FY 2021 CLAIMS (10/1/2020 - 9/30/2021)          *
+******************************************************************
+
+RELEASE CONTENTS:
+
+MU00.@BFN2699.IPNDM222:
+
+README   - DESCRIPTION OF RELEASE
+MANIFEST - GENERAL RELEASE INFORMATION
+IPDRV222 - NEW DRIVER PROGRAM FOR FY2022.2
+

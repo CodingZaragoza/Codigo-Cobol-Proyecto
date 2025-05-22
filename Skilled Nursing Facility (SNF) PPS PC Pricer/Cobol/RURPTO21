@@ -1,0 +1,43 @@
+      ****************************************************
+      *        PT/TO RURAL RATE TABLE                    *
+      *     FOR USE WITH THE PDPM FINAL RULE             *
+      *      REVISED 08/05/2020 (FY 2021)                *
+      ****************************************************
+       01  PDPM-PTOT-TABLE.
+        02  PDPM-PTOT-DATA-RURAL.
+           05  FILLER  PIC X(29) VALUE 'A 010820 010607 009678 009488'.
+           05  FILLER  PIC X(29) VALUE 'B 012022 011786 010587 010380'.
+           05  FILLER  PIC X(29) VALUE 'C 013295 013034 010977 010762'.
+           05  FILLER  PIC X(29) VALUE 'D 013578 013311 009937 009743'.
+           05  FILLER  PIC X(29) VALUE 'E 010042 009845 009158 008979'.
+           05  FILLER  PIC X(29) VALUE 'F 011386 011162 010392 010189'.
+           05  FILLER  PIC X(29) VALUE 'G 011810 011578 010652 010444'.
+           05  FILLER  PIC X(29) VALUE 'H 008204 008042 007469 007323'.
+           05  FILLER  PIC X(29) VALUE 'I 007991 007834 007664 007514'.
+           05  FILLER  PIC X(29) VALUE 'J 010042 009845 009418 009234'.
+           05  FILLER  PIC X(29) VALUE 'K 010749 010538 010002 009807'.
+           05  FILLER  PIC X(29) VALUE 'L 007708 007557 007209 007068'.
+           05  FILLER  PIC X(29) VALUE 'M 008981 008805 008444 008278'.
+           05  FILLER  PIC X(29) VALUE 'N 010467 010261 009743 009552'.
+           05  FILLER  PIC X(29) VALUE 'O 010962 010746 010067 009870'.
+           05  FILLER  PIC X(29) VALUE 'P 007638 007488 007080 006941'.
+
+           02  PDPM-PTOT-DATA2-R REDEFINES PDPM-PTOT-DATA-RURAL
+                  OCCURS 16 TIMES
+                     ASCENDING KEY IS PDPM-PTOT-GROUP-R
+                        INDEXED BY PDPM-PTOT-IDX-R.
+                   10  PDPM-PTOT-DATA-TAB.
+                       15  PDPM-PTOT-GROUP-R   PIC X(01).
+                       15  FILLER              PIC X(01).
+                       15  PDPM-RATE-PT-R      PIC 9999V99.
+                       15  FILLER              PIC X(01).
+                       15  PDPM-QRATE-PT-R     PIC 9999V99.
+                       15  FILLER              PIC X(01).
+                       15  PDPM-RATE-OT-R      PIC 9999V99.
+                       15  FILLER              PIC X(01).
+                       15  PDPM-QRATE-OT-R     PIC 9999V99.
+      ****************************************************
+      *     END OF COPYBOOK FROM PTOT RURAL RATES        *
+      ****************************************************
+
+

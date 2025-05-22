@@ -1,0 +1,429 @@
+000100 IDENTIFICATION DIVISION.                                         00010000
+000200 PROGRAM-ID.    IRDRIVER.                                         00020000
+000300*AUTHOR.        CMS.                                              00030000
+000400*                                                                 00040000
+000500 DATE-COMPILED.                                                   00050000
+000600 ENVIRONMENT                     DIVISION.                        00060000
+000700                                                                  00070000
+000800 CONFIGURATION                   SECTION.                         00080000
+000900 SOURCE-COMPUTER.                IBM-370.                         00090000
+001000 OBJECT-COMPUTER.                IBM-370.                         00100000
+001100                                                                  00110000
+001200 INPUT-OUTPUT SECTION.                                            00120000
+001300 FILE-CONTROL.                                                    00130000
+001400                                                                  00140000
+001500     SELECT BILLFILE   ASSIGN TO UT-S-SYSUT1                      00150000
+001600         FILE STATUS IS UT1-STAT.                                 00160000
+001700     SELECT PRTOPER    ASSIGN TO UT-S-PRTOPER                     00170000
+001800         FILE STATUS IS OPR-STAT.                                 00180000
+001900     SELECT OUTFILE    ASSIGN TO UT-S-OUTFILE                     00190000
+002000         FILE STATUS IS OF1-STAT.                                 00200000
+002100                                                                  00210000
+002200 DATA DIVISION.                                                   00220000
+002300 FILE SECTION.                                                    00230000
+002400 FD  BILLFILE                                                     00240000
+002500     LABEL RECORDS ARE STANDARD                                   00250000
+002600     RECORDING MODE IS F                                          00260000
+002700     BLOCK CONTAINS 0 RECORDS.                                    00270000
+002800 01  PPS-REC                     PIC X(60).                       00280000
+002900                                                                  00290000
+003000 FD  PRTOPER                                                      00300000
+003100     RECORDING MODE IS F                                          00310000
+003200     BLOCK CONTAINS 0 RECORDS                                     00320000
+003300     LABEL RECORDS ARE STANDARD.                                  00330000
+003400 01  PRTOPER-LINE                PIC X(133).                      00340000
+003500                                                                  00350000
+003600 FD  OUTFILE                                                      00360000
+003700     RECORDING MODE IS F                                          00370000
+003800     BLOCK CONTAINS 0 RECORDS                                     00380000
+003900     LABEL RECORDS ARE STANDARD.                                  00390000
+004000 01  OUTFILE-LINE                PIC X(272).                      00400000
+004100                                                                  00410000
+004200 WORKING-STORAGE SECTION.                                         00420000
+004300 77  W-STORAGE-REF               PIC X(49)  VALUE                 00430000
+004400     'I R D R I V E R - W O R K I N G   S T O R A G E'.           00440000
+004500 01  PPMGR-VERSION               PIC X(05)  VALUE 'V20.0'.        00450001
+004600 01  IROPN200                    PIC X(08)  VALUE 'IROPN200'.     00460001
+004700 01  EOF-SW                      PIC 9(01)  VALUE 0.              00470000
+004800 01  OPERLINE-CTR                PIC 9(02)  VALUE 65.             00480000
+004900 01  UT1-STAT.                                                    00490000
+005000     05  UT1-STAT1               PIC X.                           00500000
+005100     05  UT1-STAT2               PIC X.                           00510000
+005200 01  OPR-STAT.                                                    00520000
+005300     05  OPR-STAT1               PIC X.                           00530000
+005400     05  OPR-STAT2               PIC X.                           00540000
+005500 01  OF1-STAT.                                                    00550000
+005600     05  OF1-STAT1               PIC X.                           00560000
+005700     05  OF1-STAT2               PIC X.                           00570000
+005800*******************************************************           00580000
+005900*******************************************************           00590000
+006000*    MILLENNIUM BILL RECORD FORMAT                    *           00600000
+006100*******************************************************           00610000
+006200 01  BILL-WORK.                                                   00620000
+006300     05  BILL-INPUT-DATA.                                         00630000
+006400         10  BILL-NPI-NUMBER.                                     00640000
+006500             15  BILL-NPI            PIC X(08).                   00650000
+006600             15  BILL-NPI-FILLER     PIC X(02).                   00660000
+006700         10  BILL-PROVIDER-NO        PIC X(06).                   00670000
+006800         10  BILL-PATIENT-STATUS     PIC X(02).                   00680000
+006900         10  BILL-CMG-CODE           PIC X(05).                   00690000
+007000         10  BILL-LOS                PIC 9(03).                   00700000
+007100         10  BILL-COVERED-DAYS       PIC 9(03).                   00710000
+007200         10  BILL-LTR-DAYS           PIC 9(02).                   00720000
+007300         10  BILL-SPEC-PYMT-IND      PIC X(01).                   00730000
+007400         10  BILL-DISCHARGE-DATE.                                 00740000
+007500             15  D-CC                PIC 9(02).                   00750000
+007600             15  D-YY                PIC 9(02).                   00760000
+007700             15  D-MM                PIC 9(02).                   00770000
+007800             15  D-DD                PIC 9(02).                   00780000
+007900         10  BILL-COVERED-CHARGES    PIC 9(07)V9(02).             00790000
+008000         10  FILLER                  PIC X(11).                   00800000
+008100*******************************************************           00810000
+008200*    PROSPECTIVE PAYMENT REPORT COMPONENTS            *           00820000
+008300*******************************************************           00830000
+008400 01  PPS-DETAIL-LINE-OPER.                                        00840000
+008500     05  FILLER                  PIC X(01)  VALUE SPACES.         00850000
+008600     05  PRT-PROV                PIC X(06).                       00860000
+008700     05  FILLER                  PIC X(01)  VALUE SPACES.         00870000
+008800     05  PRT-PATIENT-STATUS      PIC X(2).                        00880000
+008900     05  FILLER                  PIC X(01)  VALUE SPACES.         00890000
+009000     05  PRT-DISCHG-DATE         PIC 9(08).                       00900000
+009100     05  FILLER                  PIC X(01)  VALUE SPACES.         00910000
+009200     05  PRT-WAGE-INDX           PIC 9.9999.                      00920000
+009300     05  FILLER                  PIC X(01)  VALUE SPACES.         00930000
+009400     05  PRT-CMG-CODE            PIC 9(05).                       00940000
+009500     05  FILLER                  PIC X(01)  VALUE SPACES.         00950000
+009600     05  PRT-PRICED-CMG          PIC 9(05).                       00960000
+009700     05  FILLER                  PIC X(01)  VALUE SPACES.         00970000
+009800     05  PRT-OUT-CHGS            PIC Z,ZZZ,ZZZ.99.                00980000
+009900     05  FILLER                  PIC X(01)  VALUE SPACES.         00990000
+010000     05  PRT-HSP-PART            PIC Z,ZZZ,ZZZ.99.                01000000
+010100     05  FILLER                  PIC X(01)  VALUE SPACES.         01010000
+010200     05  PRT-OUTLIER-PART        PIC ZZZ,ZZZ.99.                  01020000
+010300     05  FILLER                  PIC X(01)  VALUE SPACES.         01030000
+010400     05  PRT-ALOS                PIC ZZZZ9.                       01040000
+010500     05  FILLER                  PIC X(01)  VALUE SPACES.         01050000
+010600     05  PRT-TOT-PAY             PIC ZZZ,ZZZ.99.                  01060000
+010700     05  FILLER                  PIC X(01)  VALUE SPACES.         01070000
+010800     05  PRT-LIP                 PIC 9.9999.                      01080000
+010900     05  FILLER                  PIC X(01)  VALUE SPACES.         01090000
+011000     05  PRT-LOS                 PIC ZZZZ9.                       01100000
+011100     05  FILLER                  PIC X(01)  VALUE SPACES.         01110000
+011200     05  PRT-PPS-RTC             PIC 99.                          01120000
+011300     05  FILLER                  PIC X(01)  VALUE SPACES.         01130000
+011400     05  PRT-MSA                 PIC X(05).                       01140000
+011500     05  FILLER                  PIC X(01)  VALUE SPACES.         01150000
+011600     05  PRT-REL-WT              PIC 9.9999.                      01160000
+011700     05  FILLER                  PIC X(01)  VALUE SPACES.         01170000
+011800     05  PRT-FAC-COST            PIC ZZZZ,ZZZ.99.                 01180000
+011900                                                                  01190000
+012000 01  PPS-HEAD2-OPER.                                              01200000
+012100     05  FILLER                  PIC X(01)  VALUE SPACES.         01210000
+012200     05  FILLER                  PIC X(44)  VALUE                 01220000
+012300        '  CMS  IRF  PRICER            P R O S P E C '.           01230000
+012400     05  FILLER                  PIC X(44)  VALUE                 01240000
+012500        'T I V E   P A Y M E N T   T E S T   D A T A '.           01250000
+012600     05  FILLER                  PIC X(44)  VALUE                 01260000
+012700        '  R E P O R T                               '.           01270000
+012800                                                                  01280000
+012900 01  PPS-HEAD3-OPER.                                              01290000
+013000     05  FILLER                  PIC X(01)  VALUE SPACES.         01300000
+013100     05  FILLER                  PIC X(44)  VALUE                 01310000
+013200        'PROV  PAT  DISCHG   WAGE  ORIG  PRICE    OUT'.           01320000
+013300     05  FILLER                  PIC X(44)  VALUE                 01330000
+013400        'LIER       FAC SPEC   OUTLIER    AVG   TOTAL'.           01340000
+013500     05  FILLER                  PIC X(44)  VALUE                 01350000
+013600        '      LIP    BILL         REL      FAC      '.           01360000
+013700                                                                  01370000
+013800 01  PPS-HEAD4-OPER.                                              01380000
+013900     05  FILLER                  PIC X(01)  VALUE SPACES.         01390000
+014000     05  FILLER                  PIC X(44)  VALUE                 01400000
+014100        '  NO  ST    DATE    INDEX  CMG   CMG    CHG '.           01410000
+014200     05  FILLER                  PIC X(44)  VALUE                 01420000
+014300        'THRSHLD    PAY AMT    PAY AMT    LOS   PAY A'.           01430000
+014400     05  FILLER                  PIC X(44)  VALUE                 01440000
+014500        'MT    PCT    LOS RT  MSA  WGT      COST     '.           01450000
+014600                                                                  01460000
+014700*******************************************************           01470000
+014800*    PASSED TO IRDRV___     MILLENNIUM                *           01480000
+014900*******************************************************           01490000
+015000 01  BILL-NEW-DATA.                                               01500000
+015100     05  B-NPI-NUMBER.                                            01510000
+015200         10  B-NPI               PIC X(08).                       01520000
+015300         10  B-NPI-FILLER        PIC X(02).                       01530000
+015400     05  B-PROVIDER-NO.                                           01540000
+015500         10 B-PROVIDER-STATE     PIC X(02).                       01550000
+015600         10 FILLER               PIC X(04).                       01560000
+015700     05  B-PATIENT-STATUS        PIC 9(02).                       01570000
+015800     05  B-CMG-CODE              PIC X(05).                       01580000
+015900     05  B-LOS                   PIC 9(03).                       01590000
+016000     05  B-COV-DAYS              PIC 9(03).                       01600000
+016100     05  B-LTR                   PIC 9(02).                       01610000
+016200     05  B-SPEC-PYMT-IND         PIC X(01).                       01620000
+016300     05  B-DISCHARGE-DATE.                                        01630000
+016400         10  B-DISCHG-CC         PIC 9(02).                       01640000
+016500         10  B-DISCHG-YY         PIC 9(02).                       01650000
+016600         10  B-DISCHG-MM         PIC 9(02).                       01660000
+016700         10  B-DISCHG-DD         PIC 9(02).                       01670000
+016800     05  B-COVERED-CHARGES       PIC 9(07)V9(02).                 01680000
+016900     05  FILLER                  PIC X(11).                       01690000
+017000                                                                  01700000
+017100                                                                  01710000
+017200*******************************************************           01720000
+017300*    RETURNED BY PPDRV___                             *           01730000
+017400*******************************************************           01740000
+017500  01  PPS-DATA-ALL.                                               01750000
+017600      05  PPS-RTC                      PIC 9(02).                 01760000
+017700      05  PPS-DATA.                                               01770000
+017800          10  PPS-MSA                  PIC X(04).                 01780000
+017900          10  PPS-WAGE-INDEX           PIC 9(02)V9(04).           01790000
+018000          10  PPS-AVG-LOS              PIC 9(02).                 01800000
+018100          10  PPS-RELATIVE-WGT         PIC 9(01)V9(04).           01810000
+018200          10  PPS-TOTAL-PAY-AMT        PIC 9(07)V9(02).           01820000
+018300          10  PPS-FED-PAY-AMT          PIC 9(07)V9(02).           01830000
+018400          10  PPS-FAC-SPEC-PAY-AMT     PIC 9(07)V9(02).           01840000
+018500          10  PPS-OUTLIER-PAY-AMT      PIC 9(07)V9(02).           01850000
+018600          10  PPS-LIP-PAY-AMT          PIC 9(07)V9(02).           01860000
+018700          10  PPS-LIP-PCT              PIC 9(01)V9(04).           01870000
+018800          10  PPS-LOS                  PIC 9(03).                 01880000
+018900          10  PPS-REG-DAYS-USED        PIC 9(03).                 01890000
+019000          10  PPS-LTR-DAYS-USED        PIC 9(03).                 01900000
+019100          10  PPS-TRANSFER-PCT         PIC 9(01)V9(04).           01910000
+019200          10  PPS-FAC-SPEC-RT-PREBLEND PIC 9(05)V9(02).           01920000
+019300          10  PPS-STANDARD-PAY-AMT     PIC 9(07)V9(02).           01930000
+019400          10  PPS-FAC-COSTS            PIC 9(07)V9(02).           01940000
+019500          10  PPS-OUTLIER-THRESHOLD    PIC 9(07)V9(02).           01950000
+019600          10  PPS-CHG-OUTLIER-THRESHOLD PIC 9(07)V9(02).          01960000
+019700          10  PPS-TOTAL-PENALTY-AMT    PIC 9(07)V9(02).           01970000
+019800          10  PPS-FED-PENALTY-AMT      PIC 9(07)V9(02).           01980000
+019900          10  PPS-LIP-PENALTY-AMT      PIC 9(07)V9(02).           01990000
+020000          10  PPS-OUT-PENALTY-AMT      PIC 9(07)V9(02).           02000000
+020100          10  PPS-SUBM-CMG-CODE        PIC X(05).                 02010000
+020200          10  PPS-CMG-CODE-REDEF REDEFINES PPS-SUBM-CMG-CODE.     02020000
+020300              15  PPS-CMG-ALPHA        PIC X(01).                 02030000
+020400              15  PPS-CMG-NUMERIC.                                02040000
+020500                 20  PPS-CMG-RIC       PIC X(02).                 02050000
+020600                 20  FILLER            PIC X(02).                 02060000
+020700          10  PPS-PRICED-CMG-CODE      PIC X(05).                 02070000
+020800          10  PPS-CALC-VERS-CD         PIC X(05).                 02080000
+020900          10  PPS-CBSA                 PIC X(05).                 02090000
+021000          10  FILLER                   PIC X(08).                 02100000
+021100     05  PPS-OTHER-DATA.                                          02110000
+021200          10  PPS-NAT-LABOR-PCT        PIC 9(01)V9(05).           02120000
+021300          10  PPS-NAT-NONLABOR-PCT     PIC 9(01)V9(05).           02130000
+021400          10  PPS-NAT-THRESHOLD-ADJ    PIC 9(05)V9(02).           02140000
+021500          10  PPS-BDGT-NEUT-CONV-AMT   PIC 9(05)V9(02).           02150000
+021600          10  PPS-FED-RATE-PCT         PIC 9(01)V9(04).           02160000
+021700          10  PPS-FAC-RATE-PCT         PIC 9(01)V9(04).           02170000
+021800          10  PPS-RURAL-ADJUSTMENT     PIC 9(01)V9(04).           02180000
+021900          10  PPS-TEACH-PAY-AMT        PIC 9(07)V9(02).           02190000
+022000          10  PPS-TEACH-PENALTY        PIC 9(07)V9(02).           02200000
+022100          10  FILLER                   PIC X(02).                 02210000
+022200     05  PPS-PC-DATA.                                             02220000
+022300          10  PPS-COT-IND              PIC X(01).                 02230000
+022400          10  FILLER                   PIC X(20).                 02240000
+022500                                                                  02250000
+022600*******************************************************           02260000
+022700*    PASSED TO PPDRV___                               *           02270000
+022800*******************************************************           02280000
+022900 01  PRICER-OPT-VERS-SW.                                          02290000
+023000     02  PRICER-OPTION-SW        PIC X.                           02300000
+023100     02  PPS-VERSIONS.                                            02310000
+023200         10  PPDRV-VERSION       PIC X(05).                       02320000
+023300                                                                  02330000
+023400*******************************************************           02340000
+023500*    CAN BE PASSED TO PPDRV___                        *           02350000
+023600*******************************************************           02360000
+023700 01  PROV-RECORD-FROM-USER       PIC X(240).                      02370000
+023800                                                                  02380000
+023900*******************************************************           02390000
+024000*    CAN BE PASSED TO PPDRV___                        *           02400000
+024100*******************************************************           02410000
+024200 01  MSAX-TABLE-FROM-USER.                                        02420000
+024300     05  FILLER                  PIC X(32000).                    02430000
+024400     05  FILLER                  PIC X(30000).                    02440000
+024500     05  FILLER                  PIC X(30000).                    02450000
+024600                                                                  02460000
+024700*******************************************************           02470000
+024800*    CAN BE PASSED TO PPDRV___                        *           02480000
+024900*******************************************************           02490000
+025000 01  CBSAX-TABLE-FROM-USER.                                       02500000
+025100     05  FILLER                  PIC X(32000).                    02510000
+025200     05  FILLER                  PIC X(30000).                    02520000
+025300     05  FILLER                  PIC X(30000).                    02530000
+025400                                                                  02540000
+025500 PROCEDURE  DIVISION.                                             02550000
+025600                                                                  02560000
+025700 0000-MAINLINE  SECTION.                                          02570000
+025800     OPEN INPUT  BILLFILE.                                        02580000
+025900                                                                  02590000
+026000     OPEN OUTPUT PRTOPER                                          02600000
+026100                 OUTFILE.                                         02610000
+026200                                                                  02620000
+026300     MOVE ALL '0'     TO PPS-VERSIONS.                            02630000
+026400     MOVE SPACES      TO PPS-DATA-ALL.                            02640000
+026500                                                                  02650000
+026600     PERFORM 0100-PROCESS-RECORDS                                 02660000
+026700        THRU 0100-EXIT UNTIL EOF-SW = 1.                          02670000
+026800                                                                  02680000
+026900     CLOSE BILLFILE.                                              02690000
+027000                                                                  02700000
+027100     CLOSE PRTOPER                                                02710000
+027200           OUTFILE.                                               02720000
+027300     STOP RUN.                                                    02730000
+027400                                                                  02740000
+027500 0100-PROCESS-RECORDS.                                            02750000
+027600     READ BILLFILE INTO BILL-WORK                                 02760000
+027700         AT END                                                   02770000
+027800             MOVE 1 TO EOF-SW.                                    02780000
+027900                                                                  02790000
+028000     MOVE BILL-WORK TO BILL-NEW-DATA.                             02800000
+028100     IF  EOF-SW = 0                                               02810000
+028200         PERFORM 1000-CALC-PAYMENT THRU 1000-EXIT                 02820000
+028300         PERFORM 1100-WRITE-SYSUT2 THRU 1100-EXIT.                02830000
+028400                                                                  02840000
+028500 0100-EXIT.  EXIT.                                                02850000
+028600                                                                  02860000
+028700 1000-CALC-PAYMENT.                                               02870000
+028800*******************************************************           02880000
+028900*    CALL TO THE PPS SUBROUTINE TO CALCULATE THE      *           02890000
+029000*    PAYMENT                                          *           02900000
+029100*******************************************************           02910000
+029200***************************************************************   02920000
+029300* OPTION (1)                                                  *   02930000
+029400*       (1)  MOVE ' ' TO PRICER-OPTION-SW.                    *   02940000
+029500*            CALL 'PPDRV___' USING BILL-NEW-DATA              *   02950000
+029600*                                  PPS-DATA-ALL               *   02960000
+029700*                                  PRICER-OPT-VERS-SW.        *   02970000
+029800*        THIS PASSES THE STANDARD VARIABLES USED FOR PRICING. *   02980000
+029900*                        *  *  *  *                           *   02990000
+030000* OPTION (2)                                                  *   03000000
+030100*       (2)  MOVE 'M' TO PRICER-OPTION-SW.                    *   03010000
+030200*            CALL 'PPDRV___' USING BILL-NEW-DATA              *   03020000
+030300*                                  PPS-DATA-ALL               *   03030000
+030400*                                  PRICER-OPT-VERS-SW         *   03040000
+030500*                                  PPS-ADDITIONAL-VARIABLES.  *   03050000
+030600*        THIS PASSES THE STANDARD VARIIABLES AND THE          *   03060000
+030700*      ADDITIONAL VARIABLES USED FOR PRICING.                 *   03070000
+030800*                        *  *  *  *                           *   03080000
+030900* OPTION (3)                                                  *   03090000
+031000*       (3)  MOVE 'P' TO PRICER-OPTION-SW.                    *   03100000
+031100*            CALL 'PPDRV___' USING BILL-NEW-DATA              *   03110000
+031200*                                  PPS-DATA-ALL               *   03120000
+031300*                                  PRICER-OPT-VERS-SW         *   03130000
+031400*                                  PPS-ADDITIONAL-VARIABLES   *   03140000
+031500*                                  PROV-RECORD-FROM-USER.     *   03150000
+031600*        THIS PASSES THE STANDARD VARIABLES                   *   03160000
+031700*       AND ADDITIONAL VARIABLES USED FOR PRICING.            *   03170000
+031800*        THE PROVIDER RECORD FROM THE USER                    *   03180000
+031900*       USED FOR THIS BILL ONLY IS ALSO PASSED.               *   03190000
+032000*                        *  *  *  *                           *   03200000
+032100* OPTION (4)                                                  *   03210000
+032200*       (4)  MOVE 'A' TO PRICER-OPTION-SW.                    *   03220000
+032300*            CALL 'PPDRV___' USING BILL-NEW-DATA              *   03230000
+032400*                                  PPS-DATA-ALL               *   03240000
+032500*                                  PRICER-OPT-VERS-SW         *   03250000
+032600*                                  PPS-ADDITIONAL-VARIABLES   *   03260000
+032700*                                  PROV-RECORD-FROM-USER      *   03270000
+032800*                                  MSAX-TABLE-FROM-USER.      *   03280000
+032900*        THIS IS THE ONLINE COMPATIBLE INTERFACE.             *   03290000
+033000*        THIS PASSES THE STANDARD VARIIABLES AND THE          *   03300000
+033100*      ADDITIONAL VARIABLES USED FOR PRICING.                 *   03310000
+033200*        THE PROVIDER RECORD AND THE WAGE INDEX TABLE FROM    *   03320000
+033300*      THE USERS ARE PASSED.                                  *   03330000
+033400***************************************************************   03340000
+033500                                                                  03350000
+033600*** OPTION (1)                                                    03360000
+033700     MOVE ' ' TO PRICER-OPTION-SW.                                03370000
+033800        CALL  IROPN200   USING BILL-NEW-DATA                      03380001
+033900                               PPS-DATA-ALL                       03390000
+034000                               PRICER-OPT-VERS-SW                 03400000
+034100                               PROV-RECORD-FROM-USER              03410000
+034200                               MSAX-TABLE-FROM-USER               03420000
+034300                               CBSAX-TABLE-FROM-USER.             03430000
+034400*** OPTION (2)                                                    03440000
+034500*    MOVE 'M' TO PRICER-OPTION-SW.                                03450000
+034600*    CALL  PPDR012H   USING BILL-NEW-DATA                         03460000
+034700*                           PPS-DATA-ALL                          03470000
+034800*                           PRICER-OPT-VERS-SW                    03480000
+034900*                           PPS-ADDITIONAL-VARIABLES.             03490000
+035000*** OPTION (3)                                                    03500000
+035100*    MOVE 'P' TO PRICER-OPTION-SW.                                03510000
+035200*    CALL  PPDRV012   USING BILL-NEW-DATA                         03520000
+035300*                           PPS-DATA-ALL                          03530000
+035400*                           PRICER-OPT-VERS-SW                    03540000
+035500*                           PPS-ADDITIONAL-VARIABLES              03550000
+035600*                           PROV-RECORD-FROM-USER.                03560000
+035700*** OPTION (4)                                                    03570000
+035800*    MOVE 'A' TO PRICER-OPTION-SW.                                03580000
+035900*    CALL  PPDRV012   USING BILL-NEW-DATA                         03590000
+036000*                           PPS-DATA-ALL                          03600000
+036100*                           PRICER-OPT-VERS-SW                    03610000
+036200*                           PPS-ADDITIONAL-VARIABLES              03620000
+036300*                           PROV-RECORD-FROM-USER                 03630000
+036400*                           MSAX-TABLE-FROM-USER.                 03640000
+036500                                                                  03650000
+036600 1000-EXIT.  EXIT.                                                03660000
+036700                                                                  03670000
+036800 1100-WRITE-SYSUT2.                                               03680000
+036900******************************************************************03690000
+037000*    PRINT OPERATING PROSPECTIVE PAYMENT TEST DATA DETAIL         03700000
+037100******************************************************************03710000
+037200     IF  OPERLINE-CTR > 54                                        03720000
+037300         PERFORM 1200-PPS-HEADINGS THRU 1200-EXIT.                03730000
+037400     MOVE SPACES              TO  PPS-DETAIL-LINE-OPER.           03740000
+037500     MOVE B-PROVIDER-NO       TO  PRT-PROV.                       03750000
+037600     MOVE B-PATIENT-STATUS    TO  PRT-PATIENT-STATUS.             03760000
+037700     MOVE PPS-WAGE-INDEX      TO  PRT-WAGE-INDX.                  03770000
+037800     IF B-DISCHARGE-DATE > 20050930                               03780000
+037900        MOVE PPS-CBSA            TO  PRT-MSA                      03790000
+038000     ELSE                                                         03800000
+038100        MOVE PPS-MSA             TO  PRT-MSA.                     03810000
+038200     MOVE PPS-RELATIVE-WGT    TO  PRT-REL-WT.                     03820000
+038300     MOVE PPS-FAC-COSTS       TO  PRT-FAC-COST.                   03830000
+038400     MOVE PPS-SUBM-CMG-CODE     TO  PRT-CMG-CODE.                 03840000
+038500     MOVE PPS-PRICED-CMG-CODE   TO  PRT-PRICED-CMG.               03850000
+038600     MOVE PPS-AVG-LOS           TO  PRT-ALOS.                     03860000
+038700     MOVE PPS-LOS               TO  PRT-LOS.                      03870000
+038800     MOVE B-DISCHARGE-DATE      TO  PRT-DISCHG-DATE.              03880000
+038900     MOVE PPS-TOTAL-PAY-AMT     TO  PRT-TOT-PAY.                  03890000
+039000     MOVE PPS-CHG-OUTLIER-THRESHOLD                               03900000
+039100                                TO  PRT-OUT-CHGS.                 03910000
+039200     MOVE PPS-FAC-SPEC-PAY-AMT  TO  PRT-HSP-PART.                 03920000
+039300     MOVE PPS-OUTLIER-PAY-AMT   TO  PRT-OUTLIER-PART.             03930000
+039400     MOVE PPS-LIP-PCT           TO  PRT-LIP.                      03940000
+039500     MOVE PPS-RTC               TO  PRT-PPS-RTC.                  03950000
+039600                                                                  03960000
+039700     WRITE PRTOPER-LINE FROM PPS-DETAIL-LINE-OPER                 03970000
+039800                             AFTER ADVANCING 1.                   03980000
+039900     WRITE OUTFILE-LINE FROM PPS-DATA-ALL.                        03990000
+040000     MOVE SPACES              TO  PPS-DATA-ALL.                   04000000
+040100     IF OPR-STAT1 > 0                                             04010000
+040200        DISPLAY ' BAD4 WRITE ON PRTOPER FILE'.                    04020000
+040300     IF OF1-STAT1 > 0                                             04030000
+040400        DISPLAY ' BAD4 WRITE ON OUTFILE'.                         04040000
+040500     ADD 1 TO OPERLINE-CTR.                                       04050000
+040600                                                                  04060000
+040700 1100-EXIT.  EXIT.                                                04070000
+040800                                                                  04080000
+040900 1200-PPS-HEADINGS.                                               04090000
+041000     WRITE PRTOPER-LINE FROM PPS-HEAD2-OPER                       04100000
+041100                             AFTER ADVANCING PAGE.                04110000
+041200     IF OPR-STAT1 > 0                                             04120000
+041300        DISPLAY ' BAD5 WRITE ON PRTOPER FILE'.                    04130000
+041400     WRITE PRTOPER-LINE FROM PPS-HEAD3-OPER                       04140000
+041500                             AFTER ADVANCING 2.                   04150000
+041600     IF OPR-STAT1 > 0                                             04160000
+041700        DISPLAY ' BAD7 WRITE ON PRTOPER FILE'.                    04170000
+041800     WRITE PRTOPER-LINE FROM PPS-HEAD4-OPER                       04180000
+041900                             AFTER ADVANCING 1.                   04190000
+042000     IF OPR-STAT1 > 0                                             04200000
+042100        DISPLAY ' BAD8 WRITE ON PRTOPER FILE'.                    04210000
+042200     MOVE ALL '  -' TO PRTOPER-LINE.                              04220000
+042300     WRITE PRTOPER-LINE AFTER ADVANCING 1.                        04230000
+042400     IF OPR-STAT1 > 0                                             04240000
+042500        DISPLAY ' BAD9 WRITE ON PRTOPER FILE'.                    04250000
+042600     MOVE 4 TO OPERLINE-CTR.                                      04260000
+042700                                                                  04270000
+042800 1200-EXIT.  EXIT.                                                04280000
+

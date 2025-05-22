@@ -1,0 +1,16 @@
+       01  W-PHP-HCPCS-FILL13.
+           03                          PIC X(35)   VALUE
+               'G0129G0176G0177G0410G04119078590791'.
+           03                          PIC X(35)   VALUE
+               '90792908329083390834908369083790838'.
+           03                          PIC X(35)   VALUE
+               '90845908469084790865908809610196102'.
+           03                          PIC X(25)   VALUE
+               '9610396116961189611996120'.
+       01  W-PHP-HCPCS-TABLE13 REDEFINES W-PHP-HCPCS-FILL13.
+           03  PHP-ENTRY13 OCCURS 26 TIMES
+                   ASCENDING KEY IS PHP-HCPCS13
+                   INDEXED BY PHP-INDX13.
+               05  PHP-HCPCS13         PIC X(5).
+       01  PHP-MAX13                   PIC S9(7)   COMP-3
+                                       VALUE +26.

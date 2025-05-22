@@ -1,0 +1,75 @@
+************************************************************************00010000
+*                                                                      *00011000
+*                      MANIFEST LIST                                   *00012000
+*                                                                      *00013000
+* DATASET NAME:        MU00.@BFN2699.HHNDM213                          *00014001
+* PRICER:              HOME HEALTH PPS PRICER (HHA)                    *00015000
+* VERSION:             2021.3                                          *00016001
+* CR#:                 11855 & 12107                                   *00016101
+*                                                                      *00017000
+* EFFECTIVE DATE:      01/01/2021                                      *00018001
+* BETA/PRODUCTION:     PRODUCTION                                      *00019001
+* RELEASE DATE:        04/23/2021                                      *00019101
+*                                                                      *00019201
+************************************************************************00019600
+                                                                        00050000
+*----------------------------------------------------------------------*
+*                                                                      *
+* TOTAL NUMBER OF MEMBERS ASSOCIATED WITH THIS PRICER: 33              *
+*                                                                      *
+*     - NUMBER OF MEMBERS INCLUDED IN THIS DATASET: 5                  *
+*       - NEW MEMBERS: 2                                               *
+*         (LISTED BELOW UNDER "NON-PAIRED NEW FILE MEMBERS")           *
+*       - MEMBERS WITH CHANGES: 3                                      *
+*         (LISTED BELOW WITH "**" IN THE "CHNG" COLUMN)                *
+*                                                                      *
+*     - NUMBER OF MEMBERS NOT INCLUDED IN THIS DATASET: 28             *
+*       - MEMBERS WITH NO CHANGES: 28                                  *
+*         (LISTED BELOW WITH NOTHING IN THE "CHNG" COLUMN)             *
+*                                                                      *
+************************************************************************
+
+                       MEMBER SUMMARY LISTING (LINE COMPARE)
+
+ CHNG MEMBERS-COMPARED NEW-PROC OLD-PROC  MATCHED NEW-INS OLD-DEL REFM-LN N-DP-L
+
+ **   ADDONTBL             2036     2002     2001      35       1
+      ADXONTBL               64       64       64
+      HHCAL016              874      874      874
+      HHCAL023              867      867      867
+      HHCAL033              995      995      995
+      HHCAL044              989      989      989
+      HHCAL053              993      993      993
+      HHCAL066             1033     1033     1033
+      HHCAL074             1080     1080     1080
+      HHCAL088             1272     1272     1272
+      HHCAL095             1297     1297     1297
+      HHCAL10A             1439     1439     1439
+      HHCAL10D             1579     1579     1579
+      HHCAL113             1437     1437     1437
+      HHCAL122             1438     1438     1438
+      HHCAL132             1442     1442     1442
+      HHCAL145             1833     1833     1833
+      HHCAL152             1840     1840     1840
+      HHCAL160             1840     1840     1840
+      HHCAL171             1827     1827     1827
+      HHCAL181             2125     2125     2125
+      HHCAL190             2338     2338     2338
+      HHCAL20Y             2335     2335     2335
+      HHCAL200             1468     1468     1468
+      HHCAL212             1526     1526     1526
+      HHCAL213             1535     1535     1535
+      HHDRV20Y             2916     2916     2916
+      HHDRV213              523      523      523
+ **   MANIFEST               74       73       73                       1
+ **   README                 36       36       36
+
+                       MEMBER SUMMARY LISTING (LINE COMPARE)
+
+    NON-PAIRED NEW FILE MEMBERS         ³   NON-PAIRED OLD FILE MEMBERS
+                                        ³
+        HHCAL213                        ³
+        HHDRV213                        ³
+
+************************************************************************
+

@@ -1,0 +1,67 @@
+OPPS RETURN CODES
+
+Claim Level :
+
+01 			Claim processed
+
+50 Wage Index not located  -  processing discontinued
+
+51 Wage Index equal zero  -  processing discontinued
+
+52 Wage Index - Invalid Reclassification Change Code
+              - processing discontinued
+53 Service From Date not numeric or less than OPPS Start date
+              - processing discontinued  (i.e. 20070101)
+
+54 Service From Date not in range with Provider Effective Date
+              - termination date - processing discontinued
+
+
+Line Level :
+
+01 Line processed
+
+11 Reduced for absent quality reporting
+
+20 Payment equal to zero (Bene deductible > Payment) - line processed
+
+22 Daily Coinsurance limitation - line processed
+
+25 Provider elected coinsurance reduction for APC - line processed
+
+30 APC not found in table - line processing discontinued
+   or APC deleted
+
+38 Discount Factor Indicator Invalid - line processing discontinued
+
+40			Service Indicator Invalid - line processing discontinued
+
+41	Service Indicator Invalid for OPPS Pricer
+  	                            - line processing discontinued
+
+42	APC equal to '00000' - line processing discontinued	
+     OR   Packaging Flag = '1' or '2' or '4'
+
+43 Payment Indicator not equal to 1 or 5 thru 9
+                               - line processing discontinued
+
+44 Service Indicator equal to 'H' but Payment Indicator not equal to '6'
+                        - line processing discontinued
+
+45 Packaging Flag not equal to zero - line processing discontinued
+
+46 Line Item Denial/Reject Flag not equal zero AND Line Item Action Flag
+         not equal to 1 - line processing discontinued
+
+47 Line Item Action Flag equal to '2' or '3'
+                        - line processing discontinued
+
+48 Payment Adjustment Flag invalid  - line processing discontinued
+
+49 Type of Bill Inclusion Flag not equal zero
+                        - line processing discontinued
+
+
+
+
+

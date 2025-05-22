@@ -1,0 +1,18 @@
+       01  W-MH-HCPCS-FILL14.
+           03                          PIC X(35)   VALUE
+               'G0451M00649079190792908329083490837'.
+           03                          PIC X(35)   VALUE
+               '90839908459084690847908499085390865'.
+           03                          PIC X(35)   VALUE
+               '90880908999610196102961039611196116'.
+           03                          PIC X(35)   VALUE
+               '96118961199612096150961519615296153'.
+           03                          PIC X(5)    VALUE
+               '96154'.
+       01  W-MH-HCPCS-TABLE14 REDEFINES W-MH-HCPCS-FILL14.
+           03  MH-ENTRY14 OCCURS 29 TIMES
+                   ASCENDING KEY IS MH-HCPCS14
+                   INDEXED BY MH-INDX14.
+               05  MH-HCPCS14          PIC X(5).
+       01  MH-MAX14                    PIC S9(7)   COMP-3
+                                       VALUE +29.

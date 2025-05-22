@@ -1,0 +1,21 @@
+       01  W-DEVICE-CREDIT15.
+           03                          PIC X(33)   VALUE
+               '003914591450061029500700640240545'.
+           03                          PIC X(33)   VALUE
+               '008906383400090042125801071795286'.
+           03                          PIC X(33)   VALUE
+               '010824543810227120592902290389254'.
+           03                          PIC X(33)   VALUE
+               '025924363200293046609403182211768'.
+           03                          PIC X(33)   VALUE
+               '031907127780351207320403850271089'.
+           03                          PIC X(33)   VALUE
+               '038609700360425053492006551161315'.
+       01  W-DEVICE-CREDIT-TABLE REDEFINES W-DEVICE-CREDIT15.
+           03  DEV-CR15 OCCURS 18 TIMES
+                   ASCENDING KEY IS DEV-APC15
+                   INDEXED BY DEV-INDX15.
+               05  DEV-APC15           PIC X(4).
+               05  DEV-CAP15           PIC 9(5)V99.
+       01  DEV-MAX15                   PIC S9(7)   COMP-3
+                                       VALUE +18.

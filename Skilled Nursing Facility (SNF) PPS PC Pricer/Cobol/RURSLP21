@@ -1,0 +1,36 @@
+      ****************************************************
+      *      SLP RURAL RATE TABLE                        *
+      * FOR USE WITH THE PDPM FINAL RULE                 *
+      * REVISED 08/05/2020 (FY 2021)                     *
+      ****************************************************
+       01  PDPM-SLP-TABLE.
+           02  PDPM-SLP-DATA-RURAL.
+               05  FILLER   PIC X(15)  VALUE     'A 001984 001945'.
+               05  FILLER   PIC X(15)  VALUE     'B 005311 005205'.
+               05  FILLER   PIC X(15)  VALUE     'C 007791 007636'.
+               05  FILLER   PIC X(15)  VALUE     'D 004260 004176'.
+               05  FILLER   PIC X(15)  VALUE     'E 006828 006692'.
+               05  FILLER   PIC X(15)  VALUE     'F 008696 008523'.
+               05  FILLER   PIC X(15)  VALUE     'G 005953 005834'.
+               05  FILLER   PIC X(15)  VALUE     'H 008345 008180'.
+               05  FILLER   PIC X(15)  VALUE     'I 010301 010096'.
+               05  FILLER   PIC X(15)  VALUE     'J 008725 008551'.
+               05  FILLER   PIC X(15)  VALUE     'K 010797 010582'.
+               05  FILLER   PIC X(15)  VALUE     'L 012285 012041'.
+
+           02  PDPM-SLP-DATA2-R REDEFINES PDPM-SLP-DATA-RURAL
+                  OCCURS 12 TIMES
+                     ASCENDING KEY IS PDPM-SLP-GROUP-R
+                        INDEXED BY PDPM-SLP-IDX-R.
+                   10  PDPM-SLP-DATA-TAB-R.
+                       15  PDPM-SLP-GROUP-R PIC X(01).
+                       15  FILLER           PIC X(01).
+                       15  PDPM-RATE-SLP-R  PIC 9999V99.
+                       15  FILLER           PIC X(01).
+                       15  PDPM-QRATE-SLP-R PIC 9999V99.
+
+      ****************************************************
+      *     END OF COPYBOOK FROM SLP RURAL RATES         *
+      ****************************************************
+
+

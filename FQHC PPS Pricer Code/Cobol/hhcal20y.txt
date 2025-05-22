@@ -1,0 +1,2336 @@
+000100 IDENTIFICATION DIVISION.                                         00010000
+000200 PROGRAM-ID.    HHCAL20Y.                                         00020007
+000201 DATE-COMPILED.                                                   00020100
+000202******************************************************************00020200
+000203*                        CMS                                     *00020300
+000204******************************************************************00020400
+000205*  A). NATIONAL HHA PRICER                                       *00020500
+000206*  B). NATIONAL HHA PRICER EFFECTIVE OCT 1 2001                  *00020600
+000207*  C). THERE ARE YEARLY HHA PRICER MODULES THAT WILL             *00020700
+000208*      CALCULATE THE HRG'S,REVENUE CODES AND TYPE OF BILLS       *00020800
+000209******************************************************************00020900
+000210* LUPA = LOW UTILIZATION PAYMENT ADJUSTMENT                      *00021000
+000220******************************************************************00022000
+000230*                CY2020.X CHANGES                                *00023001
+000240*----------------------------------------------------------------*00024000
+000254* UPDATED RATES                                                  *00025404
+000255* UPDATED RURAL ADD-ON VALUES                                    *00025504
+000256* UPDATED SUPPLY ADD-ON VALUES                                   *00025604
+000257* UPDATED WS-STDV-RURAL-FAC FROM 1.0043 TO 1.0024                *00025704
+000258******************************************************************00025804
+000259*            RETURN CODE VALUES (HHA-RTC)                         00025904
+000260*                                                                 00026004
+000261*        HHA-RTC  WITH PAYMENTS RETURNED                          00026104
+000270*                                                                 00027000
+000280*     RETURN CODES                                                00028000
+000290*          00 = FINAL PAYMENT                                     00029000
+000300*               TOB = 329,339,327,337                             00030000
+000400*                  OR 32G OR 33G OR 32I OR 33I OR 32Q             00040000
+000500*                  OR 32J OR 33J OR 32M OR 33M OR 33Q             00050000
+000600*                  OR 32F OR 32K OR 32P OR 32H                    00060000
+000700*                  OR 33F OR 33K OR 33P OR 33H                    00070000
+000800*               WITH HRG,REVENUE CODE WHERE NO OUTLIER APPLIES    00080000
+000900*          01 = FINAL PAYMENT                                     00090000
+001000*               TOB = 329,339,327,337                             00100000
+001100*                  OR 32G OR 33G OR 32I OR 33I OR 32Q             00110000
+001200*                  OR 32J OR 33J OR 32M OR 33M OR 33Q             00120000
+001300*                  OR 32F OR 32K OR 32P OR 32H                    00130000
+001400*                  OR 33F OR 33K OR 33P OR 33H                    00140000
+001500*               WITH HRG,REVENUE CODE WHERE OUTLIER APPLIES       00150000
+001600*          03 = INITIAL HALF PAYMENT PAYMENT WILL BE ZERO         00160000
+001700*               TOB = 332 AND 322                                 00170000
+001800*          04 = INITIAL HALF PAYMENT PAID AT 50%                  00180000
+001900*               TOB = 332 AND 322                                 00190000
+002000*               WITH INITIAL (FIRST) HRG AND NO REVENUE CODES     00200000
+002100*          05 = INITIAL HALF PAYMENT PAID AT 60%                  00210000
+002200*               TOB = 332 AND 322                                 00220000
+002300*               WITH INITIAL (FIRST) HRG AND NO REVENUE CODES     00230000
+002400*       06,14 = LUPA PAYMENT ONLY                                 00240000
+002500*               TOB = 329,339,327,337                             00250000
+002600*                  OR 32G OR 33G OR 32I OR 33I OR 32Q             00260000
+002700*                  OR 32J OR 33J OR 32M OR 33M OR 33Q             00270000
+002800*                  OR 32F OR 32K OR 32P OR 32H                    00280000
+002900*                  OR 33F OR 33K OR 33P OR 33H                    00290000
+003000*               WITH REVENUE CODES AND REVENUE QTYS < 5       *   00300000
+003100******************************************************************00310000
+003200*          07 = FINAL PAYMENT, SCIC, PEP = N, NO OUTLIER          00320000
+003300*               TOB = 329,339,327,337                             00330000
+003400*                  OR 32G OR 33G OR 32I OR 33I OR 32Q             00340000
+003500*                  OR 32J OR 33J OR 32M OR 33M OR 33Q             00350000
+003600*                  OR 32F OR 32K OR 32P OR 32H                    00360000
+003700*                  OR 33F OR 33K OR 33P OR 33H                    00370000
+003800*               WITH REVENUE CODE WHERE NO OUTLIER APPLIES        00380000
+003900*               WITH MORE THAN ONE HRG OCCURRENCE             *   00390000
+004000*          08 = FINAL PAYMENT, SCIC, PEP = N, WITH OUTLIER        00400000
+004100*               TOB = 329,339,327,337                             00410000
+004200*                  OR 32G OR 33G OR 32I OR 33I OR 32Q             00420000
+004300*                  OR 32J OR 33J OR 32M OR 33M OR 33Q             00430000
+004400*                  OR 32F OR 32K OR 32P OR 32H                    00440000
+004500*                  OR 33F OR 33K OR 33P OR 33H                    00450000
+004600*               WITH REVENUE CODE WHERE OUTLIER APPLIES           00460000
+004700*               WITH MORE THAN ONE HRG OCCURRENCE             *   00470000
+004800******************************************************************00480000
+004900*          09 = FINAL PAYMENT, PEP = Y, NO OUTLIER                00490000
+005000*               TOB = 329,339,327,337                             00500000
+005100*                  OR 32G OR 33G OR 32I OR 33I OR 32Q             00510000
+005200*                  OR 32J OR 33J OR 32M OR 33M OR 33Q             00520000
+005300*                  OR 32F OR 32K OR 32P OR 32H                    00530000
+005400*                  OR 33F OR 33K OR 33P OR 33H                    00540000
+005500*               WITH REVENUE CODE WHERE NO OUTLIER APPLIES        00550000
+005600*               WITH ONE HRG OCCURRENCE                       *   00560000
+005700*          11 = FINAL PAYMENT, PEP = Y, WITH OUTLIER              00570000
+005800*               TOB = 329,339,327,337                             00580000
+005900*                  OR 32G OR 33G OR 32I OR 33I OR 32Q             00590000
+006000*                  OR 32J OR 33J OR 32M OR 33M OR 33Q             00600000
+006100*                  OR 32F OR 32K OR 32P OR 32H                    00610000
+006200*                  OR 33F OR 33K OR 33P OR 33H                    00620000
+006300*               WITH REVENUE CODE WHERE OUTLIER APPLIES           00630000
+006400*               WITH ONE HRG OCCURRENCE                       *   00640000
+006500******************************************************************00650000
+006600*          12 = FINAL PAYMENT, SCIC, PEP = Y, NO OUTLIER          00660000
+006700*               TOB = 329,339,327,337                             00670000
+006800*                  OR 32G OR 33G OR 32I OR 33I OR 32Q             00680000
+006900*                  OR 32J OR 33J OR 32M OR 33M OR 33Q             00690000
+007000*                  OR 32F OR 32K OR 32P OR 32H                    00700000
+007100*                  OR 33F OR 33K OR 33P OR 33H                    00710000
+007200*               WITH REVENUE CODE WHERE NO OUTLIER APPLIES        00720000
+007300*               WITH MORE THAN ONE HRG OCCURRENCE             *   00730000
+007400*          13 = FINAL PAYMENT, SCIC, PEP = Y, WITH OUTLIER        00740000
+007500*               TOB = 329,339,327,337                             00750000
+007600*                  OR 32G OR 33G OR 32I OR 33I OR 32Q             00760000
+007700*                  OR 32J OR 33J OR 32M OR 33M OR 33Q             00770000
+007800*                  OR 32F OR 32K OR 32P OR 32H                    00780000
+007900*                  OR 33F OR 33K OR 33P OR 33H                    00790000
+008000*               WITH REVENUE CODE WHERE OUTLIER APPLIES           00800000
+008100*               WITH MORE THAN ONE HRG OCCURRENCE             *   00810000
+008200******************************************************************00820000
+008300******************************************************************00830000
+008400*                                                             *   00840000
+008500*            HHA-RTC   NO PAYMENTS RETURNED                   *   00850000
+008600*                                                             *   00860000
+008700*              10 = INVALID TOB                               *   00870000
+008800*                                                             *   00880000
+008900*              15 = INVALID PEP DAYS                          *   00890000
+009000*                   FOR SHORTENED EPISODE                     *   00900000
+009100*                                                             *   00910000
+009200*              16 = INVALID HRG DAYS , > 60 DAYS              *   00920000
+009300*                                                             *   00930000
+009400*              20 = INVALID PEP INDICATOR                     *   00940000
+009500*                                                             *   00950000
+009600*              25 = INVALID MED REVIEW INDICATOR              *   00960000
+009700*                                                             *   00970000
+009800*              30 = INVALID CBSA CODE                         *   00980000
+009900*                                                             *   00990000
+010000*              31 = COUNTY CODE MISSING OR INVALID            *   01000000
+010100*                                                             *   01010000
+010200*              35 = INVALID INITIAL PAYMENT INDICATOR         *   01020000
+010300*                        0 = MAKE NORMAL INITIAL PAYMENT      *   01030000
+010400*                        1 = MAKE ZERO PAYMANT                *   01040000
+010500*                                                             *   01050000
+010600*              40 = INVALID SERVICE THRU DATE FOR             *   01060000
+010700*                      CURRENT CALENDER YEAR                  *   01070000
+010800*                                                             *   01080000
+010900*              70 = INVALID OR NO HRG CODE PRESENT            *   01090000
+011000*                                                             *   01100000
+011100*              75 = NO HRG PRESENT IN FIRST OCCURANCE AND     *   01110000
+011200*                   REVENUE-QTY-COV-VISITS > 4  AND           *   01120000
+011300*                       TOB = 329,339,327,337                 *   01130000
+011400*                          OR 32G OR 33G OR 32I OR 33I        *   01140000
+011500*                          OR 32J OR 33J OR 32M OR 33M        *   01150000
+011600*                          OR 32F OR 32K OR 32P OR 32H            01160000
+011700*                          OR 33F OR 33K OR 33P OR 33H            01170000
+011800*                                                             *   01180000
+011900*              80 = INVALID REVENUE CODE                      *   01190000
+012000*                                                             *   01200000
+012100*              85 = NO REVENUE CODE PRESENT                   *   01210000
+012200*                   WITH TOB 329 OR 339 OR 327 OR 337         *   01220000
+012300*                         OR 32G OR 33G OR 32I OR 33I         *   01230000
+012400*                         OR 32J OR 33J OR 32M OR 33M         *   01240000
+012500*                         OR 32F OR 32K OR 32P OR 32H             01250000
+012600*                         OR 33F OR 33K OR 33P OR 33H             01260000
+012700*                                                             *   01270000
+012800***************************************************************   01280000
+012900                                                                  01290000
+013000 ENVIRONMENT DIVISION.                                            01300000
+013100 CONFIGURATION SECTION.                                           01310000
+013200 SOURCE-COMPUTER.            IBM-370.                             01320000
+013300 OBJECT-COMPUTER.            IBM-370.                             01330000
+013400 INPUT-OUTPUT  SECTION.                                           01340000
+013500 FILE-CONTROL.                                                    01350000
+013600                                                                  01360000
+013700 DATA DIVISION.                                                   01370000
+013800 FILE SECTION.                                                    01380000
+013900                                                                  01390000
+014000 WORKING-STORAGE SECTION.                                         01400000
+014100 01  W-STORAGE-REF                  PIC X(46)  VALUE              01410000
+014200     'HHCAL20Y       - W O R K I N G   S T O R A G E'.            01420007
+014300 01  CAL-VERSION                    PIC X(07)  VALUE 'C2020.Y'.   01430007
+014400 01  CO1                            PIC S9(04) COMP SYNC.         01440000
+014500 01  SUB1                           PIC S9(04) COMP SYNC.         01450000
+014600 01  SS-QCV                         PIC S9(04) COMP SYNC.         01460000
+014700 01  SS-ADJ                         PIC S9(04) COMP SYNC.         01470000
+014800 01  R1                             PIC S9(04) COMP SYNC.         01480000
+014900 01  R2                             PIC S9(04) COMP SYNC.         01490000
+015000 01  R3                             PIC S9(04) COMP SYNC.         01500000
+015100 01  WS-STD-VALUE-NLUPA-AMT         PIC 9(7)V9(2) VALUE 0.        01510000
+015200 01  WS-STD-VALUE-NLUPA-OUTL        PIC 9(7)V9(2) VALUE 0.        01520000
+015300 01  WS-STDV-LUPA-ADDON-FAC         PIC 9(1)V9(4) VALUE 0.        01530000
+015400 01  WS-STDV-RURAL-FAC              PIC 9V9999 VALUE 1.0024.      01540003
+015500 01  WS-STDV-EPISODE-AMT            PIC 9(05)V9(02) VALUE 0.      01550000
+015510 01  WS-STDV-FED-SUPPLY-ADJ         PIC S9(07)V9(02) VALUE 0.     01551000
+015600*-------------------------------------------------------------*   01560000
+015700*    RURAL ADD ON PERCENTAGES FOR CY2020                      *   01570004
+015800*-------------------------------------------------------------*   01580000
+015810 01  WS-RURAL-ADDON-A               PIC 9V999 VALUE 1.005.        01581003
+015820 01  WS-RURAL-ADDON-B               PIC 9V999 VALUE 1.030.        01582003
+015830 01  WS-RURAL-ADDON-C               PIC 9V999 VALUE 1.020.        01583003
+015840 01  WS-RURAL-CATEGORY              PIC X     VALUE SPACE.        01584000
+015850***************************************************************   01585000
+015860*   YEARCHANGE - UPDATED FOR 2020.X                           *   01586004
+015870*-------------------------------------------------------------*   01587000
+015880* - FROM CLAIM EXAMPLE SPREAD SHEET HIPPSPAYCALC TAB          *   01588000
+015890***************************************************************   01589000
+015900 01  LABOR-NLABOR-PERCENT.                                        01590000
+016000     05 LABOR-PERCENT        PIC 9V9(05)  VALUE 0.76100.          01600000
+016100     05 NONLABOR-PERCENT     PIC 9V9(05)  VALUE 0.23900.          01610000
+016200***************************************************************   01620000
+016300*   YEARCHANGE - NO CHANGE FOR 2020.X                         *   01630004
+016400***************************************************************   01640000
+016500 01  LUPA-ADD-ON                  PIC 9(03)V9(02) VALUE 093.96.   01650000
+016600 01  LUPA-ADD-ON-RURAL            PIC 9(03)V9(02) VALUE 096.78.   01660000
+016700 01  LUPA-ADD-ON-2PERCENT         PIC 9(03)V9(02) VALUE 095.85.   01670000
+016800 01  LUPA-ADD-ON-2PERCENT-RUR     PIC 9(03)V9(02) VALUE 098.73.   01680000
+016900***************************************************************   01690000
+017000*   YEARCHANGE - NO CHANGE FOR 2019                           *   01700000
+017100***************************************************************   01710000
+017200 01  LUPA-ADD-ON-SN4              PIC 9(01)V9(04) VALUE 00.8451.  01720000
+017300 01  LUPA-ADD-ON-PT1              PIC 9(01)V9(04) VALUE 00.6700.  01730000
+017400 01  LUPA-ADD-ON-SLT3             PIC 9(01)V9(04) VALUE 00.6266.  01740000
+017500***************************************************************** 01750000
+017600*   YEARCHANGE - NO CHANGE FOR 2019                           *   01760000
+017700***    EXAMPLE    *********************************************** 01770000
+017800*** FED-EPISODE-RATE-AMT TIMES 1.13 = OUTLIER-THRESHOLD-AMT ***** 01780000
+017900******  2327.68 TIMES 0.65  = 1512.99  ROUNDED UP  ************** 01790000
+018000***************************************************************** 01800000
+018100 01  OUTL-LOSS-SHAR-RATIO-PERCENT PIC 9(01)V9(02) VALUE 0.80.     01810000
+018200                                                                  01820000
+018300 01  LUPA-LABOR-ADJ               PIC 9(03)V9(02).                01830000
+018400 01  LUPA-NON-LABOR-ADJ           PIC 9(03)V9(02).                01840000
+018500 01  FED-EPISODE-RATE-AMT         PIC 9(05)V9(02) VALUE 0.        01850000
+018600 01  OUTLIER-THRESHOLD-AMT        PIC 9(05)V9(02) VALUE 0.        01860000
+018700                                                                  01870000
+018800 01  WK-PEP-DAYS           PIC S9(04)       VALUE 0.              01880000
+018900 01  WK-HRG-NO-OF-DAYS     PIC S9(04)       VALUE 0.              01890000
+019000 01  WK-HRG-NO-OF-DAYS-FAC PIC S9(04)V9(06) VALUE 0.              01900000
+019100 01  WK-HRG-NO-OF-DAYS-TOT PIC S9(04)       VALUE 0.              01910000
+019200 01  WK-RTC-ADJ-IND        PIC 9            VALUE 0.              01920000
+019300 01  WK-ALL-TOTALS.                                               01930000
+019400     05  FED-ADJ                        PIC S9(07)V9(02).         01940000
+019500     05  FED-ADJP                       PIC S9(07)V9(02).         01950000
+019600     05  FED-ADJ1                       PIC S9(07)V9(02).         01960000
+019700     05  FED-ADJ2                       PIC S9(07)V9(02).         01970000
+019800     05  FED-ADJ3                       PIC S9(07)V9(02).         01980000
+019900     05  FED-ADJ4                       PIC S9(07)V9(02).         01990000
+020000     05  FED-ADJ5                       PIC S9(07)V9(02).         02000000
+020100     05  FED-ADJ6                       PIC S9(07)V9(02).         02010000
+020200     05  FED-LUPA-ADJ1                  PIC S9(07)V9(02).         02020000
+020300     05  FED-LUPA-ADJ2                  PIC S9(07)V9(02).         02030000
+020400     05  FED-LUPA-ADJ3                  PIC S9(07)V9(02).         02040000
+020500     05  FED-LUPA-ADJ4                  PIC S9(07)V9(02).         02050000
+020600     05  FED-LUPA-ADJ5                  PIC S9(07)V9(02).         02060000
+020700     05  FED-LUPA-ADJ6                  PIC S9(07)V9(02).         02070000
+020800     05  FED-LABOR-ADJ                  PIC S9(07)V9(02).         02080000
+020900     05  FED-LABOR-ADJP                 PIC S9(07)V9(02).         02090000
+021000     05  FED-LABOR-ADJ1                 PIC S9(07)V9(02).         02100000
+021100     05  FED-LABOR-ADJ2                 PIC S9(07)V9(02).         02110000
+021200     05  FED-LABOR-ADJ3                 PIC S9(07)V9(02).         02120000
+021300     05  FED-LABOR-ADJ4                 PIC S9(07)V9(02).         02130000
+021400     05  FED-LABOR-ADJ5                 PIC S9(07)V9(02).         02140000
+021500     05  FED-LABOR-ADJ6                 PIC S9(07)V9(02).         02150000
+021600     05  FED-LABOR-LUPA-ADJ1            PIC S9(07)V9(02).         02160000
+021700     05  FED-LABOR-LUPA-ADJ2            PIC S9(07)V9(02).         02170000
+021800     05  FED-LABOR-LUPA-ADJ3            PIC S9(07)V9(02).         02180000
+021900     05  FED-LABOR-LUPA-ADJ4            PIC S9(07)V9(02).         02190000
+022000     05  FED-LABOR-LUPA-ADJ5            PIC S9(07)V9(02).         02200000
+022100     05  FED-LABOR-LUPA-ADJ6            PIC S9(07)V9(02).         02210000
+022200     05  FED-SUPPLY-ADJ                 PIC S9(07)V9(02).         02220000
+022300     05  FED-NON-LABOR-ADJ              PIC S9(07)V9(02).         02230000
+022400     05  FED-NON-LABOR-ADJP             PIC S9(07)V9(02).         02240000
+022500     05  FED-NON-LABOR-ADJ1             PIC S9(07)V9(02).         02250000
+022600     05  FED-NON-LABOR-ADJ2             PIC S9(07)V9(02).         02260000
+022700     05  FED-NON-LABOR-ADJ3             PIC S9(07)V9(02).         02270000
+022800     05  FED-NON-LABOR-ADJ4             PIC S9(07)V9(02).         02280000
+022900     05  FED-NON-LABOR-ADJ5             PIC S9(07)V9(02).         02290000
+023000     05  FED-NON-LABOR-ADJ6             PIC S9(07)V9(02).         02300000
+023100     05  FED-NON-LABOR-LUPA-ADJ1        PIC S9(07)V9(02).         02310000
+023200     05  FED-NON-LABOR-LUPA-ADJ2        PIC S9(07)V9(02).         02320000
+023300     05  FED-NON-LABOR-LUPA-ADJ3        PIC S9(07)V9(02).         02330000
+023400     05  FED-NON-LABOR-LUPA-ADJ4        PIC S9(07)V9(02).         02340000
+023500     05  FED-NON-LABOR-LUPA-ADJ5        PIC S9(07)V9(02).         02350000
+023600     05  FED-NON-LABOR-LUPA-ADJ6        PIC S9(07)V9(02).         02360000
+023700     05  OUT-THRES-AMT-ADJ              PIC S9(07)V9(02).         02370000
+023800     05  OUT-THRES-LABOR-ADJ            PIC S9(07)V9(02).         02380000
+023900     05  OUT-THRES-NON-LABOR-ADJ        PIC S9(07)V9(02).         02390000
+024000     05  WK-3000-PEP-N-PRETOT-PAY       PIC S9(07)V9(02).         02400000
+024100     05  WK-3000-PEP-N-PAYMENT          PIC S9(07)V9(02).         02410000
+024200     05  WK-4000-PEP-Y-PRETOT-PAY       PIC S9(07)V9(02).         02420000
+024300     05  WK-4000-PEP-Y-PAYMENT          PIC S9(07)V9(02).         02430000
+024400     05  WK-5000-PEP-N-PRETOT-PAY       PIC S9(07)V9(02).         02440000
+024500     05  WK-5000-PEP-N-PAYMENT          PIC S9(07)V9(02).         02450000
+024600     05  WK-6000-PEP-Y-PRETOT-PAY       PIC S9(07)V9(02).         02460000
+024700     05  WK-6000-PEP-Y-PAYMENT          PIC S9(07)V9(02).         02470000
+024800     05  WK-6050-PEP-Y-TOT-DAYS         PIC S9(04).               02480000
+024900     05  WK-7000-OUTLIER-VALUE-A        PIC S9(07)V9(02).         02490000
+025000     05  WK-7000-AB-DIFF                PIC S9(07)V9(02).         02500000
+025100     05  WK-7000-CALC                   PIC S9(07)V9(02).         02510000
+025200     05  WK-8000-OUTLIER-VALUE-B        PIC S9(07)V9(02).         02520000
+025300     05  WK-8000-OUTLIER-LAB-NLAB       PIC S9(07)V9(02).         02530000
+025400     05  WK-9100-TOTAL-PAYMENT          PIC 9(07)V9(02).          02540000
+025500     05  WK-10000-OUTLIER-POOL-DIF      PIC S9(07)V9(02).         02550000
+025600     05  WK-10000-OUTLIER-POOL-PERCENT  PIC S9(09)V9(02).         02560000
+025700     05  WK-10000-OUTLIER-AVAIL-POOL    PIC S9(09)V9(02).         02570000
+025800                                                                  02580000
+025900 01  WORK-HRG.                                                    02590000
+026000     05  WORK-HRG1                      PIC X(01).                02600000
+026100     05  WORK-HRG2                      PIC X(01).                02610000
+026200     05  WORK-HRG3                      PIC X(01).                02620000
+026300     05  WORK-HRG4                      PIC X(01).                02630000
+026400     05  WORK-HRG5                      PIC X(01).                02640000
+026500                                                                  02650000
+026600*----------------------------------------------------------------*02660000
+026700 01  HOLD-HHA-DATA.                                               02670000
+026800     05  H-HHA-INPUT-DATA.                                        02680000
+026900         10  H-HHA-NPI                 PIC X(10).                 02690000
+027000         10  H-HHA-HIC                 PIC X(12).                 02700000
+027100         10  H-HHA-PROV-NO             PIC X(06).                 02710000
+027200         10  H-HHA-TOB                 PIC XXX.                   02720000
+027300             88 H-VALID-TOB-CLAIM       VALUE                     02730000
+027400             '329', '339', '327', '337',                          02740000
+027500             '32G', '33G', '32I', '33I',                          02750000
+027600             '32J', '33J', '32M', '33M', '32Q',                   02760000
+027700             '32F', '32K', '32P', '32H', '33Q',                   02770000
+027800             '33F', '33K', '33P', '33H'.                          02780000
+027900             88 H-VALID-TOB-RAP         VALUE                     02790000
+028000             '322', '332'.                                        02800000
+028100*                                                             *   02810000
+028200         10  H-HHA-PEP-INDICATOR       PIC X.                     02820000
+028300         10  H-HHA-PEP-DAYS            PIC 999.                   02830000
+028400         10  H-HHA-INIT-PAY-INDICATOR  PIC X.                     02840000
+028500             88 H-HHA-WITH-DATA-CHECK VALUE '0', '1'.             02850000
+028600             88 H-HHA-NO-DATA-CHECK   VALUE '2', '3'.             02860000
+028700         10  H-HHA-COUNTY-CODE         PIC X(05).                 02870000
+028800         10  FILLER                    PIC X(02).                 02880000
+028900         10  H-HHA-MSA1                PIC 9(07)V9(02).           02890000
+029000         10  H-HHA-MSA2-DATA REDEFINES H-HHA-MSA1.                02900000
+029100             15  FILLER             PIC XXX.                      02910000
+029200             15  H-HHA-MSA2         PIC XXXX.                     02920000
+029300             15  FILLER             PIC XX.                       02930000
+029400         10  H-HHA-CBSA-DATA REDEFINES H-HHA-MSA1.                02940000
+029500             15  FILLER             PIC XX.                       02950000
+029600             15  H-HHA-CBSA         PIC XXXXX.                    02960000
+029700             15  FILLER             PIC XX.                       02970000
+029800         10  H-HHA-SERV-FROM-DATE.                                02980000
+029900             15  H-HHA-FROM-CC         PIC XX.                    02990000
+030000             15  H-HHA-FROM-YYMMDD.                               03000000
+030100                 25  H-HHA-FROM-YY     PIC XX.                    03010000
+030200                 25  H-HHA-FROM-MM     PIC XX.                    03020000
+030300                 25  H-HHA-FROM-DD     PIC XX.                    03030000
+030400         10  H-HHA-SERV-THRU-DATE.                                03040000
+030500             15  H-HHA-THRU-CC         PIC XX.                    03050000
+030600             15  H-HHA-THRU-YYMMDD.                               03060000
+030700                 25  H-HHA-THRU-YY     PIC XX.                    03070000
+030800                 25  H-HHA-THRU-MM     PIC XX.                    03080000
+030900                 25  H-HHA-THRU-DD     PIC XX.                    03090000
+031000         10  H-HHA-ADMIT-DATE.                                    03100000
+031100             15  H-HHA-ADMIT-CC        PIC XX.                    03110000
+031200             15  H-HHA-ADMIT-YYMMDD.                              03120000
+031300                 25  H-HHA-ADMIT-YY    PIC XX.                    03130000
+031400                 25  H-HHA-ADMIT-MM    PIC XX.                    03140000
+031500                 25  H-HHA-ADMIT-DD    PIC XX.                    03150000
+031600         10  H-HHA-HRG-DATA      OCCURS 6.                        03160000
+031700             15  H-HHA-MED-REVIEW-INDICATOR PIC X.                03170000
+031800             15  H-HHA-HRG-INPUT-CODE       PIC X(05).            03180000
+031900             15  H-HHA-HRG-OUTPUT-CODE      PIC X(05).            03190000
+032000             15  H-HHA-HRG-NO-OF-DAYS       PIC 9(03).            03200000
+032100             15  H-HHA-HRG-WGTS             PIC 9(02)V9(04).      03210000
+032200             15  H-HHA-HRG-PAY              PIC 9(07)V9(02).      03220000
+032300         10  H-HHA-REVENUE-DATA     OCCURS 6.                     03230000
+032400             15  H-HHA-REVENUE-CODE             PIC X(04).        03240000
+032500             15  H-HHA-REVENUE-QTY-COV-VISITS   PIC 9(03).        03250000
+032600             15  H-HHA-REVENUE-QTY-OUTL-UNITS   PIC 9(05).        03260000
+032700             15  H-HHA-REVENUE-EARLIEST-DATE    PIC 9(08).        03270000
+032800             15  H-HHA-REVENUE-DOLL-RATE        PIC 9(07)V9(02).  03280000
+032900             15  H-HHA-REVENUE-COST             PIC 9(07)V9(02).  03290000
+033000             15  H-HHA-REVENUE-ADD-ON-VISIT-AMT PIC 9(07)V9(02).  03300000
+033100     05  H-HHA-PASSBACK-DATA.                                     03310000
+033200         10  H-HHA-PAY-RTC                PIC 99.                 03320000
+033300         10  H-HHA-REVENUE-SUM1-3-QTY-THR PIC 9(05).              03330000
+033400         10  H-HHA-REVENUE-SUM1-6-QTY-ALL PIC 9(05).              03340000
+033500         10  H-HHA-OUTLIER-PAYMENT        PIC 9(07)V9(02).        03350000
+033600         10  H-HHA-TOTAL-PAYMENT          PIC 9(07)V9(02).        03360000
+033700     05  H-HHA-CASE-MIX-DATA.                                     03370000
+033800         10  H-HHA-LUPA-ADD-ON-PAYMENT    PIC 9(03)V9(02).        03380000
+033900         10  H-HHA-LUPA-SRC-ADM           PIC X.                  03390000
+034000         10  H-HHA-RECODE-IND             PIC X.                  03400000
+034100         10  H-HHA-EPISODE-TIMING         PIC 9.                  03410000
+034200         10  H-HHA-SEVERITY-POINTS.                               03420000
+034300             15  H-HHA-CLINICAL-SEV-EQ1   PIC X(01).              03430000
+034400             15  H-HHA-FUNCTION-SEV-EQ1   PIC X(01).              03440000
+034500             15  H-HHA-CLINICAL-SEV-EQ2   PIC X(01).              03450000
+034600             15  H-HHA-FUNCTION-SEV-EQ2   PIC X(01).              03460000
+034700             15  H-HHA-CLINICAL-SEV-EQ3   PIC X(01).              03470000
+034800             15  H-HHA-FUNCTION-SEV-EQ3   PIC X(01).              03480000
+034900             15  H-HHA-CLINICAL-SEV-EQ4   PIC X(01).              03490000
+035000             15  H-HHA-FUNCTION-SEV-EQ4   PIC X(01).              03500000
+035100     05  H-HHA-PROV-TOTAL-DATA.                                   03510000
+035200         10  H-HHA-PROV-OUTLIER-PAY-TOTAL PIC 9(08)V9(02).        03520000
+035300         10  H-HHA-PROV-PAYMENT-TOTAL     PIC 9(09)V9(02).        03530000
+035400     05  H-HHA-PROV-VBP-ADJ-FAC           PIC 9V9(5).             03540000
+035500     05  H-HHA-VBP-ADJ-AMT                PIC S9(7)V99.           03550000
+035600     05  H-HHA-PPS-STD-VALUE              PIC 9(7)V99.            03560000
+035700     05  FILLER                           PIC X(27).              03570000
+035800*----------------------------------------------------------------*03580000
+035900*    STATE & COUNTY CODE RURAL ADD ON TABLE                      *03590000
+036000*----------------------------------------------------------------*03600000
+036100     COPY ADDONTBL.                                               03610000
+036200*----------------------------------------------------------------*03620000
+036300 LINKAGE SECTION.                                                 03630000
+036400***************************************************************   03640000
+036500*                 * * * * * * * * *                           *   03650000
+036600***************************************************************   03660000
+036610***************************************************************   03661000
+036620*    THIS DATA IS CALCULATED BY THIS HHAPR  SUBROUTINE        *   03662000
+036630*    AND PASSED BACK TO THE CALLING PROGRAM                   *   03663000
+036640***************************************************************   03664000
+036650 01  HHA-INPUT-DATA.                                              03665000
+036660     05  HHA-DATA.                                                03666000
+036670         10  HHA-NPI                 PIC X(10).                   03667000
+036680         10  HHA-HIC                 PIC X(12).                   03668000
+036690         10  HHA-PROV-NO             PIC X(06).                   03669000
+036700         10  HHA-TOB                 PIC XXX.                     03670000
+036800             88 HHA-VALID-TOB-CLAIM       VALUE                   03680000
+036900             '329', '339', '327', '337',                          03690000
+037000             '32G', '33G', '32I', '33I',                          03700000
+037100             '32J', '33J', '32M', '33M', '32Q',                   03710000
+037200             '32F', '32K', '32P', '32H', '33Q',                   03720000
+037300             '33F', '33K', '33P', '33H'.                          03730000
+037400             88 HHA-VALID-TOB-RAP         VALUE                   03740000
+037500             '322', '332'.                                        03750000
+037600*                                                             *   03760000
+037700         10  HHA-PEP-INDICATOR       PIC X.                       03770000
+037800         10  HHA-PEP-DAYS            PIC 999.                     03780000
+037900         10  HHA-INIT-PAY-INDICATOR  PIC X.                       03790000
+038000             88  HHA-WITH-DATA-CHECK VALUE '0', '1'.              03800000
+038100             88  HHA-NO-DATA-CHECK   VALUE '2', '3'.              03810000
+038200         10  HHA-COUNTY-CODE         PIC X(05).                   03820000
+038300         10  FILLER                  PIC X(02).                   03830000
+038400         10  HHA-MSA1                PIC 9(07)V9(02).             03840000
+038500         10  HHA-MSA2-DATA REDEFINES HHA-MSA1.                    03850000
+038600             15  FILLER             PIC XXX.                      03860000
+038700             15  HHA-MSA2.                                        03870000
+038800                 25  HHA-MSA2-RURAL-1ST.                          03880000
+038900                     30  HHA-RURAL-MSA         PIC XX.            03890000
+039000                     88  HHA-MSA-RURAL-CHECK   VALUE '99'.        03900000
+039100                 25  HHA-MSA2-RURAL-2ND        PIC XX.            03910000
+039200             15  FILLER             PIC XX.                       03920000
+039300         10  HHA-CBSA-DATA REDEFINES HHA-MSA1.                    03930000
+039400             15  FILLER             PIC XX.                       03940000
+039500             15  HHA-CBSA.                                        03950000
+039600                 88  HHA-CBSA-RURAL-CHECK-ALL VALUE               03960000
+039700                 '50001', '50002', '50005', '50007', '50025',     03970000
+039800                 '50028', '50031', '50035', '50036', '50037',     03980000
+039900                 '50041', '50045', '50047', '50048', '50050',     03990000
+040000                 '50056', '50057', '50066', '50068', '50071',     04000000
+040100                 '50073', '50080', '50084', '50087', '50089',     04010000
+040200                 '50090', '50091', '50103', '50104', '50111',     04020000
+040300                 '50115', '50117', '50118', '50120', '50121',     04030000
+040400                 '50139', '50146', '50147', '50149', '50151',     04040000
+040500                 '50164', '50165', '50168', '50169', '50173',     04050000
+040600                 '50174', '50177', '50180', '50182', '50183'.     04060000
+040700*                                                                 04070000
+040800                 25  HHA-CBSA-RURAL-1ST.                          04080000
+040900                     30  HHA-RURAL-CBSA        PIC XXX.           04090000
+041000                     88  HHA-CBSA-RURAL-CHECK   VALUE '999'.      04100000
+041100                 25  HHA-CBSA-RURAL-2ND        PIC XX.            04110000
+041200             15  FILLER             PIC XX.                       04120000
+041300         10  HHA-SERV-FROM-DATE.                                  04130000
+041400             15  HHA-FROM-CC         PIC XX.                      04140000
+041500             15  HHA-FROM-YYMMDD.                                 04150000
+041600                 25  HHA-FROM-YY     PIC XX.                      04160000
+041700                 25  HHA-FROM-MM     PIC XX.                      04170000
+041800                 25  HHA-FROM-DD     PIC XX.                      04180000
+041900         10  HHA-SERV-THRU-DATE.                                  04190000
+042000             15  HHA-THRU-CC         PIC XX.                      04200000
+042100             15  HHA-THRU-YYMMDD.                                 04210000
+042200                 25  HHA-THRU-YY     PIC XX.                      04220000
+042300                 25  HHA-THRU-MM     PIC XX.                      04230000
+042400                 25  HHA-THRU-DD     PIC XX.                      04240000
+042500         10  HHA-ADMIT-DATE.                                      04250000
+042600             15  HHA-ADMIT-CC        PIC XX.                      04260000
+042700             15  HHA-ADMIT-YYMMDD.                                04270000
+042800                 25  HHA-ADMIT-YY    PIC XX.                      04280000
+042900                 25  HHA-ADMIT-MM    PIC XX.                      04290000
+043000                 25  HHA-ADMIT-DD    PIC XX.                      04300000
+043100         10  HHA-HRG-DATA      OCCURS 6.                          04310000
+043200             15  HHA-MED-REVIEW-INDICATOR PIC X.                  04320000
+043300             15  HHA-HRG-INPUT-CODE       PIC X(05).              04330000
+043400             15  HHA-HRG-OUTPUT-CODE      PIC X(05).              04340000
+043500             15  HHA-HRG-NO-OF-DAYS       PIC 9(03).              04350000
+043600             15  HHA-HRG-WGTS             PIC 9(02)V9(04).        04360000
+043700             15  HHA-HRG-PAY              PIC 9(07)V9(02).        04370000
+043800         10  HHA-REVENUE-DATA     OCCURS 6.                       04380000
+043900             15  HHA-REVENUE-CODE             PIC X(04).          04390000
+044000             15  HHA-REVENUE-QTY-COV-VISITS   PIC 9(03).          04400000
+044100             15  HHA-REVENUE-QTY-OUTL-UNITS   PIC 9(05).          04410000
+044200             15  HHA-REVENUE-EARLIEST-DATE    PIC 9(08).          04420000
+044300             15  HHA-REVENUE-DOLL-RATE        PIC 9(07)V9(02).    04430000
+044400             15  HHA-REVENUE-COST             PIC 9(07)V9(02).    04440000
+044500             15  HHA-REVENUE-ADD-ON-VISIT-AMT PIC 9(07)V9(02).    04450000
+044600     05  HHA-PASSBACK-DATA.                                       04460000
+044700         10  HHA-PAY-RTC                PIC 99.                   04470000
+044800         10  HHA-REVENUE-SUM1-3-QTY-THR PIC 9(05).                04480000
+044900         10  HHA-REVENUE-SUM1-6-QTY-ALL PIC 9(05).                04490000
+045000         10  HHA-OUTLIER-PAYMENT        PIC 9(07)V9(02).          04500000
+045100         10  HHA-TOTAL-PAYMENT          PIC 9(07)V9(02).          04510000
+045200     05  HHA-CASE-MIX-DATA.                                       04520000
+045300         10  HHA-LUPA-ADD-ON-PAYMENT      PIC 9(03)V9(02).        04530000
+045400         10  HHA-LUPA-SRC-ADM             PIC X.                  04540000
+045500         10  HHA-RECODE-IND               PIC X.                  04550000
+045600         10  HHA-EPISODE-TIMING           PIC 9.                  04560000
+045700         10  HHA-SEVERITY-POINTS.                                 04570000
+045800             15  HHA-CLINICAL-SEV-EQ1     PIC X(01).              04580000
+045900             15  HHA-FUNCTION-SEV-EQ1     PIC X(01).              04590000
+046000             15  HHA-CLINICAL-SEV-EQ2     PIC X(01).              04600000
+046100             15  HHA-FUNCTION-SEV-EQ2     PIC X(01).              04610000
+046200             15  HHA-CLINICAL-SEV-EQ3     PIC X(01).              04620000
+046300             15  HHA-FUNCTION-SEV-EQ3     PIC X(01).              04630000
+046400             15  HHA-CLINICAL-SEV-EQ4     PIC X(01).              04640000
+046500             15  HHA-FUNCTION-SEV-EQ4     PIC X(01).              04650000
+046600     05  HHA-PROV-TOTAL-DATA.                                     04660000
+046700         10  HHA-PROV-OUTLIER-PAY-TOTAL PIC 9(08)V9(02).          04670000
+046800         10  HHA-PROV-PAYMENT-TOTAL     PIC 9(09)V9(02).          04680000
+046900     05  HHA-PROV-VBP-ADJ-FAC           PIC 9V9(5).               04690000
+047000     05  HHA-VBP-ADJ-AMT                PIC S9(7)V99.             04700000
+047100     05  HHA-PPS-STD-VALUE              PIC 9(7)V99.              04710000
+047200     05  FILLER                         PIC X(27).                04720000
+047300*----------------------------------------------------------------*04730000
+047400                                                                  04740000
+047500 01  HOLD-VARIABLES-DATA.                                         04750000
+047600     02  HOLD-VAR-DATA.                                           04760000
+047700         05  PRICER-OPTION-SW                   PIC X(01).        04770000
+047800         05  HHOPN-VERSION                      PIC X(07).        04780000
+047900         05  HHDRV-VERSION                      PIC X(07).        04790000
+048000         05  HHCAL-VERSION                      PIC X(07).        04800000
+048100         05  FILLER                             PIC X(20).        04810000
+048200                                                                  04820000
+048300 01  CBSA-WAGE-INDEX-DATA.                                        04830000
+048400     02  HOLD-WIR-DATA.                                           04840000
+048500         05  WIR-CBSA                       PIC X(05).            04850000
+048600         05  WIR-CBSA-EFFDATE               PIC X(08).            04860000
+048700         05  WIR-CBSA-WAGEIND               PIC 9(02)V9(04).      04870000
+048800                                                                  04880000
+048900 01  TB-REV-DOLL-RATE-UNITS.                                      04890000
+049000     05 WK-REV-DOLL-RATE-UNITS  PIC 9(07)V9(02)                   04900000
+049100                                OCCURS 6.                         04910000
+049200 01  TB-STDV-DATA.                                                04920000
+049300     05 TB-STDV-TABLE           OCCURS 6.                         04930000
+049400        10  TB-STDV-REV-CODE           PIC X(04).                 04940000
+049500        10  TB-STDV-REV-DOLL-RATE      PIC 9(07)V9(02).           04950000
+049600                                                                  04960000
+049700 PROCEDURE DIVISION  USING HHA-INPUT-DATA                         04970000
+049800                           HOLD-VARIABLES-DATA                    04980000
+049900                           CBSA-WAGE-INDEX-DATA                   04990000
+050000                           TB-REV-DOLL-RATE-UNITS                 05000000
+050100                           TB-STDV-DATA.                          05010000
+050200                                                                  05020000
+050300***************************************************************   05030000
+050400*    PROCESSING:                                              *   05040000
+050500*        A. WILL PROCESS NATIONAL HHA FOR CY 2010             *   05050000
+050600*                STARTING JAN 1, 2010                         *   05060000
+050700***************************************************************   05070000
+050800                                                                  05080000
+050900     MOVE CAL-VERSION TO HHCAL-VERSION.                           05090000
+051000                                                                  05100000
+051100     PERFORM 200-MAINLINE-CONTROL THRU 200-EXIT.                  05110000
+051200                                                                  05120000
+051300*         YEARCHANGE  2014.1                      ===========**   05130000
+051400     MOVE 0 TO  H-HHA-LUPA-ADD-ON-PAYMENT.                        05140000
+051500*         YEARCHANGE  2014.1                      ===========**   05150000
+051600                                                                  05160000
+051700*----------------------------------------------------------------*05170000
+051800* CALCULATE THE HHA-PPS-STD-VALUE                                *05180000
+051900*----------------------------------------------------------------*05190000
+052000     PERFORM 9200-CALC-STD-VALUE  THRU 9200-EXIT.                 05200000
+052010*----------------------------------------------------------------*05201000
+052020* CALCULATE THE HHA-VBP-ADJ-AMT                                  *05202000
+052030*----------------------------------------------------------------*05203000
+052040     PERFORM 9100-VBP-CALC        THRU 9100-EXIT.                 05204000
+052050                                                                  05205000
+052060     MOVE HOLD-HHA-DATA TO HHA-INPUT-DATA.                        05206000
+052070                                                                  05207000
+052080     GOBACK.                                                      05208000
+052090                                                                  05209000
+052100 200-MAINLINE-CONTROL.                                            05210000
+052200                                                                  05220000
+052300     MOVE HHA-INPUT-DATA TO HOLD-HHA-DATA.                        05230000
+052400                                                                  05240000
+052500     MOVE SPACE   TO WS-RURAL-CATEGORY.                           05250000
+052510                                                                  05251000
+052520     MOVE ALL '0' TO                                              05252000
+052530                     WK-ALL-TOTALS                                05253000
+052540                     WK-HRG-NO-OF-DAYS                            05254000
+052550                     WK-HRG-NO-OF-DAYS-TOT                        05255000
+052560                     WK-RTC-ADJ-IND                               05256000
+052570                     WK-PEP-DAYS                                  05257000
+052580                     H-HHA-PASSBACK-DATA                          05258000
+052590                     H-HHA-HRG-PAY (1)                            05259000
+052600                     H-HHA-HRG-PAY (2)                            05260000
+052700                     H-HHA-HRG-PAY (3)                            05270000
+052800                     H-HHA-HRG-PAY (4)                            05280000
+052900                     H-HHA-HRG-PAY (5)                            05290000
+053000                     H-HHA-HRG-PAY (6)                            05300000
+053100                     H-HHA-REVENUE-COST (1)                       05310000
+053200                     H-HHA-REVENUE-COST (2)                       05320000
+053300                     H-HHA-REVENUE-COST (3)                       05330000
+053400                     H-HHA-REVENUE-COST (4)                       05340000
+053500                     H-HHA-REVENUE-COST (5)                       05350000
+053600                     H-HHA-REVENUE-COST (6)                       05360000
+053700                     H-HHA-REVENUE-ADD-ON-VISIT-AMT (1)           05370000
+053800                     H-HHA-REVENUE-ADD-ON-VISIT-AMT (2)           05380000
+053900                     H-HHA-REVENUE-ADD-ON-VISIT-AMT (3)           05390000
+054000                     H-HHA-REVENUE-ADD-ON-VISIT-AMT (4)           05400000
+054100                     H-HHA-REVENUE-ADD-ON-VISIT-AMT (5)           05410000
+054200                     H-HHA-REVENUE-ADD-ON-VISIT-AMT (6).          05420000
+054300                                                                  05430000
+054400     IF  H-HHA-PAY-RTC = 00                                       05440000
+054500         PERFORM 400-CALC-THE-HHA THRU 400-EXIT.                  05450000
+054600                                                                  05460000
+054700 200-EXIT.   EXIT.                                                05470000
+054800                                                                  05480000
+054900 400-CALC-THE-HHA.                                                05490000
+055000                                                                  05500000
+055100*    IF H-HHA-SERV-THRU-DATE < 20070101                           05510000
+055200*        MOVE '40' TO H-HHA-PAY-RTC                               05520000
+055300*        GO TO 400-EXIT.                                          05530000
+055400                                                                  05540000
+055500     IF H-HHA-ADMIT-DATE >                                        05550000
+055600        H-HHA-SERV-FROM-DATE                                      05560000
+055700         MOVE '40' TO H-HHA-PAY-RTC                               05570000
+055800         GO TO 400-EXIT.                                          05580000
+055900                                                                  05590000
+056000     IF (H-VALID-TOB-RAP  AND                                     05600000
+056100        (H-HHA-HRG-INPUT-CODE (1) = SPACE))                       05610000
+056200        MOVE '70' TO H-HHA-PAY-RTC                                05620000
+056300        GO TO 400-EXIT.                                           05630000
+056400                                                                  05640000
+056500     IF (H-VALID-TOB-CLAIM AND                                    05650000
+056600         (H-HHA-REVENUE-SUM1-6-QTY-ALL > 4 ) AND                  05660000
+056700         (H-HHA-HRG-INPUT-CODE (1) = SPACE))                      05670000
+056800        MOVE '75' TO H-HHA-PAY-RTC                                05680000
+056900        GO TO 400-EXIT.                                           05690000
+057000                                                                  05700000
+057100     IF (H-VALID-TOB-CLAIM AND                                    05710000
+057200         (H-HHA-REVENUE-CODE (1) = SPACE))                        05720000
+057300        MOVE '85' TO H-HHA-PAY-RTC                                05730000
+057400        GO TO 400-EXIT.                                           05740000
+057500                                                                  05750000
+057600     IF (H-VALID-TOB-CLAIM AND                                    05760000
+057700         (H-HHA-HRG-INPUT-CODE (2) NOT = SPACES) AND              05770000
+057800         (H-HHA-PEP-INDICATOR = 'Y') AND                          05780000
+057900         (H-HHA-PEP-DAYS NOT NUMERIC OR                           05790000
+058000          H-HHA-PEP-DAYS = ZEROES))                               05800000
+058100        MOVE '15' TO H-HHA-PAY-RTC                                05810000
+058200        GO TO 400-EXIT.                                           05820000
+058300                                                                  05830000
+058400     IF H-HHA-PAY-RTC NOT = 00 GO TO 400-EXIT.                    05840000
+058500                                                                  05850000
+058600***************************************************************   05860000
+058700*                 YEARCHANGE                                  *   05870000
+058800*-------------------------------------------------------------*   05880000
+058900* RATES AND THRESHOLDS ARE APPLIED FOR RURAL AND NON-RURAL    *   05890000
+059000*-------------------------------------------------------------*   05900000
+059100* OUTLIER-THRESHOLD-AMT = FED-EPISODE-RATE-AMT X .51          *   05910000
+059200***************************************************************   05920000
+059300*-------------------------------------------------------------*   05930000
+059400*   NON-RURAL, REPORTING DATA  -  TABLE 1                     *   05940000
+059500*   ( SAVE FOR STANDARD VALUE CALCULATION )                   *   05950000
+059600*-------------------------------------------------------------*   05960000
+059610     MOVE 03220.79           TO  WS-STDV-EPISODE-AMT.             05961004
+059620*-------------------------------------------------------------*   05962000
+059630*   RURAL, REPORTING DATA    - TABLE 8, 1ST GROUP, 2ND COL    *   05963000
+059640*-------------------------------------------------------------*   05964000
+059650     IF HHA-CBSA-RURAL-CHECK                                      05965000
+059660     OR HHA-CBSA-RURAL-CHECK-ALL                                  05966000
+059670        IF HHA-WITH-DATA-CHECK                                    05967000
+059671           MOVE 03220.79 TO   FED-EPISODE-RATE-AMT                05967104
+059672           MOVE 01642.60 TO   OUTLIER-THRESHOLD-AMT               05967204
+059673           PERFORM 2000-TBL-SCC-SEARCH THRU 2000-EXIT             05967300
+059674           IF H-HHA-PAY-RTC = '31'                                05967400
+059675              GO TO 400-EXIT                                      05967500
+059676           ELSE                                                   05967600
+059677              GO TO PROCESS-PAYMENT                               05967700
+059678           END-IF                                                 05967800
+059679        END-IF                                                    05967900
+059680     END-IF.                                                      05968000
+059690*-------------------------------------------------------------*   05969000
+059691*   RURAL, NO REPORTING DATA - TABLE 7, 2ND GROUP, 2ND COL    *   05969100
+059692*-------------------------------------------------------------*   05969200
+059693     IF HHA-CBSA-RURAL-CHECK                                      05969300
+059694     OR HHA-CBSA-RURAL-CHECK-ALL                                  05969400
+059695        IF HHA-NO-DATA-CHECK                                      05969500
+059696           MOVE 03157.33 TO   FED-EPISODE-RATE-AMT                05969604
+059697           MOVE 01610.24 TO   OUTLIER-THRESHOLD-AMT               05969704
+059698           PERFORM 2000-TBL-SCC-SEARCH THRU 2000-EXIT             05969800
+059699           IF H-HHA-PAY-RTC = '31'                                05969900
+059700              GO TO 400-EXIT                                      05970000
+059701           ELSE                                                   05970100
+059702              GO TO PROCESS-PAYMENT                               05970200
+059703           END-IF                                                 05970300
+059704        END-IF                                                    05970400
+059705     END-IF.                                                      05970500
+059706*-------------------------------------------------------------*   05970600
+059707*   NON-RURAL, REPORTING DATA  -  TABLE 1                     *   05970700
+059708*-------------------------------------------------------------*   05970800
+059709     IF HHA-WITH-DATA-CHECK                                       05970900
+059710        MOVE 03220.79 TO   FED-EPISODE-RATE-AMT                   05971004
+059711        MOVE 01642.60 TO   OUTLIER-THRESHOLD-AMT                  05971104
+059712        GO TO PROCESS-PAYMENT                                     05971200
+059713     END-IF.                                                      05971300
+059714*-------------------------------------------------------------*   05971400
+059715*   NON-RURAL, NO REPORTING DATA - TABLE 2                    *   05971500
+059716*-------------------------------------------------------------*   05971600
+059717     IF HHA-NO-DATA-CHECK                                         05971700
+059718        MOVE 03157.33 TO   FED-EPISODE-RATE-AMT                   05971804
+059719        MOVE 01610.24 TO   OUTLIER-THRESHOLD-AMT                  05971904
+059720        GO TO PROCESS-PAYMENT                                     05972000
+059721     END-IF.                                                      05972100
+059722                                                                  05972200
+059723 PROCESS-PAYMENT.                                                 05972300
+059724                                                                  05972400
+059725* ADJUST REVENUE-DOLL-RATE IF RURAL                               05972500
+059726     PERFORM 425-ADJ-REV-DOLL-RATE THRU 425-EXIT                  05972600
+059727             VARYING SS-ADJ FROM 1 BY 1                           05972700
+059728             UNTIL SS-ADJ > 6.                                    05972800
+059729                                                                  05972900
+059730     IF H-VALID-TOB-RAP                                           05973000
+059740        PERFORM 500-INITIAL-PAYMENT THRU 500-EXIT                 05974000
+059750        GO TO 400-EXIT.                                           05975000
+059760                                                                  05976000
+059770     IF H-VALID-TOB-CLAIM                                         05977000
+059780        PERFORM 1000-FINAL-PAYMENT THRU 1000-EXIT                 05978000
+059790        GO TO 400-EXIT.                                           05979000
+059800                                                                  05980000
+059900     MOVE '10' TO H-HHA-PAY-RTC.                                  05990000
+060000                                                                  06000000
+060100 400-EXIT.   EXIT.                                                06010000
+060200                                                                  06020000
+060300 425-ADJ-REV-DOLL-RATE.                                           06030000
+060301     IF WS-RURAL-CATEGORY = 'A'                                   06030100
+060302         COMPUTE H-HHA-REVENUE-DOLL-RATE (SS-ADJ) ROUNDED =       06030200
+060303                 H-HHA-REVENUE-DOLL-RATE (SS-ADJ) *               06030300
+060304                 WS-RURAL-ADDON-A                                 06030400
+060305     END-IF.                                                      06030500
+060306     IF WS-RURAL-CATEGORY = 'B'                                   06030600
+060307         COMPUTE H-HHA-REVENUE-DOLL-RATE (SS-ADJ) ROUNDED =       06030700
+060308                 H-HHA-REVENUE-DOLL-RATE (SS-ADJ) *               06030800
+060309                 WS-RURAL-ADDON-B                                 06030900
+060310     END-IF.                                                      06031000
+060311     IF WS-RURAL-CATEGORY = 'C'                                   06031100
+060312         COMPUTE H-HHA-REVENUE-DOLL-RATE (SS-ADJ) ROUNDED =       06031200
+060313                 H-HHA-REVENUE-DOLL-RATE (SS-ADJ) *               06031300
+060314                 WS-RURAL-ADDON-C                                 06031400
+060315     END-IF.                                                      06031500
+060316 425-EXIT.    EXIT.                                               06031600
+060317                                                                  06031700
+060318 500-INITIAL-PAYMENT.                                             06031800
+060319                                                                  06031900
+060320     MOVE H-HHA-HRG-OUTPUT-CODE (1) TO WORK-HRG.                  06032000
+060321                                                                  06032100
+060322***************************************************************   06032200
+060330*            TOB = 322 OR 332 INITIAL PAYMENT                     06033000
+060340***************************************************************   06034000
+060350                                                                  06035000
+060360     IF  H-HHA-INIT-PAY-INDICATOR  = '0' OR '1' OR '2' OR '3'     06036000
+060370         NEXT SENTENCE                                            06037000
+060380     ELSE                                                         06038000
+060390         MOVE '35' TO H-HHA-PAY-RTC                               06039000
+060400         GO TO 500-EXIT.                                          06040000
+060500                                                                  06050000
+060600     IF  H-HHA-INIT-PAY-INDICATOR  = '1' OR '3'                   06060000
+060700         MOVE '03' TO H-HHA-PAY-RTC                               06070000
+060800         GO TO 500-EXIT.                                          06080000
+060900                                                                  06090000
+061000     COMPUTE FED-ADJ ROUNDED =                                    06100000
+061100               H-HHA-HRG-WGTS (1) * FED-EPISODE-RATE-AMT.         06110000
+061200                                                                  06120000
+061300     COMPUTE FED-LABOR-ADJ ROUNDED =                              06130000
+061400             WIR-CBSA-WAGEIND *                                   06140000
+061500             LABOR-PERCENT *                                      06150000
+061600             FED-ADJ.                                             06160000
+061700                                                                  06170000
+061800     COMPUTE FED-NON-LABOR-ADJ ROUNDED =                          06180000
+061900              (NONLABOR-PERCENT * FED-ADJ).                       06190000
+062000                                                                  06200000
+062300*         YEARCHANGE                              ===========**   06230000
+062400                                                                  06240000
+062500      PERFORM 10100-SUPPLY-ADD-ON-CALC  THRU 10100-EXIT.          06250000
+062600                                                                  06260000
+062700*         YEARCHANGE                              ===========**   06270000
+062800                                                                  06280000
+062900*    IF HHA-SERV-THRU-DATE > 20071231 AND                         06290000
+063000*       HHA-SERV-FROM-DATE > 20071231                             06300000
+063100*        NEXT SENTENCE                                            06310000
+063200*    ELSE                                                         06320000
+063300*        MOVE 0000000.00 TO FED-SUPPLY-ADJ.                       06330000
+063400                                                                  06340000
+063500                                                                  06350000
+063600     IF H-HHA-SERV-FROM-DATE = H-HHA-ADMIT-DATE                   06360000
+063700        COMPUTE H-HHA-TOTAL-PAYMENT ROUNDED =                     06370000
+063800       (FED-LABOR-ADJ + FED-NON-LABOR-ADJ + FED-SUPPLY-ADJ) * .6  06380000
+063900        MOVE H-HHA-TOTAL-PAYMENT TO H-HHA-HRG-PAY (1)             06390000
+064000        MOVE '05' TO H-HHA-PAY-RTC                                06400000
+064100     ELSE                                                         06410000
+064200        COMPUTE H-HHA-TOTAL-PAYMENT ROUNDED =                     06420000
+064300       (FED-LABOR-ADJ + FED-NON-LABOR-ADJ + FED-SUPPLY-ADJ) * .5  06430000
+064400        MOVE H-HHA-TOTAL-PAYMENT TO H-HHA-HRG-PAY (1)             06440000
+064500        MOVE '04' TO H-HHA-PAY-RTC.                               06450000
+064600                                                                  06460000
+064700 500-EXIT.   EXIT.                                                06470000
+064800                                                                  06480000
+064900 1000-FINAL-PAYMENT.                                              06490000
+065000                                                                  06500000
+065100     IF H-HHA-REVENUE-QTY-COV-VISITS (1) NOT NUMERIC              06510000
+065200        MOVE ZEROES TO H-HHA-REVENUE-QTY-COV-VISITS (1).          06520000
+065300     IF H-HHA-REVENUE-QTY-COV-VISITS (2) NOT NUMERIC              06530000
+065400        MOVE ZEROES TO H-HHA-REVENUE-QTY-COV-VISITS (2).          06540000
+065500     IF H-HHA-REVENUE-QTY-COV-VISITS (3) NOT NUMERIC              06550000
+065600        MOVE ZEROES TO H-HHA-REVENUE-QTY-COV-VISITS (3).          06560000
+065700     IF H-HHA-REVENUE-QTY-COV-VISITS (4) NOT NUMERIC              06570000
+065800        MOVE ZEROES TO H-HHA-REVENUE-QTY-COV-VISITS (4).          06580000
+065900     IF H-HHA-REVENUE-QTY-COV-VISITS (5) NOT NUMERIC              06590000
+066000        MOVE ZEROES TO H-HHA-REVENUE-QTY-COV-VISITS (5).          06600000
+066100     IF H-HHA-REVENUE-QTY-COV-VISITS (6) NOT NUMERIC              06610000
+066200        MOVE ZEROES TO H-HHA-REVENUE-QTY-COV-VISITS (6).          06620000
+066300                                                                  06630000
+066400     IF H-HHA-REVENUE-QTY-OUTL-UNITS (1) NOT NUMERIC              06640000
+066500        MOVE ZEROES TO H-HHA-REVENUE-QTY-OUTL-UNITS (1).          06650000
+066600     IF H-HHA-REVENUE-QTY-OUTL-UNITS (2) NOT NUMERIC              06660000
+066700        MOVE ZEROES TO H-HHA-REVENUE-QTY-OUTL-UNITS (2).          06670000
+066800     IF H-HHA-REVENUE-QTY-OUTL-UNITS (3) NOT NUMERIC              06680000
+066900        MOVE ZEROES TO H-HHA-REVENUE-QTY-OUTL-UNITS (3).          06690000
+067000     IF H-HHA-REVENUE-QTY-OUTL-UNITS (4) NOT NUMERIC              06700000
+067100        MOVE ZEROES TO H-HHA-REVENUE-QTY-OUTL-UNITS (4).          06710000
+067200     IF H-HHA-REVENUE-QTY-OUTL-UNITS (5) NOT NUMERIC              06720000
+067300        MOVE ZEROES TO H-HHA-REVENUE-QTY-OUTL-UNITS (5).          06730000
+067400     IF H-HHA-REVENUE-QTY-OUTL-UNITS (6) NOT NUMERIC              06740000
+067500        MOVE ZEROES TO H-HHA-REVENUE-QTY-OUTL-UNITS (6).          06750000
+067600                                                                  06760000
+067700     COMPUTE H-HHA-REVENUE-SUM1-3-QTY-THR ROUNDED =               06770000
+067800             H-HHA-REVENUE-QTY-COV-VISITS (1) +                   06780000
+067900             H-HHA-REVENUE-QTY-COV-VISITS (2) +                   06790000
+068000             H-HHA-REVENUE-QTY-COV-VISITS (3).                    06800000
+068100     COMPUTE H-HHA-REVENUE-SUM1-6-QTY-ALL ROUNDED =               06810000
+068200             H-HHA-REVENUE-QTY-COV-VISITS (1) +                   06820000
+068300             H-HHA-REVENUE-QTY-COV-VISITS (2) +                   06830000
+068400             H-HHA-REVENUE-QTY-COV-VISITS (3) +                   06840000
+068500             H-HHA-REVENUE-QTY-COV-VISITS (4) +                   06850000
+068600             H-HHA-REVENUE-QTY-COV-VISITS (5) +                   06860000
+068700             H-HHA-REVENUE-QTY-COV-VISITS (6).                    06870000
+068800                                                                  06880000
+068900     MOVE H-HHA-HRG-OUTPUT-CODE (1) TO WORK-HRG.                  06890000
+069000                                                                  06900000
+069100     IF H-HHA-REVENUE-SUM1-6-QTY-ALL < 5                          06910000
+069200       NEXT SENTENCE                                              06920000
+069300     ELSE                                                         06930000
+069400       GO TO PEP-CHECK.                                           06940000
+069500                                                                  06950000
+069600*01  LUPA-ADD-ON                                                  06960000
+069700*01  LUPA-ADD-ON-RURAL                                            06970000
+069800*01  LUPA-ADD-ON-2PERCENT                                         06980000
+069900*01  LUPA-ADD-ON-2PERCENT-RUR                                     06990000
+070000                                                                  07000000
+070100     IF HHA-WITH-DATA-CHECK                                       07010000
+070200        IF HHA-CBSA-RURAL-CHECK                                   07020000
+070300        OR HHA-CBSA-RURAL-CHECK-ALL                               07030000
+070400           IF WS-RURAL-CATEGORY = 'A'                             07040000
+070500              COMPUTE LUPA-ADD-ON-2PERCENT-RUR ROUNDED =          07050000
+070600                      LUPA-ADD-ON-2PERCENT-RUR *                  07060000
+070700                      WS-RURAL-ADDON-A                            07070000
+070800           END-IF                                                 07080000
+070900           IF WS-RURAL-CATEGORY = 'B'                             07090000
+071000              COMPUTE LUPA-ADD-ON-2PERCENT-RUR ROUNDED =          07100000
+071100                      LUPA-ADD-ON-2PERCENT-RUR *                  07110000
+071200                                       WS-RURAL-ADDON-B           07120000
+071300           END-IF                                                 07130000
+071400           IF WS-RURAL-CATEGORY = 'C'                             07140000
+071410              COMPUTE LUPA-ADD-ON-2PERCENT-RUR ROUNDED =          07141000
+071411                      LUPA-ADD-ON-2PERCENT-RUR *                  07141100
+071412                                       WS-RURAL-ADDON-C           07141200
+071413           END-IF                                                 07141300
+071414*  RECOMPUTE LUPA ADD ON BASED ON CATEGORY HERE                   07141400
+071415           COMPUTE LUPA-LABOR-ADJ ROUNDED =                       07141500
+071416                 WIR-CBSA-WAGEIND *                               07141600
+071417                 LABOR-PERCENT *                                  07141700
+071418                 LUPA-ADD-ON-2PERCENT-RUR                         07141800
+071419        ELSE                                                      07141900
+071420           COMPUTE LUPA-LABOR-ADJ ROUNDED =                       07142000
+071430                 WIR-CBSA-WAGEIND *                               07143000
+071440                 LABOR-PERCENT *                                  07144000
+071450                 LUPA-ADD-ON-2PERCENT                             07145000
+071460        END-IF                                                    07146000
+071470     ELSE                                                         07147000
+071480        IF HHA-CBSA-RURAL-CHECK                                   07148000
+071490        OR HHA-CBSA-RURAL-CHECK-ALL                               07149000
+071500           IF WS-RURAL-CATEGORY = 'A'                             07150000
+071600              COMPUTE LUPA-ADD-ON-RURAL ROUNDED =                 07160000
+071700                      LUPA-ADD-ON-RURAL *                         07170000
+071800                      WS-RURAL-ADDON-A                            07180000
+071900           END-IF                                                 07190000
+072000           IF WS-RURAL-CATEGORY = 'B'                             07200000
+072100              COMPUTE LUPA-ADD-ON-RURAL ROUNDED =                 07210000
+072200                      LUPA-ADD-ON-RURAL *                         07220000
+072300                      WS-RURAL-ADDON-B                            07230000
+072400           END-IF                                                 07240000
+072500           IF WS-RURAL-CATEGORY = 'C'                             07250000
+072600              COMPUTE LUPA-ADD-ON-RURAL ROUNDED =                 07260000
+072700                      LUPA-ADD-ON-RURAL *                         07270000
+072710                      WS-RURAL-ADDON-C                            07271000
+072720           END-IF                                                 07272000
+072730           COMPUTE LUPA-LABOR-ADJ ROUNDED =                       07273000
+072740                 WIR-CBSA-WAGEIND *                               07274000
+072750                 LABOR-PERCENT *                                  07275000
+072760                 LUPA-ADD-ON-RURAL                                07276000
+072770        ELSE                                                      07277000
+072780           COMPUTE LUPA-LABOR-ADJ ROUNDED =                       07278000
+072790                 WIR-CBSA-WAGEIND *                               07279000
+072800                 LABOR-PERCENT *                                  07280000
+072900                 LUPA-ADD-ON                                      07290000
+073000        END-IF                                                    07300000
+073100     END-IF.                                                      07310000
+073200                                                                  07320000
+073300     IF HHA-WITH-DATA-CHECK                                       07330000
+073400        IF HHA-CBSA-RURAL-CHECK                                   07340000
+073500        OR HHA-CBSA-RURAL-CHECK-ALL                               07350000
+073600           IF WS-RURAL-CATEGORY = 'A'                             07360000
+073700              COMPUTE LUPA-ADD-ON-2PERCENT-RUR ROUNDED =          07370000
+073800                      LUPA-ADD-ON-2PERCENT-RUR *                  07380000
+073900                      WS-RURAL-ADDON-A                            07390000
+074000           END-IF                                                 07400000
+074100           IF WS-RURAL-CATEGORY = 'B'                             07410000
+074200              COMPUTE LUPA-ADD-ON-2PERCENT-RUR ROUNDED =          07420000
+074210                      LUPA-ADD-ON-2PERCENT-RUR *                  07421000
+074220                      WS-RURAL-ADDON-B                            07422000
+074230           END-IF                                                 07423000
+074240           IF WS-RURAL-CATEGORY = 'C'                             07424000
+074250              COMPUTE LUPA-ADD-ON-2PERCENT-RUR ROUNDED =          07425000
+074260                      LUPA-ADD-ON-2PERCENT-RUR *                  07426000
+074270                      WS-RURAL-ADDON-C                            07427000
+074280           END-IF                                                 07428000
+074290           COMPUTE LUPA-NON-LABOR-ADJ ROUNDED =                   07429000
+074300                 NONLABOR-PERCENT *                               07430000
+074400                 LUPA-ADD-ON-2PERCENT-RUR                         07440000
+074500        ELSE                                                      07450000
+074600         COMPUTE LUPA-NON-LABOR-ADJ ROUNDED =                     07460000
+074700                 NONLABOR-PERCENT *                               07470000
+074800                 LUPA-ADD-ON-2PERCENT                             07480000
+074900        END-IF                                                    07490000
+075000     ELSE                                                         07500000
+075100        IF HHA-CBSA-RURAL-CHECK                                   07510000
+075200        OR HHA-CBSA-RURAL-CHECK-ALL                               07520000
+075300           IF WS-RURAL-CATEGORY = 'A'                             07530000
+075310              COMPUTE LUPA-ADD-ON-RURAL ROUNDED =                 07531000
+075320                      LUPA-ADD-ON-RURAL *                         07532000
+075330                      WS-RURAL-ADDON-A                            07533000
+075340           END-IF                                                 07534000
+075350           IF WS-RURAL-CATEGORY = 'B'                             07535000
+075360              COMPUTE LUPA-ADD-ON-RURAL ROUNDED =                 07536000
+075370                      LUPA-ADD-ON-RURAL *                         07537000
+075380                      WS-RURAL-ADDON-B                            07538000
+075390           END-IF                                                 07539000
+075391           IF WS-RURAL-CATEGORY = 'C'                             07539100
+075392              COMPUTE LUPA-ADD-ON-RURAL ROUNDED =                 07539200
+075393                      LUPA-ADD-ON-RURAL *                         07539300
+075394                      WS-RURAL-ADDON-C                            07539400
+075395           END-IF                                                 07539500
+075396           COMPUTE LUPA-NON-LABOR-ADJ ROUNDED =                   07539600
+075397                 NONLABOR-PERCENT *                               07539700
+075398                 LUPA-ADD-ON-RURAL                                07539800
+075399        ELSE                                                      07539900
+075400           COMPUTE LUPA-NON-LABOR-ADJ ROUNDED =                   07540000
+075500                 NONLABOR-PERCENT *                               07550000
+075600                 LUPA-ADD-ON                                      07560000
+075700        END-IF                                                    07570000
+075800     END-IF.                                                      07580000
+075900                                                                  07590000
+076000                                                                  07600000
+076100*    IF H-HHA-ADMIT-DATE = H-HHA-SERV-FROM-DATE AND               07610000
+076200*        WORK-HRG1 = '1' OR '2'                                   07620000
+076300*       COMPUTE H-HHA-LUPA-ADD-ON-PAYMENT ROUNDED =               07630000
+076400*         LUPA-LABOR-ADJ + LUPA-NON-LABOR-ADJ                     07640000
+076500*    ELSE                                                         07650000
+076600*       MOVE 0 TO  H-HHA-LUPA-ADD-ON-PAYMENT.                     07660000
+076700*                                                                 07670000
+076800***         VARYING SUB1 FROM 1 BY 1 UNTIL                        07680000
+076900***         (H-HHA-REVENUE-CODE (SUB1) = SPACES OR                07690000
+077000***          SUB1 > 6.                                            07700000
+077100                                                                  07710000
+077200                                                                  07720000
+077300**   CHANGE MISSING DATES TO DEFAULT FOR EARLIEST DATE COMPARE ** 07730000
+077400                                                                  07740000
+077500     IF H-HHA-REVENUE-EARLIEST-DATE (1) = 0                       07750000
+077600        MOVE 29990101 TO H-HHA-REVENUE-EARLIEST-DATE (1).         07760000
+077700                                                                  07770000
+077800     IF H-HHA-REVENUE-EARLIEST-DATE (3) = 0                       07780000
+077900        MOVE 29990101 TO H-HHA-REVENUE-EARLIEST-DATE (3).         07790000
+078000                                                                  07800000
+078100     IF H-HHA-REVENUE-EARLIEST-DATE (4) = 0                       07810000
+078200        MOVE 29990101 TO H-HHA-REVENUE-EARLIEST-DATE (4).         07820000
+078300                                                                  07830000
+078400*    IF REVENUE EARLIEST DATES = ALL 9'S THEN                     07840000
+078500*    LUPA ADD ON DOES NOT CALCULATE                               07850000
+078600                                                                  07860000
+078700     IF (H-HHA-REVENUE-EARLIEST-DATE (1) = 99999999 AND           07870000
+078800         H-HHA-REVENUE-EARLIEST-DATE (3) = 99999999 AND           07880000
+078900         H-HHA-REVENUE-EARLIEST-DATE (4) = 99999999)              07890000
+079000         MOVE 0 TO  H-HHA-LUPA-ADD-ON-PAYMENT                     07900000
+079100                    H-HHA-REVENUE-ADD-ON-VISIT-AMT (1)            07910000
+079200                    H-HHA-REVENUE-ADD-ON-VISIT-AMT (2)            07920000
+079300                    H-HHA-REVENUE-ADD-ON-VISIT-AMT (3)            07930000
+079400                    H-HHA-REVENUE-ADD-ON-VISIT-AMT (4)            07940000
+079500                    H-HHA-REVENUE-ADD-ON-VISIT-AMT (5)            07950000
+079600         MOVE 0 TO  H-HHA-LUPA-ADD-ON-PAYMENT                     07960000
+079700           GO TO RTC-CHECK.                                       07970000
+079800                                                                  07980000
+079900*    IF  REVENUE EARLIEST DATES = DEFAULT THEN                    07990000
+080000*    LUPA ADD ON DOES NOT CALCULATE                               08000000
+080100                                                                  08010000
+080200     IF (H-HHA-REVENUE-EARLIEST-DATE (1) = 29990101 AND           08020000
+080300         H-HHA-REVENUE-EARLIEST-DATE (3) = 29990101 AND           08030000
+080400         H-HHA-REVENUE-EARLIEST-DATE (4) = 29990101)              08040000
+080500         MOVE 0 TO  H-HHA-LUPA-ADD-ON-PAYMENT                     08050000
+080600                    H-HHA-REVENUE-ADD-ON-VISIT-AMT (1)            08060000
+080700                    H-HHA-REVENUE-ADD-ON-VISIT-AMT (2)            08070000
+080800                    H-HHA-REVENUE-ADD-ON-VISIT-AMT (3)            08080000
+080900                    H-HHA-REVENUE-ADD-ON-VISIT-AMT (4)            08090000
+081000                    H-HHA-REVENUE-ADD-ON-VISIT-AMT (5)            08100000
+081100         MOVE 0 TO  H-HHA-LUPA-ADD-ON-PAYMENT                     08110000
+081200           GO TO RTC-CHECK.                                       08120000
+081300                                                                  08130000
+081400*    IF PT OCCURS ON EARLIEST DATE THEN LUPA ADD ON APPLIES TO    08140000
+081500*       PT                                                        08150000
+081600                                                                  08160000
+081700     IF (H-HHA-REVENUE-EARLIEST-DATE (1) <                        08170000
+081800         H-HHA-REVENUE-EARLIEST-DATE (3)) AND                     08180000
+081900        (H-HHA-REVENUE-EARLIEST-DATE (1) <                        08190000
+082000         H-HHA-REVENUE-EARLIEST-DATE (4))                         08200000
+082100        COMPUTE  H-HHA-REVENUE-ADD-ON-VISIT-AMT (1) ROUNDED =     08210000
+082200           H-HHA-REVENUE-DOLL-RATE (1) * LUPA-ADD-ON-PT1          08220000
+082300        MOVE LUPA-ADD-ON-PT1     TO WS-STDV-LUPA-ADDON-FAC        08230000
+082400        COMPUTE H-HHA-LUPA-ADD-ON-PAYMENT ROUNDED =               08240000
+082500           H-HHA-LUPA-ADD-ON-PAYMENT +                            08250000
+082600           H-HHA-REVENUE-ADD-ON-VISIT-AMT (1)                     08260000
+082700           GO TO RTC-CHECK.                                       08270000
+082800                                                                  08280000
+082900*    IF SLT OCCURS ON EARLIEST DATE THEN LUPA ADD ON APPLIES TO   08290000
+083000*       SLT                                                       08300000
+083100                                                                  08310000
+083200     IF (H-HHA-REVENUE-EARLIEST-DATE (3) <                        08320000
+083300         H-HHA-REVENUE-EARLIEST-DATE (1)) AND                     08330000
+083400        (H-HHA-REVENUE-EARLIEST-DATE (3) <                        08340000
+083500         H-HHA-REVENUE-EARLIEST-DATE (4))                         08350000
+083600        COMPUTE  H-HHA-REVENUE-ADD-ON-VISIT-AMT (3) ROUNDED =     08360000
+083700           H-HHA-REVENUE-DOLL-RATE (3) * LUPA-ADD-ON-SLT3         08370000
+083800        MOVE LUPA-ADD-ON-SLT3    TO WS-STDV-LUPA-ADDON-FAC        08380000
+083900        COMPUTE H-HHA-LUPA-ADD-ON-PAYMENT ROUNDED =               08390000
+084000           H-HHA-LUPA-ADD-ON-PAYMENT +                            08400000
+084100           H-HHA-REVENUE-ADD-ON-VISIT-AMT (3)                     08410000
+084200           GO TO RTC-CHECK.                                       08420000
+084300                                                                  08430000
+084400*    IF SN OCCURS ON EARLIEST DATE THEN LUPA ADD ON APPLIES TO    08440000
+084500*       SN                                                        08450000
+084600                                                                  08460000
+084700     IF (H-HHA-REVENUE-EARLIEST-DATE (4) <                        08470000
+084800         H-HHA-REVENUE-EARLIEST-DATE (1)) AND                     08480000
+084900        (H-HHA-REVENUE-EARLIEST-DATE (4) <                        08490000
+085000         H-HHA-REVENUE-EARLIEST-DATE (3))                         08500000
+085100        COMPUTE  H-HHA-REVENUE-ADD-ON-VISIT-AMT (4) ROUNDED =     08510000
+085200           H-HHA-REVENUE-DOLL-RATE (4) * LUPA-ADD-ON-SN4          08520000
+085300        MOVE LUPA-ADD-ON-SN4     TO WS-STDV-LUPA-ADDON-FAC        08530000
+085400        COMPUTE H-HHA-LUPA-ADD-ON-PAYMENT ROUNDED =               08540000
+085500           H-HHA-LUPA-ADD-ON-PAYMENT +                            08550000
+085600           H-HHA-REVENUE-ADD-ON-VISIT-AMT (4)                     08560000
+085700           GO TO RTC-CHECK.                                       08570000
+085800                                                                  08580000
+085900*    IF PT  EARLIEST DATE = SLT EARLIEST AND = SN EARLIEST        08590000
+086000*    THEN LUPA ADD ON APPLIES TO SN                               08600000
+086100*                                                                 08610000
+086200                                                                  08620000
+086300     IF (H-HHA-REVENUE-EARLIEST-DATE (1) =                        08630000
+086400         H-HHA-REVENUE-EARLIEST-DATE (3)) AND                     08640000
+086500        (H-HHA-REVENUE-EARLIEST-DATE (1) =                        08650000
+086600         H-HHA-REVENUE-EARLIEST-DATE (4))                         08660000
+086700        COMPUTE  H-HHA-REVENUE-ADD-ON-VISIT-AMT (4) ROUNDED =     08670000
+086800           H-HHA-REVENUE-DOLL-RATE (4) * LUPA-ADD-ON-SN4          08680000
+086900        MOVE LUPA-ADD-ON-SN4     TO WS-STDV-LUPA-ADDON-FAC        08690000
+087000        COMPUTE H-HHA-LUPA-ADD-ON-PAYMENT ROUNDED =               08700000
+087100           H-HHA-LUPA-ADD-ON-PAYMENT +                            08710000
+087200           H-HHA-REVENUE-ADD-ON-VISIT-AMT (4)                     08720000
+087300           GO TO RTC-CHECK.                                       08730000
+087400                                                                  08740000
+087500*    IF PT EARLIEST DATE = SN EARLIEST                            08750000
+087600*    THEN LUPA ADD ON APPLIES TO SN                               08760000
+087700*                                                                 08770000
+087800                                                                  08780000
+087900     IF (H-HHA-REVENUE-EARLIEST-DATE (1) =                        08790000
+088000         H-HHA-REVENUE-EARLIEST-DATE (4))                         08800000
+088100        COMPUTE  H-HHA-REVENUE-ADD-ON-VISIT-AMT (4) ROUNDED =     08810000
+088200           H-HHA-REVENUE-DOLL-RATE (4) * LUPA-ADD-ON-SN4          08820000
+088300        MOVE LUPA-ADD-ON-SN4     TO WS-STDV-LUPA-ADDON-FAC        08830000
+088400        COMPUTE H-HHA-LUPA-ADD-ON-PAYMENT ROUNDED =               08840000
+088500           H-HHA-LUPA-ADD-ON-PAYMENT +                            08850000
+088600           H-HHA-REVENUE-ADD-ON-VISIT-AMT (4)                     08860000
+088700           GO TO RTC-CHECK.                                       08870000
+088800                                                                  08880000
+088900*    IF SLT EARLIEST DATE = SN EARLIEST                           08890000
+089000*    THEN LUPA ADD ON APPLIES TO SN                               08900000
+089100*                                                                 08910000
+089200                                                                  08920000
+089300     IF (H-HHA-REVENUE-EARLIEST-DATE (3) =                        08930000
+089400         H-HHA-REVENUE-EARLIEST-DATE (4))                         08940000
+089500        COMPUTE  H-HHA-REVENUE-ADD-ON-VISIT-AMT (4) ROUNDED =     08950000
+089600           H-HHA-REVENUE-DOLL-RATE (4) * LUPA-ADD-ON-SN4          08960000
+089700        MOVE LUPA-ADD-ON-SN4     TO WS-STDV-LUPA-ADDON-FAC        08970000
+089800        COMPUTE H-HHA-LUPA-ADD-ON-PAYMENT ROUNDED =               08980000
+089900           H-HHA-LUPA-ADD-ON-PAYMENT +                            08990000
+090000           H-HHA-REVENUE-ADD-ON-VISIT-AMT (4)                     09000000
+090100           GO TO RTC-CHECK.                                       09010000
+090200                                                                  09020000
+090300*    IF PT  EARLIEST DATE = SLT EARLIEST                          09030000
+090400*    THEN LUPA ADD ON APPLIES TO PT                               09040000
+090500*                                                                 09050000
+090600                                                                  09060000
+090700     IF (H-HHA-REVENUE-EARLIEST-DATE (1) =                        09070000
+090800         H-HHA-REVENUE-EARLIEST-DATE (3))                         09080000
+090900        COMPUTE  H-HHA-REVENUE-ADD-ON-VISIT-AMT (1) ROUNDED =     09090000
+091000           H-HHA-REVENUE-DOLL-RATE (1) * LUPA-ADD-ON-PT1          09100000
+091100        MOVE LUPA-ADD-ON-PT1     TO WS-STDV-LUPA-ADDON-FAC        09110000
+091200        COMPUTE H-HHA-LUPA-ADD-ON-PAYMENT ROUNDED =               09120000
+091300           H-HHA-LUPA-ADD-ON-PAYMENT +                            09130000
+091400           H-HHA-REVENUE-ADD-ON-VISIT-AMT (1)                     09140000
+091500           GO TO RTC-CHECK.                                       09150000
+091600                                                                  09160000
+091700                                                                  09170000
+091800 RTC-CHECK.                                                       09180000
+091900************************************************************      09190000
+092000* ZERO OUT LUPA ADD-ON PAYMENT WHEN CERTAIN CONDITIONS MET *      09200000
+092100************************************************************      09210000
+092200                                                                  09220000
+092300     MOVE H-HHA-HRG-OUTPUT-CODE (1) TO WORK-HRG.                  09230000
+092400                                                                  09240000
+092500     IF H-HHA-ADMIT-DATE NOT = H-HHA-SERV-FROM-DATE               09250000
+092600         MOVE 0 TO  H-HHA-LUPA-ADD-ON-PAYMENT                     09260000
+092700                    H-HHA-REVENUE-ADD-ON-VISIT-AMT (1)            09270000
+092800                    H-HHA-REVENUE-ADD-ON-VISIT-AMT (2)            09280000
+092900                    H-HHA-REVENUE-ADD-ON-VISIT-AMT (3)            09290000
+093000                    H-HHA-REVENUE-ADD-ON-VISIT-AMT (4)            09300000
+093100                    H-HHA-REVENUE-ADD-ON-VISIT-AMT (5).           09310000
+093200*                                                                 09320000
+093300     IF (WORK-HRG1 =  '1' OR '2')                                 09330000
+093400       NEXT SENTENCE                                              09340000
+093500     ELSE                                                         09350000
+093600         MOVE 0 TO  H-HHA-LUPA-ADD-ON-PAYMENT                     09360000
+093700                    H-HHA-REVENUE-ADD-ON-VISIT-AMT (1)            09370000
+093800                    H-HHA-REVENUE-ADD-ON-VISIT-AMT (2)            09380000
+093900                    H-HHA-REVENUE-ADD-ON-VISIT-AMT (3)            09390000
+094000                    H-HHA-REVENUE-ADD-ON-VISIT-AMT (4)            09400000
+094100                    H-HHA-REVENUE-ADD-ON-VISIT-AMT (5).           09410000
+094200*                                                                 09420000
+094300     IF (H-HHA-LUPA-SRC-ADM = 'B' OR 'C')                         09430000
+094400         MOVE 0 TO  H-HHA-LUPA-ADD-ON-PAYMENT                     09440000
+094500                    H-HHA-REVENUE-ADD-ON-VISIT-AMT (1)            09450000
+094600                    H-HHA-REVENUE-ADD-ON-VISIT-AMT (2)            09460000
+094700                    H-HHA-REVENUE-ADD-ON-VISIT-AMT (3)            09470000
+094800                    H-HHA-REVENUE-ADD-ON-VISIT-AMT (4)            09480000
+094900                    H-HHA-REVENUE-ADD-ON-VISIT-AMT (5).           09490000
+095000*                                                                 09500000
+095100                                                                  09510000
+095200     IF H-HHA-RECODE-IND  = '2'                                   09520000
+095300         MOVE 0 TO  H-HHA-LUPA-ADD-ON-PAYMENT                     09530000
+095400                    H-HHA-REVENUE-ADD-ON-VISIT-AMT (1)            09540000
+095500                    H-HHA-REVENUE-ADD-ON-VISIT-AMT (2)            09550000
+095600                    H-HHA-REVENUE-ADD-ON-VISIT-AMT (3)            09560000
+095700                    H-HHA-REVENUE-ADD-ON-VISIT-AMT (4)            09570000
+095800                    H-HHA-REVENUE-ADD-ON-VISIT-AMT (5).           09580000
+095900                                                                  09590000
+096000*                                                                 09600000
+096100     IF H-HHA-REVENUE-SUM1-6-QTY-ALL = 0                          09610000
+096200         MOVE 0 TO  H-HHA-LUPA-ADD-ON-PAYMENT                     09620000
+096300                    H-HHA-REVENUE-ADD-ON-VISIT-AMT (1)            09630000
+096400                    H-HHA-REVENUE-ADD-ON-VISIT-AMT (2)            09640000
+096500                    H-HHA-REVENUE-ADD-ON-VISIT-AMT (3)            09650000
+096600                    H-HHA-REVENUE-ADD-ON-VISIT-AMT (4)            09660000
+096700                    H-HHA-REVENUE-ADD-ON-VISIT-AMT (5).           09670000
+096800*                                                                 09680000
+096900        PERFORM 1050-LUPA THRU 1050-EXIT.                         09690000
+097000                                                                  09700000
+097100        IF H-HHA-LUPA-ADD-ON-PAYMENT > 0                          09710000
+097200           MOVE '14' TO H-HHA-PAY-RTC                             09720000
+097300        ELSE                                                      09730000
+097400           MOVE '06' TO H-HHA-PAY-RTC                             09740000
+097500        END-IF.                                                   09750000
+097600                                                                  09760000
+097700**   CHANGE DATES WITH DEFAULT BACK TO ZERO FOR PASSBACK       ** 09770000
+097800                                                                  09780000
+097900     IF H-HHA-REVENUE-EARLIEST-DATE (1) = 29990101                09790000
+098000        MOVE 0 TO H-HHA-REVENUE-EARLIEST-DATE (1).                09800000
+098100                                                                  09810000
+098200     IF H-HHA-REVENUE-EARLIEST-DATE (3) = 29990101                09820000
+098300        MOVE 0 TO H-HHA-REVENUE-EARLIEST-DATE (3).                09830000
+098400                                                                  09840000
+098500     IF H-HHA-REVENUE-EARLIEST-DATE (4) = 29990101                09850000
+098600        MOVE 0 TO H-HHA-REVENUE-EARLIEST-DATE (4).                09860000
+098700                                                                  09870000
+098800                                                                  09880000
+098900     COMPUTE H-HHA-TOTAL-PAYMENT ROUNDED =                        09890000
+099000             H-HHA-REVENUE-COST (1) +                             09900000
+099100             H-HHA-REVENUE-ADD-ON-VISIT-AMT (1) +                 09910000
+099200             H-HHA-REVENUE-COST (2) +                             09920000
+099300             H-HHA-REVENUE-ADD-ON-VISIT-AMT (2) +                 09930000
+099400             H-HHA-REVENUE-COST (3) +                             09940000
+099500             H-HHA-REVENUE-ADD-ON-VISIT-AMT (3) +                 09950000
+099600             H-HHA-REVENUE-COST (4) +                             09960000
+099700             H-HHA-REVENUE-ADD-ON-VISIT-AMT (4) +                 09970000
+099800             H-HHA-REVENUE-COST (5) +                             09980000
+099900             H-HHA-REVENUE-ADD-ON-VISIT-AMT (5) +                 09990000
+100000             H-HHA-REVENUE-COST (6) +                             10000000
+100100             H-HHA-REVENUE-ADD-ON-VISIT-AMT (6).                  10010000
+100200                                                                  10020000
+100300     GO TO 1000-EXIT.                                             10030000
+100400                                                                  10040000
+100500 PEP-CHECK.                                                       10050000
+100600                                                                  10060000
+100700     IF (H-HHA-PEP-INDICATOR NOT = 'Y' AND NOT = 'N')             10070000
+100800         MOVE '20' TO H-HHA-PAY-RTC                               10080000
+100900         GO TO 1000-EXIT.                                         10090000
+101000                                                                  10100000
+101100      PERFORM 1100-ADD-HRG-DAYS THRU 1100-EXIT                    10110000
+101200         VARYING CO1 FROM 1 BY 1 UNTIL CO1 > 6.                   10120000
+101300                                                                  10130000
+101400      IF WK-HRG-NO-OF-DAYS-TOT > 60                               10140000
+101500         MOVE '16' TO H-HHA-PAY-RTC                               10150000
+101600         GO TO 1000-EXIT.                                         10160000
+101700                                                                  10170000
+101800                                                                  10180000
+101900*********  HRG  PAYMENT   *******************                     10190000
+102000                                                                  10200000
+102100***  IF H-HHA-REVENUE-SUM1-3-QTY-THR > 9                          10210000
+102200        IF H-HHA-HRG-INPUT-CODE (2) = SPACES                      10220000
+102300           IF H-HHA-PEP-INDICATOR = 'N'                           10230000
+102400              PERFORM 3000-PEP-N-ADJUST THRU 3000-EXIT            10240000
+102500                  VARYING CO1 FROM 1 BY 1 UNTIL                   10250000
+102600*                 (H-HHA-HRG-INPUT-CODE (CO1) = SPACES OR         10260000
+102700                   CO1 > 6                                        10270000
+102800               PERFORM 7000-OUTLIER-PAYMENT THRU 7000-EXIT        10280000
+102900                                                                  10290000
+103000               GO TO 1000-EXIT.                                   10300000
+103100                                                                  10310000
+103200                                                                  10320000
+103300***  IF H-HHA-REVENUE-SUM1-3-QTY-THR > 9                          10330000
+103400        IF H-HHA-HRG-INPUT-CODE (2) = SPACES                      10340000
+103500           IF H-HHA-PEP-INDICATOR = 'Y'                           10350000
+103600              PERFORM 4000-PEP-Y-ADJUST THRU 4000-EXIT            10360000
+103700                  VARYING CO1 FROM 1 BY 1 UNTIL                   10370000
+103800*                 (H-HHA-HRG-INPUT-CODE (CO1) = SPACES OR         10380000
+103900                   CO1 > 6                                        10390000
+104000               PERFORM 7000-OUTLIER-PAYMENT THRU 7000-EXIT        10400000
+104100                                                                  10410000
+104200               GO TO 1000-EXIT.                                   10420000
+104300                                                                  10430000
+104400**** IF H-HHA-REVENUE-SUM1-3-QTY-THR > 9                          10440000
+104500        IF H-HHA-HRG-INPUT-CODE (2) NOT = SPACES                  10450000
+104600           IF H-HHA-PEP-INDICATOR = 'N'                           10460000
+104700              PERFORM 5000-PEP-N-ADJUST THRU 5000-EXIT            10470000
+104800                  VARYING CO1 FROM 1 BY 1 UNTIL                   10480000
+104900*                 (H-HHA-HRG-INPUT-CODE (CO1) = SPACES OR         10490000
+105000                   CO1 > 6                                        10500000
+105100               PERFORM 7000-OUTLIER-PAYMENT THRU 7000-EXIT        10510000
+105200                                                                  10520000
+105300               GO TO 1000-EXIT.                                   10530000
+105400                                                                  10540000
+105500**** IF H-HHA-REVENUE-SUM1-3-QTY-THR > 9                          10550000
+105600        IF H-HHA-HRG-INPUT-CODE (2) NOT = SPACES                  10560000
+105700           IF H-HHA-PEP-INDICATOR = 'Y'                           10570000
+105800              PERFORM 6000-PEP-Y-ADJUST THRU 6000-EXIT            10580000
+105900                  VARYING CO1 FROM 1 BY 1 UNTIL                   10590000
+106000*                 (H-HHA-HRG-INPUT-CODE (CO1) = SPACES OR         10600000
+106100                   CO1 > 6                                        10610000
+106200               PERFORM 7000-OUTLIER-PAYMENT THRU 7000-EXIT        10620000
+106300                                                                  10630000
+106400               GO TO 1000-EXIT.                                   10640000
+106500                                                                  10650000
+106600                                                                  10660000
+106700      MOVE '20' TO H-HHA-PAY-RTC.                                 10670000
+106800                                                                  10680000
+106900 1000-EXIT.  EXIT.                                                10690000
+107000 1050-LUPA.                                                       10700000
+107100                                                                  10710000
+107200***************************************************************   10720000
+107300*                    LUPA PAYMENT                                 10730000
+107400***************************************************************   10740000
+107500                                                                  10750000
+107600*    IF H-HHA-REVENUE-QTY-COV-VISITS (1) = 0                      10760000
+107700*       GO TO 1050-EXIT.                                          10770000
+107800                                                                  10780000
+107900     MOVE H-HHA-HRG-OUTPUT-CODE (1) TO WORK-HRG.                  10790000
+108000                                                                  10800000
+108100     COMPUTE FED-ADJ1 ROUNDED =                                   10810000
+108200            (H-HHA-REVENUE-QTY-COV-VISITS (1) *                   10820000
+108300             H-HHA-REVENUE-DOLL-RATE (1)).                        10830000
+108400                                                                  10840000
+108500     COMPUTE FED-LUPA-ADJ1 ROUNDED =                              10850000
+108600             H-HHA-REVENUE-ADD-ON-VISIT-AMT (1).                  10860000
+108700                                                                  10870000
+108800     COMPUTE FED-LABOR-ADJ1 ROUNDED =                             10880000
+108900             WIR-CBSA-WAGEIND *                                   10890000
+109000             LABOR-PERCENT *                                      10900000
+109100             FED-ADJ1.                                            10910000
+109200                                                                  10920000
+109300     COMPUTE FED-LABOR-LUPA-ADJ1 ROUNDED =                        10930000
+109400             WIR-CBSA-WAGEIND *                                   10940000
+109500             LABOR-PERCENT *                                      10950000
+109600             FED-LUPA-ADJ1.                                       10960000
+109700                                                                  10970000
+109800     COMPUTE FED-NON-LABOR-ADJ1 ROUNDED =                         10980000
+109900             NONLABOR-PERCENT *                                   10990000
+110000             FED-ADJ1.                                            11000000
+110100                                                                  11010000
+110200     COMPUTE FED-NON-LABOR-LUPA-ADJ1 ROUNDED =                    11020000
+110300             NONLABOR-PERCENT *                                   11030000
+110400             FED-LUPA-ADJ1.                                       11040000
+110500                                                                  11050000
+110600     COMPUTE H-HHA-REVENUE-COST (1) ROUNDED =                     11060000
+110700             (FED-LABOR-ADJ1 + FED-NON-LABOR-ADJ1).               11070000
+110800     COMPUTE H-HHA-REVENUE-ADD-ON-VISIT-AMT (1) ROUNDED =         11080000
+110900             (FED-LABOR-LUPA-ADJ1 + FED-NON-LABOR-LUPA-ADJ1).     11090000
+111000                                                                  11100000
+111100     COMPUTE FED-ADJ2 ROUNDED =                                   11110000
+111200            (H-HHA-REVENUE-QTY-COV-VISITS (2) *                   11120000
+111300             H-HHA-REVENUE-DOLL-RATE (2)).                        11130000
+111400                                                                  11140000
+111500     COMPUTE FED-LABOR-ADJ2 ROUNDED =                             11150000
+111600             WIR-CBSA-WAGEIND *                                   11160000
+111700             LABOR-PERCENT *                                      11170000
+111800             FED-ADJ2.                                            11180000
+111900                                                                  11190000
+112000     COMPUTE FED-NON-LABOR-ADJ2 ROUNDED =                         11200000
+112100             NONLABOR-PERCENT *                                   11210000
+112200             FED-ADJ2.                                            11220000
+112300                                                                  11230000
+112400     COMPUTE H-HHA-REVENUE-COST (2) ROUNDED =                     11240000
+112500             (FED-LABOR-ADJ2 + FED-NON-LABOR-ADJ2).               11250000
+112600                                                                  11260000
+112700     COMPUTE FED-ADJ3 ROUNDED =                                   11270000
+112800            (H-HHA-REVENUE-QTY-COV-VISITS (3) *                   11280000
+112900             H-HHA-REVENUE-DOLL-RATE (3)).                        11290000
+113000                                                                  11300000
+113100     COMPUTE FED-LUPA-ADJ3 ROUNDED =                              11310000
+113200             H-HHA-REVENUE-ADD-ON-VISIT-AMT (3).                  11320000
+113300                                                                  11330000
+113400     COMPUTE FED-LABOR-ADJ3 ROUNDED =                             11340000
+113500             WIR-CBSA-WAGEIND *                                   11350000
+113600             LABOR-PERCENT *                                      11360000
+113700             FED-ADJ3.                                            11370000
+113800                                                                  11380000
+113900     COMPUTE FED-LABOR-LUPA-ADJ3 ROUNDED =                        11390000
+114000             WIR-CBSA-WAGEIND *                                   11400000
+114100             LABOR-PERCENT *                                      11410000
+114200             FED-LUPA-ADJ3.                                       11420000
+114300                                                                  11430000
+114400     COMPUTE FED-NON-LABOR-ADJ3 ROUNDED =                         11440000
+114500             NONLABOR-PERCENT *                                   11450000
+114600             FED-ADJ3.                                            11460000
+114700                                                                  11470000
+114800     COMPUTE FED-NON-LABOR-LUPA-ADJ3 ROUNDED =                    11480000
+114900             NONLABOR-PERCENT *                                   11490000
+115000             FED-LUPA-ADJ3.                                       11500000
+115100                                                                  11510000
+115200     COMPUTE H-HHA-REVENUE-COST (3) ROUNDED =                     11520000
+115300             (FED-LABOR-ADJ3 + FED-NON-LABOR-ADJ3).               11530000
+115400                                                                  11540000
+115500     COMPUTE H-HHA-REVENUE-ADD-ON-VISIT-AMT (3) ROUNDED =         11550000
+115600             (FED-LABOR-LUPA-ADJ3 + FED-NON-LABOR-LUPA-ADJ3).     11560000
+115700                                                                  11570000
+115800     COMPUTE FED-ADJ4 ROUNDED =                                   11580000
+115900            (H-HHA-REVENUE-QTY-COV-VISITS (4) *                   11590000
+116000             H-HHA-REVENUE-DOLL-RATE (4)).                        11600000
+116100                                                                  11610000
+116200     COMPUTE FED-LUPA-ADJ4 ROUNDED =                              11620000
+116300             H-HHA-REVENUE-ADD-ON-VISIT-AMT (4).                  11630000
+116400                                                                  11640000
+116500     COMPUTE FED-LABOR-ADJ4 ROUNDED =                             11650000
+116600             WIR-CBSA-WAGEIND *                                   11660000
+116700             LABOR-PERCENT *                                      11670000
+116800             FED-ADJ4.                                            11680000
+116900                                                                  11690000
+117000     COMPUTE FED-LABOR-LUPA-ADJ4 ROUNDED =                        11700000
+117100             WIR-CBSA-WAGEIND *                                   11710000
+117200             LABOR-PERCENT *                                      11720000
+117300             FED-LUPA-ADJ4.                                       11730000
+117400                                                                  11740000
+117500     COMPUTE FED-NON-LABOR-ADJ4 ROUNDED =                         11750000
+117600             NONLABOR-PERCENT *                                   11760000
+117700             FED-ADJ4.                                            11770000
+117800                                                                  11780000
+117900     COMPUTE FED-NON-LABOR-LUPA-ADJ4 ROUNDED =                    11790000
+118000             NONLABOR-PERCENT *                                   11800000
+118100             FED-LUPA-ADJ4.                                       11810000
+118200                                                                  11820000
+118300     COMPUTE H-HHA-REVENUE-COST (4) ROUNDED =                     11830000
+118400             (FED-LABOR-ADJ4 + FED-NON-LABOR-ADJ4).               11840000
+118500                                                                  11850000
+118600     COMPUTE H-HHA-REVENUE-ADD-ON-VISIT-AMT (4) ROUNDED =         11860000
+118700             (FED-LABOR-LUPA-ADJ4 + FED-NON-LABOR-LUPA-ADJ4).     11870000
+118800                                                                  11880000
+118900     COMPUTE FED-ADJ5 ROUNDED =                                   11890000
+119000            (H-HHA-REVENUE-QTY-COV-VISITS (5) *                   11900000
+119100             H-HHA-REVENUE-DOLL-RATE (5)).                        11910000
+119200                                                                  11920000
+119300     COMPUTE FED-LABOR-ADJ5 ROUNDED =                             11930000
+119400             WIR-CBSA-WAGEIND *                                   11940000
+119500             LABOR-PERCENT *                                      11950000
+119600             FED-ADJ5.                                            11960000
+119700                                                                  11970000
+119800                                                                  11980000
+119900     COMPUTE FED-NON-LABOR-ADJ5 ROUNDED =                         11990000
+120000             NONLABOR-PERCENT *                                   12000000
+120100             FED-ADJ5.                                            12010000
+120200                                                                  12020000
+120300     COMPUTE H-HHA-REVENUE-COST (5) ROUNDED =                     12030000
+120400             (FED-LABOR-ADJ5 + FED-NON-LABOR-ADJ5).               12040000
+120500                                                                  12050000
+120600     COMPUTE FED-ADJ6 ROUNDED =                                   12060000
+120700            (H-HHA-REVENUE-QTY-COV-VISITS (6) *                   12070000
+120800             H-HHA-REVENUE-DOLL-RATE (6)).                        12080000
+120900                                                                  12090000
+121000     COMPUTE FED-LABOR-ADJ6 ROUNDED =                             12100000
+121100             WIR-CBSA-WAGEIND *                                   12110000
+121200             LABOR-PERCENT *                                      12120000
+121300             FED-ADJ6.                                            12130000
+121400                                                                  12140000
+121500                                                                  12150000
+121600     COMPUTE FED-NON-LABOR-ADJ6 ROUNDED =                         12160000
+121700             NONLABOR-PERCENT *                                   12170000
+121800             FED-ADJ6.                                            12180000
+121900                                                                  12190000
+122000     COMPUTE H-HHA-REVENUE-COST (6) ROUNDED =                     12200000
+122100             (FED-LABOR-ADJ6 + FED-NON-LABOR-ADJ6).               12210000
+122200                                                                  12220000
+122300 1050-EXIT.   EXIT.                                               12230000
+122400                                                                  12240000
+122500 1100-ADD-HRG-DAYS.                                               12250000
+122600                                                                  12260000
+122700      IF H-HHA-HRG-NO-OF-DAYS (CO1) NUMERIC                       12270000
+122800         ADD H-HHA-HRG-NO-OF-DAYS (CO1) TO                        12280000
+122900             WK-HRG-NO-OF-DAYS-TOT.                               12290000
+123000                                                                  12300000
+123100 1100-EXIT.   EXIT.                                               12310000
+123200                                                                  12320000
+123300***************************************************************   12330000
+123400*           STATE & COUNTY CODE TABLE SEARCH                      12340000
+123500***************************************************************   12350000
+123600 2000-TBL-SCC-SEARCH.                                             12360000
+123700                                                                  12370000
+123701     IF HHA-COUNTY-CODE = SPACES                                  12370100
+123702        MOVE '31' TO H-HHA-PAY-RTC                                12370200
+123703        GO TO 2000-EXIT                                           12370300
+123704     END-IF.                                                      12370400
+123705                                                                  12370500
+123706     SEARCH ALL T-SCC-DATA                                        12370600
+123707         AT END                                                   12370700
+123708            MOVE '31' TO H-HHA-PAY-RTC                            12370800
+123709            GO TO 2000-EXIT                                       12370900
+123710         WHEN T-SCC-CODE (IX-SCC) = HHA-COUNTY-CODE               12371000
+123711            MOVE T-SCC-CATEGORY (IX-SCC) TO WS-RURAL-CATEGORY     12371100
+123712            MOVE '00' TO H-HHA-PAY-RTC                            12371200
+123713     END-SEARCH.                                                  12371300
+123714                                                                  12371400
+123715     IF WS-RURAL-CATEGORY = 'A'                                   12371500
+123716       COMPUTE FED-EPISODE-RATE-AMT ROUNDED =                     12371600
+123717               FED-EPISODE-RATE-AMT  * WS-RURAL-ADDON-A           12371700
+123718       COMPUTE OUTLIER-THRESHOLD-AMT ROUNDED =                    12371800
+123719               OUTLIER-THRESHOLD-AMT * WS-RURAL-ADDON-A           12371900
+123720     END-IF.                                                      12372000
+123721     IF WS-RURAL-CATEGORY = 'B'                                   12372100
+123722       COMPUTE FED-EPISODE-RATE-AMT ROUNDED =                     12372200
+123723               FED-EPISODE-RATE-AMT  * WS-RURAL-ADDON-B           12372300
+123724       COMPUTE OUTLIER-THRESHOLD-AMT ROUNDED =                    12372400
+123725               OUTLIER-THRESHOLD-AMT * WS-RURAL-ADDON-B           12372500
+123730     END-IF.                                                      12373000
+123731     IF WS-RURAL-CATEGORY = 'C'                                   12373100
+123732       COMPUTE FED-EPISODE-RATE-AMT ROUNDED =                     12373200
+123733               FED-EPISODE-RATE-AMT  * WS-RURAL-ADDON-C           12373300
+123734       COMPUTE OUTLIER-THRESHOLD-AMT ROUNDED =                    12373400
+123735               OUTLIER-THRESHOLD-AMT * WS-RURAL-ADDON-C           12373500
+123740     END-IF.                                                      12374000
+123741                                                                  12374100
+123742 2000-EXIT.   EXIT.                                               12374200
+123743                                                                  12374300
+123744 3000-PEP-N-ADJUST.                                               12374400
+123745                                                                  12374500
+123746***************************************************************   12374600
+123747*           HRG OCCUR < 2 AND PEP = N ADJUSTMENT                  12374700
+123748***************************************************************   12374800
+123750                                                                  12375000
+123760     IF H-HHA-HRG-INPUT-CODE (CO1) = SPACES                       12376000
+123770        MOVE 6 TO CO1                                             12377000
+123780        GO TO 3000-EXIT.                                          12378000
+123790                                                                  12379000
+123800     MOVE H-HHA-HRG-NO-OF-DAYS (CO1) TO WK-HRG-NO-OF-DAYS.        12380000
+123900                                                                  12390000
+124000     MOVE H-HHA-HRG-OUTPUT-CODE (CO1) TO WORK-HRG.                12400000
+124100                                                                  12410000
+124200*         YEARCHANGE                              ===========**   12420000
+124300                                                                  12430000
+124400      PERFORM 10100-SUPPLY-ADD-ON-CALC  THRU 10100-EXIT.          12440000
+124500                                                                  12450000
+124600*         YEARCHANGE                              ===========**   12460000
+124700                                                                  12470000
+124800*    IF HHA-SERV-THRU-DATE > 20071231 AND                         12480000
+124900*       HHA-SERV-FROM-DATE > 20071231                             12490000
+125000*        NEXT SENTENCE                                            12500000
+125100*    ELSE                                                         12510000
+125200*        MOVE 0000000.00 TO FED-SUPPLY-ADJ.                       12520000
+125300                                                                  12530000
+125400     COMPUTE FED-ADJ ROUNDED =                                    12540000
+125500               H-HHA-HRG-WGTS (1) * FED-EPISODE-RATE-AMT.         12550000
+125600                                                                  12560000
+125700     COMPUTE FED-LABOR-ADJ ROUNDED =                              12570000
+125800              (WIR-CBSA-WAGEIND *                                 12580000
+125900               LABOR-PERCENT * FED-ADJ).                          12590000
+126000                                                                  12600000
+126100     COMPUTE FED-NON-LABOR-ADJ ROUNDED =                          12610000
+126200              (NONLABOR-PERCENT * FED-ADJ).                       12620000
+126300                                                                  12630000
+126400     COMPUTE WK-3000-PEP-N-PAYMENT ROUNDED =                      12640000
+126500          (FED-LABOR-ADJ + FED-NON-LABOR-ADJ + FED-SUPPLY-ADJ).   12650000
+126600                                                                  12660000
+126700     COMPUTE H-HHA-HRG-PAY (CO1) ROUNDED =                        12670000
+126800             WK-3000-PEP-N-PAYMENT.                               12680000
+126900                                                                  12690000
+127000     COMPUTE WK-3000-PEP-N-PRETOT-PAY ROUNDED =                   12700000
+127100             WK-3000-PEP-N-PRETOT-PAY + WK-3000-PEP-N-PAYMENT.    12710000
+127200                                                                  12720000
+127300 3000-EXIT.   EXIT.                                               12730000
+127400                                                                  12740000
+127500 4000-PEP-Y-ADJUST.                                               12750000
+127600                                                                  12760000
+127700***************************************************************   12770000
+127800*           HRG OCCUR < 2 AND PEP = Y ADJUSTMENT                  12780000
+127900***************************************************************   12790000
+128000                                                                  12800000
+128100     IF H-HHA-HRG-INPUT-CODE (CO1) = SPACES                       12810000
+128200        MOVE 6 TO SUB1                                            12820000
+128300        GO TO 4000-EXIT.                                          12830000
+128400                                                                  12840000
+128500     MOVE 2 TO WK-RTC-ADJ-IND.                                    12850000
+128600                                                                  12860000
+128700     MOVE H-HHA-HRG-NO-OF-DAYS (CO1) TO WK-HRG-NO-OF-DAYS.        12870000
+128800                                                                  12880000
+128900     MOVE H-HHA-HRG-OUTPUT-CODE (CO1) TO WORK-HRG.                12890000
+129000                                                                  12900000
+129100*         YEARCHANGE                              ===========**   12910000
+129200                                                                  12920000
+129300      PERFORM 10100-SUPPLY-ADD-ON-CALC  THRU 10100-EXIT.          12930000
+129400                                                                  12940000
+129500*         YEARCHANGE                              ===========**   12950000
+129600                                                                  12960000
+129700                                                                  12970000
+129800*    IF HHA-SERV-THRU-DATE > 20071231 AND                         12980000
+129900*       HHA-SERV-FROM-DATE > 20071231                             12990000
+130000*        NEXT SENTENCE                                            13000000
+130100*    ELSE                                                         13010000
+130200*        MOVE 0000000.00 TO FED-SUPPLY-ADJ.                       13020000
+130300                                                                  13030000
+130400                                                                  13040000
+130500     COMPUTE FED-ADJP ROUNDED =                                   13050000
+130600               H-HHA-HRG-WGTS (1) * FED-EPISODE-RATE-AMT.         13060000
+130700                                                                  13070000
+130800     COMPUTE FED-LABOR-ADJP ROUNDED =                             13080000
+130900               WIR-CBSA-WAGEIND *                                 13090000
+131000               LABOR-PERCENT * FED-ADJP.                          13100000
+131100                                                                  13110000
+131200     COMPUTE FED-NON-LABOR-ADJP ROUNDED =                         13120000
+131300               NONLABOR-PERCENT * FED-ADJP.                       13130000
+131400                                                                  13140000
+131500     COMPUTE WK-4000-PEP-Y-PAYMENT ROUNDED =                      13150000
+131600         (FED-LABOR-ADJP + FED-NON-LABOR-ADJP + FED-SUPPLY-ADJ).  13160000
+131700                                                                  13170000
+131800     COMPUTE WK-HRG-NO-OF-DAYS-FAC ROUNDED =                      13180000
+131900               (WK-HRG-NO-OF-DAYS / 60).                          13190000
+132000                                                                  13200000
+132100     COMPUTE WK-4000-PEP-Y-PAYMENT ROUNDED =                      13210000
+132200             WK-4000-PEP-Y-PAYMENT *                              13220000
+132300             WK-HRG-NO-OF-DAYS-FAC.                               13230000
+132400                                                                  13240000
+132500     COMPUTE H-HHA-HRG-PAY (CO1) ROUNDED =                        13250000
+132600             WK-4000-PEP-Y-PAYMENT.                               13260000
+132700                                                                  13270000
+132800     COMPUTE WK-4000-PEP-Y-PRETOT-PAY ROUNDED =                   13280000
+132900             WK-4000-PEP-Y-PRETOT-PAY + WK-4000-PEP-Y-PAYMENT.    13290000
+133000                                                                  13300000
+133100                                                                  13310000
+133200 4000-EXIT.   EXIT.                                               13320000
+133300                                                                  13330000
+133400 5000-PEP-N-ADJUST.                                               13340000
+133500                                                                  13350000
+133600***************************************************************   13360000
+133700*           HRG OCCUR > 1 AND PEP = N ADJUSTMENT                  13370000
+133800***************************************************************   13380000
+133900                                                                  13390000
+134000     IF H-HHA-HRG-INPUT-CODE (CO1) = SPACES                       13400000
+134100        MOVE 6 TO SUB1                                            13410000
+134200        GO TO 5000-EXIT.                                          13420000
+134300                                                                  13430000
+134400     MOVE 1 TO WK-RTC-ADJ-IND.                                    13440000
+134500                                                                  13450000
+134600     MOVE H-HHA-HRG-NO-OF-DAYS (CO1) TO WK-HRG-NO-OF-DAYS.        13460000
+134700                                                                  13470000
+134800     MOVE H-HHA-HRG-OUTPUT-CODE (CO1) TO WORK-HRG.                13480000
+134900                                                                  13490000
+135000*         YEARCHANGE                              ===========**   13500000
+135100                                                                  13510000
+135200      PERFORM 10100-SUPPLY-ADD-ON-CALC  THRU 10100-EXIT.          13520000
+135300                                                                  13530000
+135400*         YEARCHANGE                              ===========**   13540000
+135500                                                                  13550000
+135600                                                                  13560000
+135700*    IF HHA-SERV-THRU-DATE > 20071231 AND                         13570000
+135800*       HHA-SERV-FROM-DATE > 20071231                             13580000
+135900*        NEXT SENTENCE                                            13590000
+136000*    ELSE                                                         13600000
+136100*        MOVE 0000000.00 TO FED-SUPPLY-ADJ.                       13610000
+136200                                                                  13620000
+136300                                                                  13630000
+136400     COMPUTE FED-ADJ ROUNDED =                                    13640000
+136500               (WK-HRG-NO-OF-DAYS  *                              13650000
+136600                H-HHA-HRG-WGTS (CO1) *                            13660000
+136700                FED-EPISODE-RATE-AMT) / 60.                       13670000
+136800                                                                  13680000
+136900     COMPUTE FED-LABOR-ADJ ROUNDED =                              13690000
+137000               WIR-CBSA-WAGEIND *                                 13700000
+137100               LABOR-PERCENT * FED-ADJ.                           13710000
+137200                                                                  13720000
+137300     COMPUTE FED-NON-LABOR-ADJ ROUNDED =                          13730000
+137400               NONLABOR-PERCENT * FED-ADJ.                        13740000
+137500                                                                  13750000
+137600     COMPUTE WK-5000-PEP-N-PAYMENT ROUNDED =                      13760000
+137700           (FED-LABOR-ADJ + FED-NON-LABOR-ADJ + FED-SUPPLY-ADJ).  13770000
+137800                                                                  13780000
+137900     COMPUTE H-HHA-HRG-PAY (CO1) ROUNDED =                        13790000
+138000             WK-5000-PEP-N-PAYMENT.                               13800000
+138100                                                                  13810000
+138200                                                                  13820000
+138300     COMPUTE WK-5000-PEP-N-PRETOT-PAY ROUNDED =                   13830000
+138400             WK-5000-PEP-N-PRETOT-PAY + WK-5000-PEP-N-PAYMENT.    13840000
+138500                                                                  13850000
+138600 5000-EXIT.   EXIT.                                               13860000
+138700                                                                  13870000
+138800 6000-PEP-Y-ADJUST.                                               13880000
+138900                                                                  13890000
+139000***************************************************************   13900000
+139100*           HRG OCCUR > 1 AND PEP = Y SHORTENED EPISODE           13910000
+139200***************************************************************   13920000
+139300                                                                  13930000
+139400     IF H-HHA-HRG-INPUT-CODE (CO1) = SPACES                       13940000
+139500        MOVE 6 TO SUB1                                            13950000
+139600        GO TO 6000-EXIT.                                          13960000
+139700                                                                  13970000
+139800     MOVE 3 TO WK-RTC-ADJ-IND.                                    13980000
+139900                                                                  13990000
+140000     MOVE H-HHA-HRG-NO-OF-DAYS (CO1) TO WK-HRG-NO-OF-DAYS.        14000000
+140100     MOVE H-HHA-PEP-DAYS             TO WK-PEP-DAYS.              14010000
+140200                                                                  14020000
+140300     MOVE H-HHA-HRG-OUTPUT-CODE (CO1) TO WORK-HRG.                14030000
+140400                                                                  14040000
+140500*         YEARCHANGE                              ===========**   14050000
+140600                                                                  14060000
+140700      PERFORM 10100-SUPPLY-ADD-ON-CALC  THRU 10100-EXIT.          14070000
+140800                                                                  14080000
+140900*         YEARCHANGE                              ===========**   14090000
+141000                                                                  14100000
+141100                                                                  14110000
+141200*    IF HHA-SERV-THRU-DATE > 20071231 AND                         14120000
+141300*       HHA-SERV-FROM-DATE > 20071231                             14130000
+141400*        NEXT SENTENCE                                            14140000
+141500*    ELSE                                                         14150000
+141600*        MOVE 0000000.00 TO FED-SUPPLY-ADJ.                       14160000
+141700*                                                                 14170000
+141800*    COMPUTE FED-ADJ ROUNDED =                                    14180000
+141900*        (WK-HRG-NO-OF-DAYS / WK-PEP-DAYS)                        14190000
+142000*                                *                                14200000
+142100*                    ((WK-PEP-DAYS / 60)                          14210000
+142200*                                *                                14220000
+142300*          (H-HHA-HRG-WGTS (CO1) * FED-EPISODE-RATE-AMT)).        14230000
+142400*                                                                 14240000
+142500*                                                                 14250000
+142600*    COMPUTE FED-ADJ ROUNDED =                                    14260000
+142700*        (WK-HRG-NO-OF-DAYS / WK-PEP-DAYS)                        14270000
+142800*                                *                                14280000
+142900*      ((WK-PEP-DAYS * H-HHA-HRG-WGTS (CO1) *                     14290000
+143000*                          FED-EPISODE-RATE-AMT) / 60).           14300000
+143100                                                                  14310000
+143200     COMPUTE FED-ADJ  ROUNDED =                                   14320000
+143300      ((WK-PEP-DAYS * H-HHA-HRG-WGTS (CO1) *                      14330000
+143400                           FED-EPISODE-RATE-AMT) / 60).           14340000
+143500                                                                  14350000
+143600     COMPUTE FED-ADJ ROUNDED  =                                   14360000
+143700                  (FED-ADJP * WK-HRG-NO-OF-DAYS) / WK-PEP-DAYS.   14370000
+143800                                                                  14380000
+143900     COMPUTE FED-LABOR-ADJ ROUNDED =                              14390000
+144000               WIR-CBSA-WAGEIND *                                 14400000
+144100               LABOR-PERCENT * FED-ADJ.                           14410000
+144200                                                                  14420000
+144300     COMPUTE FED-NON-LABOR-ADJ ROUNDED =                          14430000
+144400               NONLABOR-PERCENT * FED-ADJ.                        14440000
+144500                                                                  14450000
+144600     COMPUTE WK-6000-PEP-Y-PAYMENT ROUNDED =                      14460000
+144700          (FED-LABOR-ADJ + FED-NON-LABOR-ADJ + FED-SUPPLY-ADJ).   14470000
+144800                                                                  14480000
+144900     COMPUTE H-HHA-HRG-PAY (CO1) ROUNDED =                        14490000
+145000             WK-6000-PEP-Y-PAYMENT.                               14500000
+145100                                                                  14510000
+145200     COMPUTE WK-6000-PEP-Y-PRETOT-PAY ROUNDED =                   14520000
+145300             WK-6000-PEP-Y-PRETOT-PAY + WK-6000-PEP-Y-PAYMENT.    14530000
+145400                                                                  14540000
+145500                                                                  14550000
+145600 6000-EXIT.   EXIT.                                               14560000
+145700                                                                  14570000
+145800 7000-OUTLIER-PAYMENT.                                            14580000
+145900                                                                  14590000
+146000***************************************************************   14600000
+146100*                    OUTLIER PAYMENT                              14610000
+146200***************************************************************   14620000
+146300     COMPUTE OUT-THRES-LABOR-ADJ ROUNDED =                        14630000
+146400               WIR-CBSA-WAGEIND *                                 14640000
+146500               LABOR-PERCENT * OUTLIER-THRESHOLD-AMT.             14650000
+146600                                                                  14660000
+146700     COMPUTE OUT-THRES-NON-LABOR-ADJ ROUNDED =                    14670000
+146800               NONLABOR-PERCENT * OUTLIER-THRESHOLD-AMT.          14680000
+146900                                                                  14690000
+147000     COMPUTE OUT-THRES-AMT-ADJ ROUNDED  =                         14700000
+147100             (OUT-THRES-LABOR-ADJ +                               14710000
+147200              OUT-THRES-NON-LABOR-ADJ).                           14720000
+147300                                                                  14730000
+147400      COMPUTE WK-7000-OUTLIER-VALUE-A ROUNDED =                   14740000
+147500              OUT-THRES-AMT-ADJ +                                 14750000
+147600             WK-3000-PEP-N-PRETOT-PAY +                           14760000
+147700             WK-4000-PEP-Y-PRETOT-PAY +                           14770000
+147800             WK-5000-PEP-N-PRETOT-PAY +                           14780000
+147900             WK-6000-PEP-Y-PRETOT-PAY.                            14790000
+148000                                                                  14800000
+148100      PERFORM 8000-ADD-REV-DOLL THRU 8000-EXIT                    14810000
+148200                  VARYING CO1 FROM 1 BY 1 UNTIL                   14820000
+148300                   CO1 > 6.                                       14830000
+148400                                                                  14840000
+148500      COMPUTE WK-7000-AB-DIFF ROUNDED =                           14850000
+148600              WK-8000-OUTLIER-VALUE-B - WK-7000-OUTLIER-VALUE-A.  14860000
+148700****===================                                           14870000
+148800      IF WK-7000-AB-DIFF > ZERO                                   14880000
+148900         COMPUTE WK-7000-CALC ROUNDED =                           14890000
+149000               OUTL-LOSS-SHAR-RATIO-PERCENT * WK-7000-AB-DIFF     14900000
+149100                                                                  14910000
+149200*** ================== NEW OUTLIER CAP HERE ========              14920000
+149300         PERFORM 10000-OUTLIER-CAP-CALC THRU 10000-EXIT           14930000
+149400*** ================== NEW OUTLIER CAP HERE ========              14940000
+149500                                                                  14950000
+149600****===================                                           14960000
+149700         COMPUTE H-HHA-OUTLIER-PAYMENT ROUNDED =                  14970000
+149800               WK-7000-CALC                                       14980000
+149900                                                                  14990000
+150000****===================                                           15000000
+150100         COMPUTE H-HHA-TOTAL-PAYMENT ROUNDED =                    15010000
+150200                (WK-7000-CALC +                                   15020000
+150300                 WK-3000-PEP-N-PRETOT-PAY +                       15030000
+150400                 WK-4000-PEP-Y-PRETOT-PAY +                       15040000
+150500                 WK-5000-PEP-N-PRETOT-PAY +                       15050000
+150600                 WK-6000-PEP-Y-PRETOT-PAY)                        15060000
+150700                                                                  15070000
+150800          PERFORM 9000-WHICH-RTC-OUTLIER THRU 9000-EXIT           15080000
+150900      ELSE                                                        15090000
+151000         COMPUTE H-HHA-TOTAL-PAYMENT ROUNDED =                    15100000
+151100                (WK-3000-PEP-N-PRETOT-PAY +                       15110000
+151200                 WK-4000-PEP-Y-PRETOT-PAY +                       15120000
+151300                 WK-5000-PEP-N-PRETOT-PAY +                       15130000
+151400                 WK-6000-PEP-Y-PRETOT-PAY)                        15140000
+151500          PERFORM 9050-WHICH-RTC-NO-OUTLIER THRU 9050-EXIT.       15150000
+151600                                                                  15160000
+151700 7000-EXIT.   EXIT.                                               15170000
+151800                                                                  15180000
+151900 8000-ADD-REV-DOLL.                                               15190000
+152000                                                                  15200000
+152100***************************************************************   15210000
+152200*        ADD ALL REVENUE DOLLARS                                  15220000
+152300***************************************************************   15230000
+152400     IF H-HHA-REVENUE-CODE (CO1) = SPACES                         15240000
+152500        MOVE 6 TO CO1                                             15250000
+152600        GO TO 8000-EXIT.                                          15260000
+152700                                                                  15270000
+152800     PERFORM 8100-ADJ-REV-DOLL    THRU 8100-EXIT.                 15280000
+152900                                                                  15290000
+153000     COMPUTE FED-ADJ ROUNDED =                                    15300000
+153100             WK-REV-DOLL-RATE-UNITS (CO1) *                       15310000
+153200             H-HHA-REVENUE-QTY-OUTL-UNITS (CO1).                  15320000
+153300                                                                  15330000
+153400     COMPUTE FED-LABOR-ADJ ROUNDED =                              15340000
+153500               WIR-CBSA-WAGEIND *                                 15350000
+153600               LABOR-PERCENT * FED-ADJ.                           15360000
+153700                                                                  15370000
+153800     COMPUTE FED-NON-LABOR-ADJ ROUNDED =                          15380000
+153900               NONLABOR-PERCENT * FED-ADJ.                        15390000
+154000                                                                  15400000
+154100     COMPUTE WK-8000-OUTLIER-LAB-NLAB ROUNDED =                   15410000
+154200           (FED-LABOR-ADJ + FED-NON-LABOR-ADJ).                   15420000
+154300                                                                  15430000
+154400     COMPUTE H-HHA-REVENUE-COST (CO1) ROUNDED =                   15440000
+154500               WK-8000-OUTLIER-LAB-NLAB.                          15450000
+154600                                                                  15460000
+154700     COMPUTE WK-8000-OUTLIER-VALUE-B ROUNDED =                    15470000
+154800             WK-8000-OUTLIER-VALUE-B + WK-8000-OUTLIER-LAB-NLAB.  15480000
+154900                                                                  15490000
+155000 8000-EXIT.   EXIT.                                               15500000
+155100                                                                  15510000
+155200*----------------------------------------------------------------*15520000
+155300* ADJUST DOLLAR RATE USING THE RURAL ADD ON FACTOR               *15530000
+155400*----------------------------------------------------------------*15540000
+155500 8100-ADJ-REV-DOLL.                                               15550000
+155600                                                                  15560000
+155700     IF WS-RURAL-CATEGORY = 'A'                                   15570000
+155800         COMPUTE WK-REV-DOLL-RATE-UNITS  (CO1) ROUNDED =          15580000
+155810                 WK-REV-DOLL-RATE-UNITS  (CO1) *                  15581000
+155820                 WS-RURAL-ADDON-A                                 15582000
+155830     END-IF.                                                      15583000
+155840     IF WS-RURAL-CATEGORY = 'B'                                   15584000
+155850         COMPUTE WK-REV-DOLL-RATE-UNITS  (CO1) ROUNDED =          15585000
+155851                 WK-REV-DOLL-RATE-UNITS  (CO1) *                  15585100
+155852                 WS-RURAL-ADDON-B                                 15585200
+155853     END-IF.                                                      15585300
+155854     IF WS-RURAL-CATEGORY = 'C'                                   15585400
+155855         COMPUTE WK-REV-DOLL-RATE-UNITS  (CO1) ROUNDED =          15585500
+155856                 WK-REV-DOLL-RATE-UNITS  (CO1) *                  15585600
+155857                 WS-RURAL-ADDON-C                                 15585700
+155858     END-IF.                                                      15585800
+155859                                                                  15585900
+155860 8100-EXIT.   EXIT.                                               15586000
+155870                                                                  15587000
+155880 9000-WHICH-RTC-OUTLIER.                                          15588000
+155890                                                                  15589000
+155900      MOVE '01' TO H-HHA-PAY-RTC.                                 15590000
+156000      IF WK-RTC-ADJ-IND = 1  MOVE '08' TO H-HHA-PAY-RTC.          15600000
+156100      IF WK-RTC-ADJ-IND = 2  MOVE '11' TO H-HHA-PAY-RTC.          15610000
+156200      IF WK-RTC-ADJ-IND = 3  MOVE '13' TO H-HHA-PAY-RTC.          15620000
+156300      IF WK-RTC-ADJ-IND = 4  MOVE '02' TO H-HHA-PAY-RTC.          15630000
+156400                                                                  15640000
+156500                                                                  15650000
+156600 9000-EXIT.   EXIT.                                               15660000
+156700                                                                  15670000
+156800 9050-WHICH-RTC-NO-OUTLIER.                                       15680000
+156900                                                                  15690000
+157000      MOVE '00' TO H-HHA-PAY-RTC.                                 15700000
+157100                                                                  15710000
+157200      IF WK-RTC-ADJ-IND = 1  MOVE '07' TO H-HHA-PAY-RTC.          15720000
+157300      IF WK-RTC-ADJ-IND = 2  MOVE '09' TO H-HHA-PAY-RTC.          15730000
+157400      IF WK-RTC-ADJ-IND = 3  MOVE '12' TO H-HHA-PAY-RTC.          15740000
+157500                                                                  15750000
+157600 9050-EXIT.   EXIT.                                               15760000
+157700                                                                  15770000
+157800******************************************************************15780000
+157900* ADDED FOR CY2018 RELEASE                                       *15790000
+158000* CALCULATES THE VALUE BASED PURCHASING ADJUSTMENT AMOUNT        *15800000
+158100******************************************************************15810000
+158200 9100-VBP-CALC.                                                   15820000
+158300                                                                  15830000
+158400     INITIALIZE H-HHA-VBP-ADJ-AMT.                                15840000
+158500     MOVE H-HHA-TOTAL-PAYMENT TO WK-9100-TOTAL-PAYMENT.           15850000
+158600     MOVE 0                   TO H-HHA-TOTAL-PAYMENT.             15860000
+158700                                                                  15870000
+158800     IF H-HHA-HRG-PAY(1) > 0                                      15880000
+158900       COMPUTE H-HHA-HRG-PAY(1) ROUNDED =                         15890000
+159000               H-HHA-HRG-PAY(1) * H-HHA-PROV-VBP-ADJ-FAC          15900000
+159100       END-COMPUTE                                                15910000
+159200       COMPUTE H-HHA-TOTAL-PAYMENT ROUNDED =                      15920000
+159300               H-HHA-TOTAL-PAYMENT + H-HHA-HRG-PAY (1)            15930000
+159400       END-COMPUTE                                                15940000
+159500     END-IF.                                                      15950000
+159600                                                                  15960000
+159700     IF H-HHA-HRG-PAY(1) = 0                                      15970000
+159800        PERFORM 9120-VBP-REV-COST  THRU 9120-EXIT                 15980000
+159900     END-IF.                                                      15990000
+160000                                                                  16000000
+160100     COMPUTE H-HHA-OUTLIER-PAYMENT ROUNDED =                      16010000
+160200             H-HHA-OUTLIER-PAYMENT * H-HHA-PROV-VBP-ADJ-FAC       16020000
+160300     END-COMPUTE.                                                 16030000
+160400                                                                  16040000
+160500     COMPUTE H-HHA-TOTAL-PAYMENT ROUNDED =                        16050000
+160600             H-HHA-TOTAL-PAYMENT + H-HHA-OUTLIER-PAYMENT          16060000
+160700     END-COMPUTE.                                                 16070000
+160800                                                                  16080000
+160900     COMPUTE H-HHA-VBP-ADJ-AMT ROUNDED =                          16090000
+161000             H-HHA-TOTAL-PAYMENT - WK-9100-TOTAL-PAYMENT          16100000
+161100     END-COMPUTE.                                                 16110000
+161200                                                                  16120000
+161300 9100-EXIT.   EXIT.                                               16130000
+161400                                                                  16140000
+161500 9120-VBP-REV-COST.                                               16150000
+161600                                                                  16160000
+161700     COMPUTE H-HHA-REVENUE-COST (1) ROUNDED =                     16170000
+161800             H-HHA-REVENUE-COST (1) * H-HHA-PROV-VBP-ADJ-FAC      16180000
+161900     END-COMPUTE.                                                 16190000
+162000                                                                  16200000
+162100     COMPUTE H-HHA-TOTAL-PAYMENT ROUNDED =                        16210000
+162200             H-HHA-TOTAL-PAYMENT + H-HHA-REVENUE-COST (1)         16220000
+162300     END-COMPUTE.                                                 16230000
+162400                                                                  16240000
+162500     COMPUTE H-HHA-REVENUE-ADD-ON-VISIT-AMT (1) ROUNDED =         16250000
+162600             H-HHA-REVENUE-ADD-ON-VISIT-AMT (1) *                 16260000
+162700             H-HHA-PROV-VBP-ADJ-FAC                               16270000
+162800     END-COMPUTE.                                                 16280000
+162900                                                                  16290000
+163000     COMPUTE H-HHA-TOTAL-PAYMENT ROUNDED =                        16300000
+163100             H-HHA-TOTAL-PAYMENT +                                16310000
+163200             H-HHA-REVENUE-ADD-ON-VISIT-AMT (1)                   16320000
+163210     END-COMPUTE.                                                 16321000
+163211                                                                  16321100
+163212     COMPUTE H-HHA-REVENUE-COST (2) ROUNDED =                     16321200
+163213             H-HHA-REVENUE-COST (2) * H-HHA-PROV-VBP-ADJ-FAC      16321300
+163214     END-COMPUTE.                                                 16321400
+163215                                                                  16321500
+163216     COMPUTE H-HHA-TOTAL-PAYMENT ROUNDED =                        16321600
+163217             H-HHA-TOTAL-PAYMENT + H-HHA-REVENUE-COST (2)         16321700
+163218     END-COMPUTE.                                                 16321800
+163219                                                                  16321900
+163220     COMPUTE H-HHA-REVENUE-ADD-ON-VISIT-AMT (2) ROUNDED =         16322000
+163230             H-HHA-REVENUE-ADD-ON-VISIT-AMT (2) *                 16323000
+163231             H-HHA-PROV-VBP-ADJ-FAC                               16323100
+163232     END-COMPUTE.                                                 16323200
+163233                                                                  16323300
+163234     COMPUTE H-HHA-TOTAL-PAYMENT ROUNDED =                        16323400
+163235             H-HHA-TOTAL-PAYMENT +                                16323500
+163236             H-HHA-REVENUE-ADD-ON-VISIT-AMT (2)                   16323600
+163237     END-COMPUTE.                                                 16323700
+163238                                                                  16323800
+163239     COMPUTE H-HHA-REVENUE-COST (3) ROUNDED =                     16323900
+163240             H-HHA-REVENUE-COST (3) * H-HHA-PROV-VBP-ADJ-FAC      16324000
+163241     END-COMPUTE.                                                 16324100
+163242                                                                  16324200
+163243     COMPUTE H-HHA-TOTAL-PAYMENT ROUNDED =                        16324300
+163244             H-HHA-TOTAL-PAYMENT + H-HHA-REVENUE-COST (3)         16324400
+163245     END-COMPUTE.                                                 16324500
+163246                                                                  16324600
+163247     COMPUTE H-HHA-REVENUE-ADD-ON-VISIT-AMT (3) ROUNDED =         16324700
+163248             H-HHA-REVENUE-ADD-ON-VISIT-AMT (3) *                 16324800
+163249             H-HHA-PROV-VBP-ADJ-FAC                               16324900
+163250     END-COMPUTE.                                                 16325000
+163251                                                                  16325100
+163252     COMPUTE H-HHA-TOTAL-PAYMENT ROUNDED =                        16325200
+163253             H-HHA-TOTAL-PAYMENT +                                16325300
+163254             H-HHA-REVENUE-ADD-ON-VISIT-AMT (3)                   16325400
+163255     END-COMPUTE.                                                 16325500
+163256                                                                  16325600
+163257     COMPUTE H-HHA-REVENUE-COST (4) ROUNDED =                     16325700
+163258             H-HHA-REVENUE-COST (4) * H-HHA-PROV-VBP-ADJ-FAC      16325800
+163259     END-COMPUTE.                                                 16325900
+163260                                                                  16326000
+163261     COMPUTE H-HHA-TOTAL-PAYMENT ROUNDED =                        16326100
+163262             H-HHA-TOTAL-PAYMENT + H-HHA-REVENUE-COST (4)         16326200
+163263     END-COMPUTE.                                                 16326300
+163264                                                                  16326400
+163265     COMPUTE H-HHA-REVENUE-ADD-ON-VISIT-AMT (4) ROUNDED =         16326500
+163266             H-HHA-REVENUE-ADD-ON-VISIT-AMT (4) *                 16326600
+163267             H-HHA-PROV-VBP-ADJ-FAC                               16326700
+163268     END-COMPUTE.                                                 16326800
+163269                                                                  16326900
+163270     COMPUTE H-HHA-TOTAL-PAYMENT ROUNDED =                        16327000
+163271             H-HHA-TOTAL-PAYMENT +                                16327100
+163272             H-HHA-REVENUE-ADD-ON-VISIT-AMT (4)                   16327200
+163273     END-COMPUTE.                                                 16327300
+163274                                                                  16327400
+163275     COMPUTE H-HHA-REVENUE-COST (5) ROUNDED =                     16327500
+163276             H-HHA-REVENUE-COST (5) * H-HHA-PROV-VBP-ADJ-FAC      16327600
+163277     END-COMPUTE.                                                 16327700
+163278                                                                  16327800
+163279     COMPUTE H-HHA-TOTAL-PAYMENT ROUNDED =                        16327900
+163280             H-HHA-TOTAL-PAYMENT + H-HHA-REVENUE-COST (5)         16328000
+163281     END-COMPUTE.                                                 16328100
+163282                                                                  16328200
+163283     COMPUTE H-HHA-REVENUE-ADD-ON-VISIT-AMT (5) ROUNDED =         16328300
+163284             H-HHA-REVENUE-ADD-ON-VISIT-AMT (5) *                 16328400
+163285             H-HHA-PROV-VBP-ADJ-FAC                               16328500
+163286     END-COMPUTE.                                                 16328600
+163287                                                                  16328700
+163288     COMPUTE H-HHA-TOTAL-PAYMENT ROUNDED =                        16328800
+163289             H-HHA-TOTAL-PAYMENT +                                16328900
+163290             H-HHA-REVENUE-ADD-ON-VISIT-AMT (5)                   16329000
+163291     END-COMPUTE.                                                 16329100
+163292                                                                  16329200
+163293     COMPUTE H-HHA-REVENUE-COST (6) ROUNDED =                     16329300
+163294             H-HHA-REVENUE-COST (6) * H-HHA-PROV-VBP-ADJ-FAC      16329400
+163295     END-COMPUTE.                                                 16329500
+163296                                                                  16329600
+163297     COMPUTE H-HHA-TOTAL-PAYMENT ROUNDED =                        16329700
+163298             H-HHA-TOTAL-PAYMENT + H-HHA-REVENUE-COST (6)         16329800
+163299     END-COMPUTE.                                                 16329900
+163300                                                                  16330000
+163301     COMPUTE H-HHA-REVENUE-ADD-ON-VISIT-AMT (6) ROUNDED =         16330100
+163302             H-HHA-REVENUE-ADD-ON-VISIT-AMT (6) *                 16330200
+163303             H-HHA-PROV-VBP-ADJ-FAC                               16330300
+163304     END-COMPUTE.                                                 16330400
+163305                                                                  16330500
+163306     COMPUTE H-HHA-TOTAL-PAYMENT ROUNDED =                        16330600
+163307             H-HHA-TOTAL-PAYMENT +                                16330700
+163308             H-HHA-REVENUE-ADD-ON-VISIT-AMT (6)                   16330800
+163309     END-COMPUTE.                                                 16330900
+163310                                                                  16331000
+163311 9120-EXIT.   EXIT.                                               16331100
+163312                                                                  16331200
+163313******************************************************************16331300
+163314* ADDED FOR CY2018 RELEASE                                       *16331400
+163315* CALCULATES THE STANDARDIZED ALLOWED AMOUNT                     *16331500
+163316******************************************************************16331600
+163317 9200-CALC-STD-VALUE.                                             16331700
+163318                                                                  16331800
+163319     MOVE 0                   TO H-HHA-PPS-STD-VALUE.             16331900
+163320                                                                  16332000
+163321     IF H-HHA-REVENUE-SUM1-6-QTY-ALL < 5 AND                      16332100
+163322        H-HHA-TOB IS NOT EQUAL TO 322                             16332200
+163323        PERFORM 9210-CALC-STD-VALUE-LUPA                          16332300
+163324           THRU 9210-EXIT                                         16332400
+163325     END-IF.                                                      16332500
+163326                                                                  16332600
+163327     IF H-HHA-REVENUE-SUM1-6-QTY-ALL > 4 OR                       16332700
+163328        H-HHA-TOB IS EQUAL TO 322                                 16332800
+163329        PERFORM 9220-CALC-STD-VALUE-NLUPA                         16332900
+163330           THRU 9220-EXIT                                         16333000
+163331     END-IF.                                                      16333100
+163332                                                                  16333200
+163333 9200-EXIT.  EXIT.                                                16333300
+163334                                                                  16333400
+163335******************************************************************16333500
+163336* ADDED FOR CY2018 RELEASE                                       *16333600
+163337* CALCULATES THE STANDARDIZED ALLOWED AMOUNT FOR LUPA CLAIMS     *16333700
+163338******************************************************************16333800
+163339 9210-CALC-STD-VALUE-LUPA.                                        16333900
+163340                                                                  16334000
+163350     MOVE 0                   TO SS-QCV.                          16335000
+163360     PERFORM 6 TIMES                                              16336000
+163361       ADD 1                  TO SS-QCV                           16336100
+163362                                                                  16336200
+163363       IF H-HHA-REVENUE-QTY-COV-VISITS (SS-QCV) > 0               16336300
+163364                                                                  16336400
+163365         COMPUTE H-HHA-PPS-STD-VALUE ROUNDED =                    16336500
+163366                 H-HHA-PPS-STD-VALUE +                            16336600
+163367                (H-HHA-REVENUE-QTY-COV-VISITS (SS-QCV) *          16336700
+163368                 TB-STDV-REV-DOLL-RATE (SS-QCV))                  16336800
+163370         END-COMPUTE                                              16337000
+163371                                                                  16337100
+163372       END-IF                                                     16337200
+163373                                                                  16337300
+163374       IF H-HHA-REVENUE-ADD-ON-VISIT-AMT (SS-QCV) > 0             16337400
+163375                                                                  16337500
+163376         COMPUTE H-HHA-PPS-STD-VALUE ROUNDED =                    16337600
+163377                  H-HHA-PPS-STD-VALUE +                           16337700
+163378                 (TB-STDV-REV-DOLL-RATE (SS-QCV) *                16337800
+163380                      WS-STDV-LUPA-ADDON-FAC)                     16338000
+163381         END-COMPUTE                                              16338100
+163382                                                                  16338200
+163383       END-IF                                                     16338300
+163384     END-PERFORM.                                                 16338400
+163385                                                                  16338500
+163386     COMPUTE H-HHA-PPS-STD-VALUE ROUNDED =                        16338600
+163387             H-HHA-PPS-STD-VALUE *                                16338700
+163388             WS-STDV-RURAL-FAC                                    16338800
+163389     END-COMPUTE.                                                 16338900
+163390                                                                  16339000
+163400 9210-EXIT.  EXIT.                                                16340000
+163410                                                                  16341000
+163411******************************************************************16341100
+163412* ADDED FOR CY2018 RELEASE                                       *16341200
+163413* CALCULATES THE STANDARDIZED ALLOWED AMOUNT FOR NON-LUPA CLAIMS *16341300
+163414******************************************************************16341400
+163415 9220-CALC-STD-VALUE-NLUPA.                                       16341500
+163416                                                                  16341600
+163417     MOVE 0              TO WS-STDV-FED-SUPPLY-ADJ.               16341700
+163418     IF  WORK-HRG5 = 'S' OR '1'                                   16341800
+163419         MOVE 0000014.84 TO WS-STDV-FED-SUPPLY-ADJ.               16341905
+163420     IF  WORK-HRG5 = 'T' OR '2'                                   16342000
+163421         MOVE 0000053.59 TO WS-STDV-FED-SUPPLY-ADJ.               16342105
+163424     IF  WORK-HRG5 = 'U' OR '3'                                   16342400
+163425         MOVE 0000146.94 TO WS-STDV-FED-SUPPLY-ADJ.               16342505
+163428     IF  WORK-HRG5 = 'V' OR '4'                                   16342800
+163429         MOVE 0000218.31 TO WS-STDV-FED-SUPPLY-ADJ.               16342905
+163432     IF  WORK-HRG5 = 'W' OR '5'                                   16343200
+163433         MOVE 0000336.65 TO WS-STDV-FED-SUPPLY-ADJ.               16343305
+163436     IF  WORK-HRG5 = 'X' OR '6'                                   16343600
+163437         MOVE 0000579.00 TO WS-STDV-FED-SUPPLY-ADJ.               16343705
+163439                                                                  16343900
+163440* HIPPS CALCULATION                                               16344000
+163441                                                                  16344100
+163442     COMPUTE WS-STD-VALUE-NLUPA-AMT ROUNDED =                     16344200
+163443       ( ( H-HHA-HRG-WGTS(1) * WS-STDV-EPISODE-AMT ) +            16344300
+163444           WS-STDV-FED-SUPPLY-ADJ )*                              16344400
+163445           H-HHA-HRG-NO-OF-DAYS (1) / 60 *                        16344500
+163446           WS-STDV-RURAL-FAC * 1                                  16344600
+163447     END-COMPUTE.                                                 16344700
+163448                                                                  16344800
+163449* OUTLIER CALCULATION                                             16344900
+163450                                                                  16345000
+163451     COMPUTE WS-STD-VALUE-NLUPA-OUTL ROUNDED =                    16345100
+163452       H-HHA-OUTLIER-PAYMENT /                                    16345200
+163453       ( (LABOR-PERCENT * WIR-CBSA-WAGEIND) +                     16345300
+163454         (1 - LABOR-PERCENT) )                                    16345400
+163455     END-COMPUTE.                                                 16345500
+163456                                                                  16345600
+163457* STANDARD VALUE CALCULATION                                      16345700
+163458                                                                  16345800
+163459     COMPUTE H-HHA-PPS-STD-VALUE ROUNDED =                        16345900
+163460             WS-STD-VALUE-NLUPA-AMT +                             16346000
+163461             WS-STD-VALUE-NLUPA-OUTL                              16346100
+163462     END-COMPUTE.                                                 16346200
+163463                                                                  16346300
+163464     IF H-HHA-TOB = 322                                           16346400
+163465        IF H-HHA-INIT-PAY-INDICATOR = '1' OR '3'                  16346500
+163470           COMPUTE H-HHA-PPS-STD-VALUE ROUNDED =                  16347000
+163480                   H-HHA-PPS-STD-VALUE * 0                        16348000
+163481           END-COMPUTE                                            16348100
+163482           GO TO 9220-EXIT                                        16348200
+163483        END-IF                                                    16348300
+163484     END-IF.                                                      16348400
+163485                                                                  16348500
+163486     IF H-HHA-TOB = 322                                           16348600
+163487        IF H-HHA-ADMIT-DATE = H-HHA-SERV-FROM-DATE                16348700
+163488           COMPUTE H-HHA-PPS-STD-VALUE ROUNDED =                  16348800
+163489                   H-HHA-PPS-STD-VALUE * .60                      16348900
+163490           END-COMPUTE                                            16349000
+163491        ELSE                                                      16349100
+163492           COMPUTE H-HHA-PPS-STD-VALUE ROUNDED =                  16349200
+163493                   H-HHA-PPS-STD-VALUE * .50                      16349300
+163494           END-COMPUTE                                            16349400
+163495        END-IF                                                    16349500
+163496     END-IF.                                                      16349600
+163497                                                                  16349700
+163498 9220-EXIT.  EXIT.                                                16349800
+163499                                                                  16349900
+163500*         YEARCHANGE  2011.0                      ===========**   16350000
+163501                                                                  16350100
+163502 10000-OUTLIER-CAP-CALC.                                          16350200
+163503                                                                  16350300
+163504     IF  HHA-PROV-PAYMENT-TOTAL = 0                               16350400
+163505        GO TO 10000-EXIT.                                         16350500
+163506                                                                  16350600
+163507     IF  HHA-PROV-OUTLIER-PAY-TOTAL = 0                           16350700
+163508        GO TO 10000-EXIT.                                         16350800
+163509                                                                  16350900
+163510     COMPUTE WK-10000-OUTLIER-POOL-PERCENT ROUNDED =              16351000
+163520         HHA-PROV-PAYMENT-TOTAL * .1.                             16352000
+163530                                                                  16353000
+163540     COMPUTE WK-10000-OUTLIER-AVAIL-POOL ROUNDED =                16354000
+163550      WK-10000-OUTLIER-POOL-PERCENT - HHA-PROV-OUTLIER-PAY-TOTAL. 16355000
+163560                                                                  16356000
+163570      COMPUTE WK-10000-OUTLIER-POOL-DIF ROUNDED =                 16357000
+163580         WK-10000-OUTLIER-AVAIL-POOL - WK-7000-CALC.              16358000
+163590                                                                  16359000
+163600      IF WK-10000-OUTLIER-POOL-DIF > 0                            16360000
+163700        GO TO 10000-EXIT.                                         16370000
+163800                                                                  16380000
+163900      IF WK-10000-OUTLIER-POOL-DIF < 0 OR                         16390000
+164000         HHA-PROV-OUTLIER-PAY-TOTAL < 0                           16400000
+164100        COMPUTE WK-7000-CALC ROUNDED = 0                          16410000
+164200        MOVE 4 TO WK-RTC-ADJ-IND.                                 16420000
+164300                                                                  16430000
+164400*         YEARCHANGE  2011.0                      ===========**   16440000
+164500                                                                  16450000
+164600 10000-EXIT.   EXIT.                                              16460000
+164700                                                                  16470000
+164800*         YEARCHANGE                              ===========**   16480000
+164900                                                                  16490000
+164910*===========================================================**    16491002
+164920* UPDATED FOR CY2020                                         *    16492002
+164930*===========================================================**    16493002
+165000 10100-SUPPLY-ADD-ON-CALC.                                        16500000
+165200*===========================================================**    16520000
+165300*   NON-RURAL, WITH QUALITY DATA =  5B COL 4           =====**    16530000
+165400*   NON-RURAL, NO QUALITY DATA   =  6B COL 4           =====**    16540000
+165500*   RURAL, WITH QUALITY DATA     =  5B COL 4           =====**    16550000
+165510*   RURAL, NO QUALITY DATA       =  6B COL 4           =====**    16551000
+165520*===========================================================**    16552000
+165530                                                                  16553000
+165540*    YEARCHANGE  2019.0 NON RURAL W/ QUALITY DATA  ====**         16554000
+165550*    YEARCHANGE  2019.0 TABLE  5B 4TH COL          ====**         16555000
+165560                                                                  16556000
+165570     IF HHA-CBSA-RURAL-CHECK                                      16557000
+165580     OR HHA-CBSA-RURAL-CHECK-ALL                                  16558000
+165590        GO TO RURAL-DATA-CHECK.                                   16559000
+165600                                                                  16560000
+165700     IF HHA-WITH-DATA-CHECK                                       16570000
+165800       NEXT SENTENCE                                              16580000
+165900     ELSE                                                         16590000
+166000       GO TO NO-DATA-CHECK.                                       16600000
+166100                                                                  16610000
+166200     IF  WORK-HRG5 = 'S' OR '1'                                   16620000
+166300         MOVE 0000014.84 TO FED-SUPPLY-ADJ                        16630002
+166400         GO TO 10100-EXIT.                                        16640000
+166500                                                                  16650000
+166600     IF  WORK-HRG5 = 'T' OR '2'                                   16660000
+166700         MOVE 0000053.59 TO FED-SUPPLY-ADJ                        16670003
+166800         GO TO 10100-EXIT.                                        16680000
+166900                                                                  16690000
+167000     IF  WORK-HRG5 = 'U' OR '3'                                   16700000
+167100         MOVE 0000146.94 TO FED-SUPPLY-ADJ                        16710002
+167200         GO TO 10100-EXIT.                                        16720000
+167300                                                                  16730000
+167400     IF  WORK-HRG5 = 'V' OR '4'                                   16740000
+167500         MOVE 0000218.31 TO FED-SUPPLY-ADJ                        16750002
+167600         GO TO 10100-EXIT.                                        16760000
+167700                                                                  16770000
+167800     IF  WORK-HRG5 = 'W' OR '5'                                   16780000
+167900         MOVE 0000336.65 TO FED-SUPPLY-ADJ                        16790002
+168000         GO TO 10100-EXIT.                                        16800000
+168100                                                                  16810000
+168200     IF  WORK-HRG5 = 'X' OR '6'                                   16820000
+168300         MOVE 0000579.00 TO FED-SUPPLY-ADJ                        16830002
+168400         GO TO 10100-EXIT.                                        16840000
+168500                                                                  16850000
+168600 NO-DATA-CHECK.                                                   16860000
+168700                                                                  16870000
+168800*    YEARCHANGE  2019.0 NON RURAL WO/ QUALITY DATA   ====**       16880000
+168900*    YEARCHANGE  2019.0 TABLE  6B 4TH COL            ====**       16890000
+169000                                                                  16900000
+169100     IF HHA-NO-DATA-CHECK                                         16910000
+169200       NEXT SENTENCE                                              16920000
+169300     ELSE                                                         16930000
+169400         GO TO 10100-EXIT.                                        16940000
+169500                                                                  16950000
+169600     IF  WORK-HRG5 = 'S' OR '1'                                   16960000
+169700         MOVE 0000014.55 TO FED-SUPPLY-ADJ                        16970002
+169800         GO TO 10100-EXIT.                                        16980000
+169900                                                                  16990000
+170000     IF  WORK-HRG5 = 'T' OR '2'                                   17000000
+170100         MOVE 0000052.54 TO FED-SUPPLY-ADJ                        17010002
+170200         GO TO 10100-EXIT.                                        17020000
+170300                                                                  17030000
+170400     IF  WORK-HRG5 = 'U' OR '3'                                   17040000
+170500         MOVE 0000144.06 TO FED-SUPPLY-ADJ                        17050002
+170600         GO TO 10100-EXIT.                                        17060000
+170700                                                                  17070000
+170800     IF  WORK-HRG5 = 'V' OR '4'                                   17080000
+170900         MOVE 0000214.03 TO FED-SUPPLY-ADJ                        17090002
+171000         GO TO 10100-EXIT.                                        17100000
+171100                                                                  17110000
+171200     IF  WORK-HRG5 = 'W' OR '5'                                   17120000
+171300         MOVE 0000330.04 TO FED-SUPPLY-ADJ                        17130002
+171400         GO TO 10100-EXIT.                                        17140000
+171500                                                                  17150000
+171600     IF  WORK-HRG5 = 'X' OR '6'                                   17160000
+171700         MOVE 0000567.63 TO FED-SUPPLY-ADJ                        17170002
+171800         GO TO 10100-EXIT.                                        17180000
+171900                                                                  17190000
+172000 RURAL-DATA-CHECK.                                                17200000
+172100                                                                  17210000
+172200*    YEARCHANGE  2019.0 RURAL W/ QUALITY DATA      ====**         17220000
+172300*    YEARCHANGE  2019.0 TABLE  5B  COL 4           ====**         17230000
+172400                                                                  17240000
+172500     IF HHA-WITH-DATA-CHECK                                       17250000
+172600       NEXT SENTENCE                                              17260000
+172700     ELSE                                                         17270000
+172800       GO TO RURAL-NO-DATA-CHECK.                                 17280000
+172900                                                                  17290000
+173000     IF  WORK-HRG5 = 'S' OR '1'                                   17300000
+173100         MOVE 0000014.84 TO FED-SUPPLY-ADJ                        17310002
+173200         PERFORM 10200-RURAL-ADD-ON THRU 10200-EXIT               17320000
+173300         GO TO 10100-EXIT.                                        17330000
+173400                                                                  17340000
+173500     IF  WORK-HRG5 = 'T' OR '2'                                   17350000
+173600         MOVE 0000053.59 TO FED-SUPPLY-ADJ                        17360003
+173700         PERFORM 10200-RURAL-ADD-ON THRU 10200-EXIT               17370000
+173800         GO TO 10100-EXIT.                                        17380000
+173900                                                                  17390000
+173910     IF  WORK-HRG5 = 'U' OR '3'                                   17391000
+173920         MOVE 0000146.94 TO FED-SUPPLY-ADJ                        17392002
+173930         PERFORM 10200-RURAL-ADD-ON THRU 10200-EXIT               17393000
+173940         GO TO 10100-EXIT.                                        17394000
+173950                                                                  17395000
+173960     IF  WORK-HRG5 = 'V' OR '4'                                   17396000
+173970         MOVE 0000218.31 TO FED-SUPPLY-ADJ                        17397002
+173980         PERFORM 10200-RURAL-ADD-ON THRU 10200-EXIT               17398000
+173990         GO TO 10100-EXIT.                                        17399000
+174000                                                                  17400000
+174100     IF  WORK-HRG5 = 'W' OR '5'                                   17410000
+174200         MOVE 0000336.65 TO FED-SUPPLY-ADJ                        17420002
+174300         PERFORM 10200-RURAL-ADD-ON THRU 10200-EXIT               17430000
+174400         GO TO 10100-EXIT.                                        17440000
+174500                                                                  17450000
+174600     IF  WORK-HRG5 = 'X' OR '6'                                   17460000
+174700         MOVE 0000579.00 TO FED-SUPPLY-ADJ                        17470002
+174800         PERFORM 10200-RURAL-ADD-ON THRU 10200-EXIT               17480000
+174900         GO TO 10100-EXIT.                                        17490000
+175000                                                                  17500000
+175100 RURAL-NO-DATA-CHECK.                                             17510000
+175200                                                                  17520000
+175300*    YEARCHANGE  2019.0 RURAL WO/ QUALITY DATA     ====**         17530000
+175400*    YEARCHANGE  2019.0 TABLE  6B COL 4            ====**         17540000
+175500                                                                  17550000
+175600     IF HHA-NO-DATA-CHECK                                         17560000
+175700       NEXT SENTENCE                                              17570000
+175800     ELSE                                                         17580000
+175900         GO TO 10100-EXIT.                                        17590000
+176000                                                                  17600000
+176100     IF  WORK-HRG5 = 'S' OR '1'                                   17610000
+176200         MOVE 0000014.55 TO FED-SUPPLY-ADJ                        17620002
+176300         PERFORM 10200-RURAL-ADD-ON THRU 10200-EXIT               17630000
+176400         GO TO 10100-EXIT.                                        17640000
+176500                                                                  17650000
+176600     IF  WORK-HRG5 = 'T' OR '2'                                   17660000
+176700         MOVE 0000052.54 TO FED-SUPPLY-ADJ                        17670002
+176800         PERFORM 10200-RURAL-ADD-ON THRU 10200-EXIT               17680000
+176900         GO TO 10100-EXIT.                                        17690000
+177000                                                                  17700000
+177100     IF  WORK-HRG5 = 'U' OR '3'                                   17710000
+177200         MOVE 0000144.06 TO FED-SUPPLY-ADJ                        17720002
+177300         PERFORM 10200-RURAL-ADD-ON THRU 10200-EXIT               17730000
+177400         GO TO 10100-EXIT.                                        17740000
+177500                                                                  17750000
+177600     IF  WORK-HRG5 = 'V' OR '4'                                   17760000
+177700         MOVE 0000214.03 TO FED-SUPPLY-ADJ                        17770002
+177800         PERFORM 10200-RURAL-ADD-ON THRU 10200-EXIT               17780000
+177900         GO TO 10100-EXIT.                                        17790000
+178000                                                                  17800000
+178100     IF  WORK-HRG5 = 'W' OR '5'                                   17810000
+178200         MOVE 0000330.04 TO FED-SUPPLY-ADJ                        17820002
+178300         PERFORM 10200-RURAL-ADD-ON THRU 10200-EXIT               17830000
+178400         GO TO 10100-EXIT.                                        17840000
+178500                                                                  17850000
+178510     IF  WORK-HRG5 = 'X' OR '6'                                   17851000
+178520         MOVE 0000567.63 TO FED-SUPPLY-ADJ                        17852002
+178530         PERFORM 10200-RURAL-ADD-ON THRU 10200-EXIT               17853000
+178540         GO TO 10100-EXIT.                                        17854000
+178550                                                                  17855000
+178560 10100-EXIT.   EXIT.                                              17856000
+178570                                                                  17857000
+178580 10200-RURAL-ADD-ON.                                              17858000
+178590                                                                  17859000
+178600      IF WS-RURAL-CATEGORY = 'A'                                  17860000
+178700         COMPUTE FED-SUPPLY-ADJ ROUNDED =                         17870000
+178800                 FED-SUPPLY-ADJ * WS-RURAL-ADDON-A                17880000
+178900      END-IF.                                                     17890000
+179000      IF WS-RURAL-CATEGORY = 'B'                                  17900000
+179001         COMPUTE FED-SUPPLY-ADJ ROUNDED =                         17900100
+179002                 FED-SUPPLY-ADJ * WS-RURAL-ADDON-B                17900200
+179012      END-IF.                                                     17901200
+179013      IF WS-RURAL-CATEGORY = 'C'                                  17901300
+179014         COMPUTE FED-SUPPLY-ADJ ROUNDED =                         17901400
+179015                 FED-SUPPLY-ADJ * WS-RURAL-ADDON-C                17901500
+179018      END-IF.                                                     17901800
+179019                                                                  17901900
+179020 10200-EXIT.   EXIT.                                              17902000
+179021                                                                  17902100
+179030******        L A S T   S O U R C E   S T A T E M E N T   *****   17903000
+

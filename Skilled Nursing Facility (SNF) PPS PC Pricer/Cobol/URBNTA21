@@ -1,0 +1,29 @@
+      ****************************************************
+      * PROD NTA RURAL RATE TABLE FY2021                 *
+      * FOR USE WITH THE PDPM FINAL RULE                 *
+      * REVISED 08/05/2020 (FY 2021)                     *
+      ****************************************************
+       01  PDPM-NTA-TABLE-U.
+           02  PDPM-NTA-DATA-U.
+               05  FILLER   PIC X(15)  VALUE     'A 026438 025923'.
+               05  FILLER   PIC X(15)  VALUE     'B 020645 020243'.
+               05  FILLER   PIC X(15)  VALUE     'C 015014 014722'.
+               05  FILLER   PIC X(15)  VALUE     'D 010853 010641'.
+               05  FILLER   PIC X(15)  VALUE     'E 007834 007681'.
+               05  FILLER   PIC X(15)  VALUE     'F 005875 005761'.
+
+           02  PDPM-NTA-DATA2-U REDEFINES PDPM-NTA-DATA-U
+                  OCCURS 6 TIMES
+                     ASCENDING KEY IS PDPM-NTA-GROUP-U
+                            INDEXED BY PDPM-NTA-IDX-U.
+                   10  PDPM-NTA-DATA-TAB-U.
+                       15  PDPM-NTA-GROUP-U PIC X(01).
+                       15  FILLER           PIC X(01).
+                       15  PDPM-RATE-NTA-U  PIC 9999V99.
+                       15  FILLER           PIC X(01).
+                       15  PDPM-QRATE-NTA-U PIC 9999V99.
+      ****************************************************
+      *     END OF COPYBOOK FROM NTA URBAN RATES         *
+      ****************************************************
+
+

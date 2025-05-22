@@ -1,0 +1,1551 @@
+000100 IDENTIFICATION DIVISION.                                         00010000
+000200 PROGRAM-ID.    IPCAL150.                                         00020001
+000300*AUTHOR.        CMS.                                              00030000
+000400*REMARKS.       CMS.                                              00040000
+000410******************************************************************00041000
+000420*  FIRST IPF STARTED 01/01/2005                                  *00042000
+000430*  NEW IPF YEAR WILL START IN OCTOBER OF ANY GIVE YEAR           *00043000
+000440******************************************************************00044000
+000461*  CHANGE IN THIS PROGRAM EFFECTIVE 10/01/2014 ARE:              *00046100
+000462*  -- NO COMORBIDITY CHANGES                                     *00046207
+000470*  -- RATES ONLY                                                 *00047000
+000471*     IF THE HOSP-QUAL-IND IS EQUAL TO '1'                       *00047100
+000472*        MOVE 0728.31  TO IPF-BUDGNUT-RATE-AMT                   *00047206
+000473*        MOVE 0313.55  TO IPF-ECT-RATE-AMT                       *00047306
+000474*     ELSE                                                       *00047407
+000475*        MOVE 0714.05  TO IPF-BUDGNUT-RATE-AMT                   *00047506
+000476*        MOVE 0307.41  TO IPF-ECT-RATE-AMT                       *00047606
+000477*     END-IF.                                                    *00047707
+000478*     MOVE 8755.00  TO IPF-OUTL-THRES-AMT.                       *00047807
+000479*     MOVE 0.69294  TO IPF-LABOR-SHARE.                          *00047906
+000480*     MOVE 0.30706  TO IPF-NLABOR-SHARE.                         *00048006
+000482******************************************************************00048200
+000490 DATE-COMPILED.                                                   00049000
+000500 ENVIRONMENT DIVISION.                                            00050000
+000600 CONFIGURATION SECTION.                                           00060000
+000700 SOURCE-COMPUTER.            IBM-370.                             00070000
+000800 OBJECT-COMPUTER.            IBM-370.                             00080000
+000900 INPUT-OUTPUT  SECTION.                                           00090000
+001000 FILE-CONTROL.                                                    00100000
+001100     EJECT                                                        00110000
+001200 DATA DIVISION.                                                   00120000
+001300 FILE SECTION.                                                    00130000
+001400                                                                  00140000
+001500 WORKING-STORAGE SECTION.                                         00150000
+001600 01  W-STORAGE-REF                  PIC X(46)  VALUE              00160000
+001700     'IPCAL150      - W O R K I N G   S T O R A G E'.             00170001
+001800 01  CAL-VERSION                    PIC X(05)  VALUE 'C15.0'.     00180001
+001900***************************************************************   00190000
+002000***************************************************************   00200000
+002100 01  SUB                     PIC 999   VALUE 0.                   00210000
+002200 01  SUB2                    PIC 999   VALUE 0.                   00220000
+002300 01  DAYS-UPTO-21            PIC 9(05) VALUE 0.                   00230000
+002400 01  DAYS-OVER-21            PIC 9(05) VALUE 0.                   00240000
+002500 01  DAYS-UPTO-9             PIC 9(05) VALUE 0.                   00250000
+002600 01  DAYS-OVER-9             PIC 9(05) VALUE 0.                   00260000
+002700 01  X1                      PIC 9(05)  COMP SYNC VALUE 0.        00270000
+002800 01  X2                      PIC 9(05)  COMP SYNC VALUE 0.        00280000
+002900 01  HOLDADJ                 PIC 9(02)V9(4)  COMP SYNC VALUE 0.   00290000
+003000 01  WK-FED-PORTION          PIC 9(07)V9(2)  VALUE 0.             00300000
+003100 01  WK-TEACH-PORTION        PIC 9(07)V9(2)  VALUE 0.             00310000
+003200 01  WK-PER-DIEM-AMT         PIC 9(07)V9(2)  VALUE 0.             00320000
+003300 01  WK-ADJ-PER-DIEM-STEP1   PIC 9(07)V9(2)  VALUE 0.             00330000
+003400 01  WK-ADJ-PER-DIEM-STEP2   PIC 9(07)V9(2)  VALUE 0.             00340000
+003500 01  WK-TOTAL-LOS            PIC 9(03) VALUE 0.                   00350000
+003600                                                                  00360000
+003700******************************************************************00370000
+003800***    INREC IS A SKEL OF FILE TO BE USED   FOR TESTING ONLY      00380000
+003900*          OR IT IS THE CODE PASSED FROM PRICER                   00390000
+004000***************************************************************   00400000
+004100                                                                  00410000
+004200 01  WK-COMORBIDITY-DATA.                                         00420000
+004300     05  DDX.                                                     00430000
+004400         10  DDXX         OCCURS 25 TIMES.                        00440000
+004500             20 WK-DDXX1     PIC X.                               00450000
+004600             20 WK-DDXX2     PIC X.                               00460000
+004700             20 WK-DDXX3     PIC X.                               00470000
+004800             20 WK-DDXX4     PIC X.                               00480000
+004900             20 WK-DDXX5     PIC X.                               00490000
+005000             20 WK-DDXX6     PIC X.                               00500000
+005100             20 WK-DDXX7     PIC X.                               00510000
+005200     05  SRG.                                                     00520000
+005300         10  SRGX         PIC X(07)  OCCURS 25 TIMES.             00530000
+005400                                                                  00540000
+005500 01  OUT-DDXX-ZERO.                                               00550000
+005600     05  OUT-Z-DDXX1          PIC X.                              00560000
+005700     05  OUT-Z-DDXX2          PIC X.                              00570000
+005800     05  OUT-Z-DDXX3          PIC X.                              00580000
+005900     05  OUT-Z-DDXX4          PIC X.                              00590000
+006000     05  OUT-Z-DDXX5          PIC X.                              00600000
+006100     05  OUT-Z-DDXX6          PIC X.                              00610000
+006200     05  OUT-Z-DDXX7          PIC X.                              00620000
+006300*******************************************************           00630000
+006400***************************************************************   00640000
+006500***************************************************************   00650000
+006600 01  DRG-FACTOR-TABLE.                                            00660000
+006700     02  TB-DRG-DATA.                                             00670000
+006800         10  FILLER      PIC X(07) VALUE '056 105'.               00680000
+006900         10  FILLER      PIC X(07) VALUE '057 105'.               00690000
+007000         10  FILLER      PIC X(07) VALUE '080 107'.               00700000
+007100         10  FILLER      PIC X(07) VALUE '081 107'.               00710000
+007200         10  FILLER      PIC X(07) VALUE '876 122'.               00720000
+007300         10  FILLER      PIC X(07) VALUE '880 105'.               00730000
+007400         10  FILLER      PIC X(07) VALUE '881 099'.               00740000
+007500         10  FILLER      PIC X(07) VALUE '882 102'.               00750000
+007600         10  FILLER      PIC X(07) VALUE '883 102'.               00760000
+007700         10  FILLER      PIC X(07) VALUE '884 103'.               00770000
+007800         10  FILLER      PIC X(07) VALUE '885 100'.               00780000
+007900         10  FILLER      PIC X(07) VALUE '886 099'.               00790000
+008000         10  FILLER      PIC X(07) VALUE '887 092'.               00800000
+008100         10  FILLER      PIC X(07) VALUE '894 097'.               00810000
+008200         10  FILLER      PIC X(07) VALUE '895 102'.               00820000
+008300         10  FILLER      PIC X(07) VALUE '896 088'.               00830000
+008400         10  FILLER      PIC X(07) VALUE '897 088'.               00840000
+008500     02  TB-DRG-DATA2 REDEFINES TB-DRG-DATA OCCURS 17             00850000
+008600             ASCENDING KEY IS TB-DRG-CODE                         00860000
+008700             INDEXED BY DRGSUB.                                   00870000
+008800          05  TB-DRG-CODE           PIC XXX.                      00880000
+008900          05  TB-DRG-ADJUSTMENTS  OCCURS 1.                       00890000
+009000              10  FILLER            PIC X.                        00900000
+009100              10  TB-DRG-FACTOR     PIC 9V99.                     00910000
+009200                                                                  00920000
+009300***************************************************************   00930000
+009400***************************************************************   00940000
+009500 01  CODE-FIRST-TABLE.                                            00950000
+009600     02  TB-FST-DATA.                                             00960000
+009700         10  FILLER      PIC X(11) VALUE '2900    103'.           00970000
+009800         10  FILLER      PIC X(11) VALUE '29010   103'.           00980000
+009900         10  FILLER      PIC X(11) VALUE '29011   103'.           00990000
+010000         10  FILLER      PIC X(11) VALUE '29012   103'.           01000000
+010100         10  FILLER      PIC X(11) VALUE '29013   103'.           01010000
+010200         10  FILLER      PIC X(11) VALUE '29020   103'.           01020000
+010300         10  FILLER      PIC X(11) VALUE '29021   103'.           01030000
+010400         10  FILLER      PIC X(11) VALUE '2903    103'.           01040000
+010500         10  FILLER      PIC X(11) VALUE '29040   103'.           01050000
+010600         10  FILLER      PIC X(11) VALUE '29041   103'.           01060000
+010700         10  FILLER      PIC X(11) VALUE '29042   103'.           01070000
+010800         10  FILLER      PIC X(11) VALUE '29043   103'.           01080000
+010900         10  FILLER      PIC X(11) VALUE '2908    103'.           01090000
+011000         10  FILLER      PIC X(11) VALUE '2909    103'.           01100000
+011100         10  FILLER      PIC X(11) VALUE '2930    105'.           01110000
+011200         10  FILLER      PIC X(11) VALUE '2931    105'.           01120000
+011300         10  FILLER      PIC X(11) VALUE '29381   103'.           01130000
+011400         10  FILLER      PIC X(11) VALUE '29382   103'.           01140000
+011500         10  FILLER      PIC X(11) VALUE '29383   103'.           01150000
+011600         10  FILLER      PIC X(11) VALUE '29384   103'.           01160000
+011700         10  FILLER      PIC X(11) VALUE '29389   103'.           01170000
+011800         10  FILLER      PIC X(11) VALUE '2939    105'.           01180000
+011900         10  FILLER      PIC X(11) VALUE '2940    103'.           01190000
+012000         10  FILLER      PIC X(11) VALUE '29410   103'.           01200000
+012100         10  FILLER      PIC X(11) VALUE '29411   103'.           01210000
+012200         10  FILLER      PIC X(11) VALUE '30789   102'.           01220000
+012300     02  TB-FST-DATA2 REDEFINES TB-FST-DATA OCCURS 26             01230000
+012400             ASCENDING KEY IS TB-FST-CODE                         01240000
+012500             INDEXED BY FSTSUB.                                   01250000
+012600          05  TB-FST-CODE           PIC X(07).                    01260000
+012700          05  TB-FST-ADJUSTMENTS  OCCURS 1.                       01270000
+012800              10  FILLER            PIC X.                        01280000
+012900              10  TB-FST-FACTOR     PIC 9V99.                     01290000
+013000                                                                  01300000
+013100***************************************************************   01310000
+013200***************************************************************   01320000
+013300 01  DAY-ADJUSTMENTS.                                             01330000
+013400     02  DAY-VALUES.                                              01340000
+013500         10  DAY1        PIC XXX  VALUE '000'.                    01350000
+013600         10  DAY2        PIC XXX  VALUE '112'.                    01360000
+013700         10  DAY3        PIC XXX  VALUE '108'.                    01370000
+013800         10  DAY4        PIC XXX  VALUE '105'.                    01380000
+013900         10  DAY5        PIC XXX  VALUE '104'.                    01390000
+014000         10  DAY6        PIC XXX  VALUE '102'.                    01400000
+014100         10  DAY7        PIC XXX  VALUE '101'.                    01410000
+014200         10  DAY8        PIC XXX  VALUE '101'.                    01420000
+014300         10  DAY9        PIC XXX  VALUE '100'.                    01430000
+014400         10  DAY10       PIC XXX  VALUE '100'.                    01440000
+014500         10  DAY11       PIC XXX  VALUE '099'.                    01450000
+014600         10  DAY12       PIC XXX  VALUE '099'.                    01460000
+014700         10  DAY13       PIC XXX  VALUE '099'.                    01470000
+014800         10  DAY14       PIC XXX  VALUE '099'.                    01480000
+014900         10  DAY15       PIC XXX  VALUE '098'.                    01490000
+015000         10  DAY16       PIC XXX  VALUE '097'.                    01500000
+015100         10  DAY17       PIC XXX  VALUE '097'.                    01510000
+015200         10  DAY18       PIC XXX  VALUE '096'.                    01520000
+015300         10  DAY19       PIC XXX  VALUE '095'.                    01530000
+015400         10  DAY20       PIC XXX  VALUE '095'.                    01540000
+015500         10  DAY21       PIC XXX  VALUE '095'.                    01550000
+015600         10  DAY21-OVER  PIC XXX  VALUE '092'.                    01560000
+015700     02  DAY-VALUES2 REDEFINES DAY-VALUES OCCURS 22.              01570000
+015800         10 DAY-VALUE2   PIC 9V99.                                01580000
+015900     EJECT                                                        01590000
+016000 LINKAGE SECTION.                                                 01600000
+016100***************************************************************   01610000
+016200*                 * * * * * * * * *                           *   01620000
+016300                                                                  01630000
+016400***************************************************************   01640000
+016500*    THIS DATA IS CALCULATED BY THIS PPCAL  SUBROUTINE        *   01650000
+016600*    AND PASSED BACK TO THE CALLING PROGRAM                   *   01660000
+016700*            RETURN CODE VALUES (IPF-RTC)                     *   01670000
+016800*                                                             *   01680000
+016900*            IPF-RTC 00-49 = HOW THE BILL WAS PAID            *   01690000
+017000*                                                             *   01700000
+017100*              00 = PAID NORMAL IPF PAYMENT                   *   01710000
+017200*              02 = PAID AS A COST-OUTLIER                    *   01720000
+017300*              03 = PRIOR DAYS BILL - VARIABLE PER DIEM       *   01730000
+017400*              04 = COMBO OF '02' AND '03'                    *   01740000
+017500*                                                             *   01750000
+017600*                                                             *   01760000
+017700*            IPF-RTC 50-99 = WHY THE BILL WAS NOT PAID        *   01770000
+017800*              51 = NO PROVIDER SPECIFIC INFO FOUND           *   01780000
+017900*              52 = INVALID CBSA# IN PROVIDER FILE            *   01790000
+018000*                   OR INVALID WAGE INDEX                     *   01800000
+018100*              53 = WAIVER STATE - NOT CALCULATED BY PPS      *   01810000
+018200*              54 = BILL-DRG INVALID                              01820000
+018300*              55 = DISCHARGE DATE < PROVIDER EFF START DATE  *   01830000
+018400*                                      OR                     *   01840000
+018500*                   DISCHARGE DATE < CBSA EFF START DATE      *   01850000
+018600*                                      OR                     *   01860000
+018700*                   DISCHARGE DATE > 20060630 START CBSA AND  *   01870000
+018800*                 SELECTED PROV EFF DATE < 20060701 START CBSA*   01880000
+018900*                   FOR PPS                                   *   01890000
+019000*              56 = INVALID LENGTH OF STAY                    *   01900000
+019100*              57 = INVALID AGE                               *   01910000
+019200*              58 = INVALID PPS FED BLEND INDICATOR           *   01920000
+019300*              98 = CANNOT PROCESS BILL OUTSIDE THIS VERSION  *   01930000
+019400***************************************************************   01940000
+019500*******************************************************           01950000
+019600*    PASSED FROM IPDRV                                *           01960000
+019700*******************************************************           01970000
+019800 01  BILL-INPUT-DATA.                                             01980000
+019900     05  BILL-IN-DATA.                                            01990000
+020000         10  BILL-NPI-NUMBER.                                     02000000
+020100             15  BILL-NPI            PIC X(08).                   02010000
+020200             15  BILL-NPI-FILLER     PIC X(02).                   02020000
+020300         10  BILL-PROVIDER-NO        PIC X(06).                   02030000
+020400         10  BILL-HIC-NO             PIC X(12).                   02040000
+020500         10  BILL-DISCHARGE-DATE.                                 02050000
+020600             15  BILL-D-CC           PIC 9(02).                   02060000
+020700             15  BILL-D-YY           PIC 9(02).                   02070000
+020800             15  BILL-D-MM           PIC 9(02).                   02080000
+020900             15  BILL-D-DD           PIC 9(02).                   02090000
+021000         10  BILL-PATIENT-STATUS     PIC X(02).                   02100000
+021100         10  BILL-AGE                PIC 9(03).                   02110000
+021200         10  BILL-DRG                PIC 9(03).                   02120000
+021300         10  BILL-LOS                PIC 9(05).                   02130000
+021400         10  BILL-OUTL-OCCUR-IND     PIC X(01).                   02140000
+021500         10  BILL-SRC-OF-ADMISSION   PIC X(01).                   02150000
+021600         10  BILL-ECT-NO-OF-UNITS    PIC 9(03).                   02160000
+021700         10  BILL-CHARGES-CLAIMED    PIC 9(07)V9(02).             02170000
+021800         10  BILL-DIAG-PROC-DATA.                                 02180000
+021900             15  BILL-OTHER-DIAG-DATA   OCCURS 25 TIMES.          02190000
+022000                 20  BILL-DDXX-1ST     PIC X.                     02200000
+022100                 20  FILLER            PIC X(06).                 02210000
+022200             15  BILL-OTHER-PROC-DATA PIC X(07)  OCCURS 25 TIMES. 02220000
+022210         10  BILL-PRIOR-DAYS         PIC 9(03).                   02221000
+022220*******************************************************           02222000
+022230*    PASSED AND RETURNED BY IPCAL                     *           02223000
+022240*******************************************************           02224000
+022250 01  IPF-DATA-VARIABLES.                                          02225000
+022260         10  IPF-RTC                 PIC 9(02).                   02226000
+022270         10  IPF-MSA-CBSA            PIC X(05).                   02227000
+022280         10  IPF-MSA-CODE REDEFINES IPF-MSA-CBSA.                 02228000
+022290             15  IPF-MSA             PIC X(04).                   02229000
+022300             15  FILLER              PIC X.                       02230000
+022400         10  IPF-CBSA-CODE REDEFINES IPF-MSA-CBSA.                02240000
+022500             15  IPF-CBSA            PIC X(05).                   02250000
+022600         10  IPF-WAGE-INDEX          PIC 9(02)V9(04).             02260000
+022700         10  IPF-LABOR-SHARE         PIC 9(01)V9(05).             02270000
+022800         10  IPF-NLABOR-SHARE        PIC 9(01)V9(05).             02280000
+022900         10  IPF-COLA                PIC 9(01)V9(03).             02290000
+023000         10  IPF-STD-FACTOR          PIC 9(01)V9(05).             02300000
+023100         10  IPF-COMORB-FACTOR       PIC 9(01)V9(05).             02310000
+023200         10  IPF-AGE-ADJ             PIC 9(01)V9(02).             02320000
+023300         10  IPF-DRG-FACTOR          PIC 9(01)V9(02).             02330000
+023400         10  IPF-GEO-RURAL-ADJ       PIC 9(01)V9(02).             02340000
+023500         10  IPF-EMERG-ADJ           PIC 9(01)V9(02).             02350000
+023600         10  IPF-TEACH-ADJ           PIC 9(01)V9(02).             02360000
+023700         10  IPF-FED-PPS-BLEND-IND   PIC X.                       02370000
+023800         10  IPF-CAL-VERSION         PIC X(05).                   02380000
+023810         10  IPF-CSTCHG-RATIO        PIC 9(01)V9(03).             02381014
+023900         10  FILLER                  PIC X(08).                   02390018
+024000                                                                  02400000
+024100*******************************************************           02410000
+024200*    PASSED AND RETURNED BY IPCAL                     *           02420000
+024300*******************************************************           02430000
+024400 01  IPF-ADDITIONAL-VARIABLES.                                    02440000
+024500     02  IPF-MF-VARIABLES.                                        02450000
+024600         10  IPF-100PCT-STOPLOS-AMT      PIC 9(07)V9(02).         02460000
+024700         10  IPF-TOT-PAYMENT             PIC 9(07)V9(02).         02470000
+024800         10  IPF-FED-PAYMENT             PIC 9(07)V9(02).         02480000
+024900         10  IPF-FAC-PAYMENT             PIC 9(07)V9(02).         02490000
+025000         10  IPF-ECT-PAYMENT             PIC 9(07)V9(02).         02500000
+025100         10  IPF-OUTLIER-PAYMENT         PIC 9(07)V9(02).         02510000
+025200         10  IPF-OUTL-COST               PIC 9(07)V9(02).         02520000
+025300         10  IPF-OUTL-ADJ-COST           PIC 9(07)V9(02).         02530000
+025400         10  IPF-OUTL-PER-DIEM-AMT       PIC 9(07)V9(02).         02540000
+025500         10  IPF-OUTL-THRES-AMT          PIC 9(07)V9(02).         02550000
+025600         10  IPF-OUTL-THRES-ADJ-AMT      PIC 9(07)V9(02).         02560000
+025700         10  IPF-ADJUSTED-PER-DIEM-AMT   PIC 9(07)V9(02).         02570000
+025800         10  IPF-WAGE-ADJ-AMT            PIC 9(07)V9(02).         02580000
+025900         10  IPF-LABOR-BASE-AMT          PIC 9(07)V9(05).         02590000
+026000         10  IPF-NLABOR-BASE-AMT         PIC 9(07)V9(05).         02600000
+026100         10  IPF-OUTL-LABOR-BASE-AMT     PIC 9(07)V9(05).         02610000
+026200         10  IPF-OUTL-NLABOR-BASE-AMT    PIC 9(07)V9(05).         02620000
+026300         10  IPF-BUDGNUT-RATE-AMT        PIC 9(05)V9(02).         02630000
+026400         10  IPF-ECT-RATE-AMT            PIC 9(05)V9(02).         02640000
+026500         10  IPF-TEACH-PAYMENT           PIC 9(07)V9(02).         02650000
+026600         10  FILLER                      PIC X(01).               02660000
+026700      02 IPF-PC-VARIABLES.                                        02670000
+026800         10  IPF-PC-DATA                 PIC X(44).               02680000
+026900                                                                  02690000
+027000 01  PRICER-OPT-VERS-SW.                                          02700000
+027100     02  PRICER-OPTION-SW          PIC X(01).                     02710000
+027200         88  VARIABLES                  VALUE 'S'.                02720000
+027300         88  PROV-RECORD-PASSED         VALUE 'P'.                02730000
+027400         88  ALL-TABLES-PASSED          VALUE 'B'.                02740000
+027500         88  PC-PRICER                  VALUE 'C'.                02750000
+027600     02  IPF-VERSIONS.                                            02760000
+027700         10  IPDRV-VERSION         PIC X(05).                     02770000
+027800                                                                  02780000
+027900**************************************************************    02790000
+028000*      THIS IS THE PROV-RECORD THAT WILL BE PASSED BACK FROM *    02800000
+028100*      THE IPCAL056 PROGRAM FOR PROCESSING                   *    02810000
+028200**************************************************************    02820000
+028300 01  PROV-NEW-HOLD.                                               02830000
+028400     02  PROV-NEWREC-HOLD1.                                       02840000
+028500         05  P-NEW-NPI10.                                         02850000
+028600             10  P-NEW-NPI8             PIC X(08).                02860000
+028700             10  P-NEW-NPI-FILLER       PIC X(02).                02870000
+028800         05  P-NEW-PROVIDER-NO.                                   02880000
+028900             88  P-NEW-DSH-ADJ-PROVIDERS                          02890000
+029000                             VALUE '180049' '190044' '190144'     02900000
+029100                                   '190191' '330047' '340085'     02910000
+029200                                   '370016' '370149' '420043'.    02920000
+029300             10  P-NEW-STATE            PIC 9(02).                02930000
+029400             10  FILLER                 PIC X(04).                02940000
+029500         05  P-NEW-DATE-DATA.                                     02950000
+029600             10  P-NEW-EFF-DATE.                                  02960000
+029700                 15  P-NEW-EFF-DT-CC    PIC 9(02).                02970000
+029800                 15  P-NEW-EFF-DT-YY    PIC 9(02).                02980000
+029900                 15  P-NEW-EFF-DT-MM    PIC 9(02).                02990000
+030000                 15  P-NEW-EFF-DT-DD    PIC 9(02).                03000000
+030100             10  P-NEW-FY-BEGIN-DATE.                             03010000
+030200                 15  P-NEW-FY-BEG-DT-CC PIC 9(02).                03020000
+030300                 15  P-NEW-FY-BEG-DT-YY PIC 9(02).                03030000
+030400                 15  P-NEW-FY-BEG-DT-MM PIC 9(02).                03040000
+030500                 15  P-NEW-FY-BEG-DT-DD PIC 9(02).                03050000
+030600             10  P-NEW-REPORT-DATE.                               03060000
+030700                 15  P-NEW-REPORT-DT-CC PIC 9(02).                03070000
+030800                 15  P-NEW-REPORT-DT-YY PIC 9(02).                03080000
+030900                 15  P-NEW-REPORT-DT-MM PIC 9(02).                03090000
+031000                 15  P-NEW-REPORT-DT-DD PIC 9(02).                03100000
+031100             10  P-NEW-TERMINATION-DATE.                          03110000
+031200                 15  P-NEW-TERM-DT-CC   PIC 9(02).                03120000
+031300                 15  P-NEW-TERM-DT-YY   PIC 9(02).                03130000
+031400                 15  P-NEW-TERM-DT-MM   PIC 9(02).                03140000
+031500                 15  P-NEW-TERM-DT-DD   PIC 9(02).                03150000
+031600         05  P-NEW-WAIVER-CODE          PIC X(01).                03160000
+031700             88  P-NEW-WAIVER-STATE       VALUE 'Y'.              03170000
+031800         05  P-NEW-INTER-NO             PIC 9(05).                03180000
+031900         05  P-NEW-PROVIDER-TYPE        PIC X(02).                03190000
+032000             88  P-N-SOLE-COMMUNITY-PROV    VALUE '01' '11'.      03200000
+032100             88  P-N-REFERRAL-CENTER        VALUE '07' '11'       03210000
+032200                                                  '15' '17'       03220000
+032300                                                  '22'.           03230000
+032400             88  P-N-INDIAN-HEALTH-SERVICE  VALUE '08'.           03240000
+032500             88  P-N-REDESIGNATED-RURAL-YR1 VALUE '09'.           03250000
+032600             88  P-N-REDESIGNATED-RURAL-YR2 VALUE '10'.           03260000
+032700             88  P-N-SOLE-COM-REF-CENT      VALUE '11'.           03270000
+032800             88  P-N-MDH-REBASED-FY90       VALUE '14' '15'.      03280000
+032900             88  P-N-MDH-RRC-REBASED-FY90   VALUE '15'.           03290000
+033000             88  P-N-SCH-REBASED-FY90       VALUE '16' '17'.      03300000
+033100             88  P-N-SCH-RRC-REBASED-FY90   VALUE '17'.           03310000
+033200             88  P-N-MEDICAL-ASSIST-FACIL   VALUE '18'.           03320000
+033300             88  P-N-EACH                   VALUE '21' '22'.      03330000
+033400             88  P-N-EACH-REFERRAL-CENTER   VALUE '22'.           03340000
+033500             88  P-N-NHCMQ-II-SNF           VALUE '32'.           03350000
+033600             88  P-N-NHCMQ-III-SNF          VALUE '33'.           03360000
+033700         05  P-NEW-CURRENT-CENSUS-DIV   PIC 9(01).                03370000
+033800             88  P-N-NEW-ENGLAND            VALUE  1.             03380000
+033900             88  P-N-MIDDLE-ATLANTIC        VALUE  2.             03390000
+034000             88  P-N-SOUTH-ATLANTIC         VALUE  3.             03400000
+034100             88  P-N-EAST-NORTH-CENTRAL     VALUE  4.             03410000
+034200             88  P-N-EAST-SOUTH-CENTRAL     VALUE  5.             03420000
+034300             88  P-N-WEST-NORTH-CENTRAL     VALUE  6.             03430000
+034400             88  P-N-WEST-SOUTH-CENTRAL     VALUE  7.             03440000
+034500             88  P-N-MOUNTAIN               VALUE  8.             03450000
+034600             88  P-N-PACIFIC                VALUE  9.             03460000
+034700         05  P-NEW-CURRENT-DIV   REDEFINES                        03470000
+034800                    P-NEW-CURRENT-CENSUS-DIV   PIC 9(01).         03480000
+034900             88  P-N-VALID-CENSUS-DIV    VALUE 1 THRU 9.          03490000
+035000         05  P-NEW-MSA-DATA.                                      03500000
+035100             10  P-NEW-CHG-CODE-INDEX       PIC X.                03510000
+035200             10  P-NEW-GEO-LOC-MSAX         PIC X(04) JUST RIGHT. 03520000
+035300             10  P-NEW-GEO-LOC-MSA9   REDEFINES                   03530000
+035400                             P-NEW-GEO-LOC-MSAX  PIC 9(04).       03540000
+035500             10  P-NEW-GEO REDEFINES                              03550000
+035600                                 P-NEW-GEO-LOC-MSAX.              03560000
+035700                 15  P-NEW-GEO-RURAL-1ST.                         03570000
+035800                     20  P-NEW-GEO-RURAL  PIC XX.                 03580000
+035900                         88  P-NEW-GEO-MSAX-RURAL VALUE '  '.     03590000
+036000                 15  P-NEW-GEO-RURAL-2ND        PIC XX.           03600000
+036100             10  P-NEW-WAGE-INDEX-LOC-MSA   PIC X(04) JUST RIGHT. 03610000
+036200             10  P-NEW-STAND-AMT-LOC-MSA    PIC X(04) JUST RIGHT. 03620000
+036300             10  P-NEW-STAND-AMT-LOC-MSA9                         03630000
+036400       REDEFINES P-NEW-STAND-AMT-LOC-MSA.                         03640000
+036500                 15  P-NEW-RURAL-1ST.                             03650000
+036600                     20  P-NEW-STAND-RURAL  PIC XX.               03660000
+036700                         88  P-NEW-STD-RURAL-CHECK VALUE '  '.    03670000
+036800                 15  P-NEW-RURAL-2ND        PIC XX.               03680000
+036900         05  P-NEW-SOL-COM-DEP-HOSP-YR PIC XX.                    03690000
+037000                 88  P-NEW-SCH-YRBLANK    VALUE   '  '.           03700000
+037100                 88  P-NEW-SCH-YR82       VALUE   '82'.           03710000
+037200                 88  P-NEW-SCH-YR87       VALUE   '87'.           03720000
+037300         05  P-NEW-LUGAR                    PIC X.                03730000
+037400         05  P-NEW-TEMP-RELIEF-IND          PIC X.                03740000
+037500         05  P-NEW-FED-PPS-BLEND-IND        PIC X.                03750000
+037600         05  FILLER                         PIC X(05).            03760000
+037700     02  PROV-NEWREC-HOLD2.                                       03770000
+037800         05  P-NEW-VARIABLES.                                     03780000
+037900             10  P-NEW-FAC-SPEC-RATE     PIC  9(05)V9(02).        03790000
+038000             10  P-NEW-COLA              PIC  9(01)V9(03).        03800000
+038100             10  P-NEW-INTERN-RATIO      PIC  9(01)V9(04).        03810000
+038200             10  P-NEW-BED-SIZE          PIC  9(05).              03820000
+038300             10  P-NEW-OPER-CSTCHG-RATIO PIC  9(01)V9(03).        03830000
+038400             10  P-NEW-CMI               PIC  9(01)V9(04).        03840000
+038500             10  P-NEW-SSI-RATIO         PIC  V9(04).             03850000
+038600             10  P-NEW-MEDICAID-RATIO    PIC  V9(04).             03860000
+038700             10  P-NEW-PPS-BLEND-YR-IND  PIC  9(01).              03870000
+038800             10  P-NEW-PRUF-UPDTE-FACTOR PIC  9(01)V9(05).        03880000
+038900             10  P-NEW-DSH-PERCENT       PIC  V9(04).             03890000
+039000             10  P-NEW-FYE-DATE          PIC  X(08).              03900000
+039100         05  P-NEW-CBSA-DATA.                                     03910000
+039200             10  P-NEW-CBSA-SPEC-PAY-IND   PIC X.                 03920000
+039300             10  P-NEW-CBSA-HOSP-QUAL-IND  PIC X.                 03930000
+039400             10  P-NEW-CBSA-GEO-LOC        PIC X(05) JUST RIGHT.  03940000
+039500             10  P-NEW-CBSA-GEO-LOCX REDEFINES                    03950000
+039600                 P-NEW-CBSA-GEO-LOC.                              03960000
+039700                 15  P-NEW-CBSA-GEO-RURAL-1ST.                    03970000
+039800                     20  P-NEW-CBSA-GEO-RURAL  PIC XXX.           03980000
+039900                         88  P-NEW-CBSA-GEO-RURAL-CHECK           03990000
+040000                             VALUE '   '.                         04000000
+040100                 15  P-NEW-CBSA-GEO-RURAL-2ND PIC XX.             04010000
+040200             10  P-NEW-CBSA-RECLASS-LOC    PIC X(05) JUST RIGHT.  04020000
+040300             10  P-NEW-CBSA-STAND-AMT-LOC  PIC X(05) JUST RIGHT.  04030000
+040400             10  P-NEW-CBSA-SPEC-WI        PIC 9(02)V9(04).       04040000
+040500             10  P-NEW-CBSA-SPEC-WI-N  REDEFINES                  04050000
+040600                 P-NEW-CBSA-SPEC-WI        PIC 9(06).             04060000
+040700     02  PROV-NEWREC-HOLD3.                                       04070000
+040800         05  P-NEW-PASS-AMT-DATA.                                 04080000
+040900             10  P-NEW-PASS-AMT-CAPITAL    PIC 9(04)V99.          04090000
+041000             10  P-NEW-PASS-AMT-DIR-MED-ED PIC 9(04)V99.          04100000
+041100             10  P-NEW-PASS-AMT-ORGAN-ACQ  PIC 9(04)V99.          04110000
+041200             10  P-NEW-PASS-AMT-PLUS-MISC  PIC 9(04)V99.          04120000
+041300         05  P-NEW-CAPI-DATA.                                     04130000
+041400             15  P-NEW-CAPI-PPS-PAY-CODE   PIC X.                 04140000
+041500             15  P-NEW-CAPI-HOSP-SPEC-RATE PIC 9(04)V99.          04150000
+041600             15  P-NEW-CAPI-OLD-HARM-RATE  PIC 9(04)V99.          04160000
+041700             15  P-NEW-CAPI-NEW-HARM-RATIO PIC 9(01)V9999.        04170000
+041800             15  P-NEW-CAPI-CSTCHG-RATIO   PIC 9V999.             04180000
+041900             15  P-NEW-CAPI-NEW-HOSP       PIC X.                 04190000
+042000             15  P-NEW-CAPI-IME            PIC 9V9999.            04200000
+042100             15  P-NEW-CAPI-EXCEPTIONS     PIC 9(04)V99.          04210000
+042200             15  P-VAL-BASED-PURCH-SCORE    PIC 9V999.            04220000
+042300         05  FILLER                         PIC X(18).            04230000
+042400******************************************************************04240000
+042500                                                                  04250000
+042600 01  WAGE-INDEX-RECORD.                                           04260000
+042700     05  W-CBSA              PIC 9(5).                            04270000
+042800     05  W-SIZE              PIC X(01).                           04280000
+042900         88  LARGE-URBAN       VALUE 'L'.                         04290000
+043000         88  OTHER-URBAN       VALUE 'O'.                         04300000
+043100         88  ALL-RURAL         VALUE 'R'.                         04310000
+043200     05  W-CBSA-EFF-DATE     PIC 9(8).                            04320000
+043300     05  FILLER              PIC X.                               04330000
+043400     05  W-CBSA-WAGE-INDEX   PIC S9(02)V9(04).                    04340000
+043500     05  FILLER              PIC S9(02)V9(04).                    04350000
+043600     EJECT                                                        04360000
+043700 PROCEDURE DIVISION  USING BILL-INPUT-DATA                        04370000
+043800                           IPF-DATA-VARIABLES                     04380000
+043900                           IPF-ADDITIONAL-VARIABLES               04390000
+044000                           PRICER-OPT-VERS-SW                     04400000
+044100                           PROV-NEW-HOLD                          04410000
+044200                           WAGE-INDEX-RECORD.                     04420000
+044370                                                                  04437000
+044400***************************************************************   04440000
+044500*    PROCESSING:                                              *   04450000
+044600*        A. WILL PROCESS CASES BASED ON DISCHARGE DATE        *   04460000
+044700*        B. INITIALIZE IPCAL  HOLD VARIABLES.                 *   04470000
+044800*        C. EDIT THE DATA PASSED FROM THE BILL BEFORE         *   04480000
+044900*           ATTEMPTING TO CALCULATE IPF. IF THIS BILL         *   04490000
+045000*           CANNOT BE PROCESSED, SET A RETURN CODE AND        *   04500000
+045100*           GOBACK.                                           *   04510000
+045200*        D. ASSEMBLE PRICING COMPONENTS.                      *   04520000
+045300*        E. CALCULATE THE PRICE.                              *   04530000
+045400***************************************************************   04540000
+045900                                                                  04590000
+046000     PERFORM 0200-MAINLINE-CONTROL THRU 0200-EXIT.                04600000
+046100                                                                  04610000
+046200     MOVE CAL-VERSION  TO  IPF-CAL-VERSION.                       04620000
+046300                                                                  04630000
+046400     GOBACK.                                                      04640000
+046500                                                                  04650000
+046600 0200-MAINLINE-CONTROL.                                           04660000
+046700                                                                  04670000
+046800     PERFORM 1000-EDIT-THE-BILL-INFO.                             04680000
+046900                                                                  04690000
+047000     IF  IPF-RTC = 00                                             04700000
+047100         PERFORM 2000-ASSEMBLE-PPS-VARIABLES THRU                 04710000
+047200                 2000-EXIT                                        04720000
+047300         PERFORM 3000-CALC-PAYMENT THRU                           04730000
+047400                 3000-EXIT.                                       04740000
+047500                                                                  04750000
+047600 0200-EXIT.   EXIT.                                               04760000
+047700                                                                  04770000
+047800 1000-EDIT-THE-BILL-INFO.                                         04780000
+047900***************************************************************   04790000
+048000*    BILL DATA EDITS IF ANY FAIL SET IPF-RTC                  *   04800000
+048100*    AND DO NOT ATTEMPT TO PRICE.                             *   04810000
+048200***************************************************************   04820000
+048300     MOVE SPACES TO WK-COMORBIDITY-DATA.                          04830000
+048400                                                                  04840000
+048500     IF  IPF-RTC = 00                                             04850000
+048600         IF  P-NEW-WAIVER-STATE                                   04860000
+048700             MOVE 53 TO IPF-RTC.                                  04870000
+048800*-------------------------------------------------------------*   04880000
+048900*    FOR FY2011, REMOVED 014 & 015 AND ADDED 009              *   04890000
+049000*-------------------------------------------------------------*   04900000
+049100     IF  IPF-RTC = 00                                             04910000
+049200         IF  BILL-DRG < 001                                       04920000
+049300                OR = 009          OR = 016 OR = 017               04930000
+049400                OR = 018 OR = 019 OR = 043 OR = 044               04940000
+049500                OR = 045 OR = 046 OR = 047 OR = 048               04950000
+049600                OR = 049 OR = 050 OR = 051 OR = 104               04960000
+049700                OR = 105 OR = 106 OR = 107 OR = 108               04970000
+049800                OR = 109 OR = 110 OR = 111 OR = 112               04980000
+049900                OR = 118 OR = 119 OR = 120 OR = 126               04990000
+050000                OR = 127 OR = 128 OR = 140 OR = 141               05000000
+050100                OR = 142 OR = 143 OR = 144 OR = 145               05010000
+050200                OR = 160 OR = 161 OR = 162 OR = 169               05020000
+050300                OR = 170 OR = 171 OR = 172 OR = 173               05030000
+050400                OR = 174 OR = 209 OR = 210 OR = 211               05040000
+050500                OR = 212 OR = 213 OR = 214 OR = 265               05050000
+050600                OR = 266 OR = 267 OR = 268 OR = 269               05060000
+050700                OR = 270 OR = 271 OR = 272 OR = 273               05070000
+050800                OR = 274 OR = 275 OR = 276 OR = 277               05080000
+050900                OR = 278 OR = 279 OR = 317 OR = 318               05090000
+051000                OR = 319 OR = 320 OR = 321 OR = 322               05100000
+051100                OR = 323 OR = 324 OR = 325 OR = 359               05110000
+051200                OR = 360 OR = 361 OR = 362 OR = 363               05120000
+051300                OR = 364 OR = 365 OR = 366 OR = 367               05130000
+051400                OR = 396 OR = 397 OR = 398 OR = 399               05140000
+051500                OR = 400 OR = 401 OR = 402 OR = 403               05150000
+051600                OR = 404 OR = 426 OR = 427 OR = 428               05160000
+051700                OR = 429 OR = 430 OR = 431 OR = 447               05170000
+051800                OR = 448 OR = 449 OR = 450 OR = 451               05180000
+051900                OR = 452 OR = 518 OR = 519 OR = 520               05190000
+052000                OR = 521 OR = 522 OR = 523 OR = 524               05200000
+052100                OR = 525 OR = 526 OR = 527 OR = 528               05210000
+052200                OR = 529 OR = 530 OR = 531 OR = 532               05220000
+052300                OR = 567 OR = 568 OR = 569 OR = 570               05230000
+052400                OR = 571 OR = 572 OR = 586 OR = 587               05240000
+052500                OR = 588 OR = 589 OR = 590 OR = 591               05250000
+052600                OR = 608 OR = 609 OR = 610 OR = 611               05260000
+052700                OR = 612 OR = 613 OR = 631 OR = 632               05270000
+052800                OR = 633 OR = 634 OR = 635 OR = 636               05280000
+052900                OR = 646 OR = 647 OR = 648 OR = 649               05290000
+053000                OR = 650 OR = 651 OR = 676 OR = 677               05300000
+053100                OR = 678 OR = 679 OR = 680 OR = 681               05310000
+053200                OR = 701 OR = 702 OR = 703 OR = 704               05320000
+053300                OR = 705 OR = 706 OR = 719 OR = 720               05330000
+053400                OR = 721 OR = 731 OR = 732 OR = 733               05340000
+053500                OR = 751 OR = 752 OR = 753 OR = 762               05350000
+053600                OR = 763 OR = 764 OR = 771 OR = 772               05360000
+053700                OR = 773 OR = 783 OR = 784 OR = 785               05370000
+053800                OR = 786 OR = 787 OR = 788 OR = 796               05380000
+053900                OR = 797 OR = 798 OR = 805 OR = 806               05390000
+054000                OR = 807 OR = 817 OR = 818 OR = 819               05400000
+054100                OR = 831 OR = 832 OR = 833 OR = 850               05410000
+054200                OR = 851 OR = 852 OR = 859 OR = 860               05420000
+054300                OR = 861 OR = 873 OR = 874 OR = 875               05430000
+054400                OR = 877 OR = 878 OR = 879 OR = 891               05440000
+054500                OR = 891 OR = 892 OR = 892 OR = 893               05450000
+054600                OR = 893 OR = 898 OR = 899 OR = 900               05460000
+054700                OR = 910 OR = 911 OR = 912 OR = 924               05470000
+054800                OR = 925 OR = 926 OR = 930 OR = 931               05480000
+054900                OR = 932 OR = 936 OR = 937 OR = 938               05490000
+055000                OR = 942 OR = 943 OR = 944 OR = 952               05500000
+055100                OR = 953 OR = 954 OR = 960 OR = 961               05510000
+055200                OR = 962 OR = 966 OR = 967 OR = 968               05520000
+055300                OR = 971 OR = 972 OR = 973 OR = 978               05530000
+055400                OR = 979 OR = 980 OR = 990 OR = 991               05540000
+055500                OR = 992 OR = 993 OR = 994 OR = 995               05550000
+055600                OR = 996 OR = 997                                 05560000
+055700             MOVE 54 TO IPF-RTC.                                  05570000
+055800                                                                  05580000
+055900     IF IPF-RTC = 00                                              05590000
+056000        IF  ((BILL-DISCHARGE-DATE < P-NEW-EFF-DATE) OR            05600000
+056100             (BILL-DISCHARGE-DATE < W-CBSA-EFF-DATE))             05610000
+056200              MOVE 55 TO IPF-RTC.                                 05620000
+056300                                                                  05630000
+056400     IF IPF-RTC = 00                                              05640000
+056500         IF  BILL-LOS NOT NUMERIC OR                              05650000
+056600             BILL-LOS = ZERO                                      05660000
+056700             MOVE 56 TO IPF-RTC.                                  05670000
+056800                                                                  05680000
+056900     IF IPF-RTC = 00                                              05690000
+057000         IF  BILL-AGE NOT NUMERIC OR                              05700000
+057100             BILL-AGE = ZERO                                      05710000
+057200             MOVE 57 TO IPF-RTC.                                  05720000
+057300                                                                  05730000
+057310*=============================================================*   05731000
+057311* FY2014 - THE BLEND INDICATOR IS NO LONGER REQUIRED          *   05731100
+057312*        - REMOVE COMMENTED CODE FOR FY2015 RELEASE           *   05731200
+057313*=============================================================*   05731300
+057400**   IF IPF-RTC = 00                                              05740000
+057500**       IF  P-NEW-FED-PPS-BLEND-IND NOT = 1 AND                  05750000
+057600**                                   NOT = 2 AND                  05760000
+057700**                                   NOT = 3 AND                  05770000
+057800**                                   NOT = 4                      05780000
+057900**           MOVE 58 TO IPF-RTC.                                  05790000
+058000                                                                  05800000
+058100 2000-ASSEMBLE-PPS-VARIABLES.                                     05810000
+058200***************************************************************   05820000
+058300*    THE APPROPRIATE SET OF THESE IPF VARIABLES ARE SELECTED  *   05830000
+058400*    DEPENDING ON THE BILL DISCHARGE DATE AND EFFECTIVE DATE  *   05840000
+058500*    OF THAT VARIABLE.                                        *   05850000
+058600*    3/31/2009 - THE STANDARDIZATION FACTOR WAS USED ONLY ONCE*   05860000
+058700*    TO CORRECT WHERE A COMPUTER CODE INCORRECTLY ASSIGNED    *   05870000
+058800*    NON-TEACHING STATUS TO MOST TEACHING FACILITIES.         *   05880000
+058900*    IT HAS BEEN COMMENTED OUT AS IT IS NO LONGER NEEDED.     *   05890000
+059000***************************************************************   05900000
+059100     MOVE ALL '0'  TO IPF-MF-VARIABLES.                           05910000
+059200                                                                  05920000
+059205     IF P-NEW-CBSA-HOSP-QUAL-IND IS EQUAL TO '1'                  05920500
+059220        MOVE 0728.31  TO IPF-BUDGNUT-RATE-AMT                     05922006
+059230        MOVE 0313.55  TO IPF-ECT-RATE-AMT                         05923006
+059240     ELSE                                                         05924000
+059250        MOVE 0714.05  TO IPF-BUDGNUT-RATE-AMT                     05925006
+059260        MOVE 0307.41  TO IPF-ECT-RATE-AMT                         05926006
+059270     END-IF.                                                      05927000
+059280     MOVE 8755.00  TO IPF-OUTL-THRES-AMT.                         05928011
+059290     MOVE 0.69294  TO IPF-LABOR-SHARE.                            05929006
+059291     MOVE 0.30706  TO IPF-NLABOR-SHARE.                           05929106
+059292                                                                  05929200
+059800*    MOVE 0.82540  TO IPF-STD-FACTOR.                             05980000
+059810                                                                  05981000
+059820     MOVE ZEROES   TO WK-FED-PORTION                              05982000
+059830                      WK-TEACH-PORTION.                           05983000
+059840                                                                  05984000
+059850     IF  (P-NEW-STATE = 02 OR 12)                                 05985000
+059860         MOVE P-NEW-COLA TO IPF-COLA                              05986000
+059870     ELSE                                                         05987000
+059880         MOVE 1.000 TO IPF-COLA.                                  05988000
+059890                                                                  05989000
+059900***************************************************************   05990000
+060100***  GET THE DRG ADJUSTMENT FACTORES OR FIRST CODES               06010000
+060110***************************************************************   06011000
+060200                                                                  06020000
+060300     PERFORM 2600-GET-DRG-FACTORS THRU 2600-EXIT.                 06030000
+060400                                                                  06040000
+060500     IF IPF-RTC = '60'                                            06050000
+060600         MOVE '00' TO IPF-RTC                                     06060000
+060700         PERFORM 2700-GET-FIRST-CODES THRU 2700-EXIT.             06070000
+060800                                                                  06080000
+060900                                                                  06090000
+061000*******************************************************           06100000
+061100***  GET THE COMORBIDITY FACTORS                                  06110000
+061200***************************************************************   06120000
+061300                                                                  06130000
+061400     PERFORM 3300-GET-COMORBIDITY THRU 3300-EXIT.                 06140000
+061500                                                                  06150000
+061600***************************************************************   06160000
+061700***  GET THE WAGE-INDEX                                           06170000
+061800***************************************************************   06180000
+061900                                                                  06190000
+062000     MOVE W-CBSA-WAGE-INDEX TO IPF-WAGE-INDEX.                    06200000
+062100                                                                  06210000
+062200***************************************************************   06220000
+062300***  GET THE AGE ADJUSTMENT                                       06230000
+062310***************************************************************   06231000
+062500                                                                  06250000
+062600     IF BILL-AGE < 45                                             06260000
+062700        MOVE 1.00 TO IPF-AGE-ADJ                                  06270000
+062800        GO TO 2000-SKIP.                                          06280000
+062900                                                                  06290000
+063000     IF BILL-AGE < 50                                             06300000
+063100        MOVE 1.01 TO IPF-AGE-ADJ                                  06310000
+063200        GO TO 2000-SKIP.                                          06320000
+063300                                                                  06330000
+063400     IF BILL-AGE < 55                                             06340000
+063500        MOVE 1.02 TO IPF-AGE-ADJ                                  06350000
+063600        GO TO 2000-SKIP.                                          06360000
+063700                                                                  06370000
+063800     IF BILL-AGE < 60                                             06380000
+063900        MOVE 1.04 TO IPF-AGE-ADJ                                  06390000
+064000        GO TO 2000-SKIP.                                          06400000
+064100                                                                  06410000
+064200     IF BILL-AGE < 65                                             06420000
+064300        MOVE 1.07 TO IPF-AGE-ADJ                                  06430000
+064400        GO TO 2000-SKIP.                                          06440000
+064500                                                                  06450000
+064600     IF BILL-AGE < 70                                             06460000
+064700        MOVE 1.10 TO IPF-AGE-ADJ                                  06470000
+064800        GO TO 2000-SKIP.                                          06480000
+064900                                                                  06490000
+065000     IF BILL-AGE < 75                                             06500000
+065100        MOVE 1.13 TO IPF-AGE-ADJ                                  06510000
+065200        GO TO 2000-SKIP.                                          06520000
+065300                                                                  06530000
+065400     IF BILL-AGE < 80                                             06540000
+065500        MOVE 1.15 TO IPF-AGE-ADJ                                  06550000
+065600        GO TO 2000-SKIP.                                          06560000
+065700                                                                  06570000
+065800     MOVE 1.17 TO IPF-AGE-ADJ.                                    06580000
+065900                                                                  06590000
+066000 2000-SKIP.                                                       06600000
+066100                                                                  06610000
+066200***************************************************************   06620000
+066300***  GET THE TEACHING ADJUSTMENT                                  06630000
+066310***************************************************************   06631000
+066500                                                                  06650000
+066600     IF P-NEW-INTERN-RATIO NUMERIC                                06660000
+066700        COMPUTE IPF-TEACH-ADJ ROUNDED =                           06670000
+066800              ((1 + P-NEW-INTERN-RATIO) ** 0.5150)                06680000
+066900     ELSE                                                         06690000
+067000        MOVE 1.00 TO IPF-TEACH-ADJ.                               06700000
+067100                                                                  06710000
+067200***************************************************************   06720000
+067300***  GET THE RURAL ADJUSTMENT                                     06730000
+067310***************************************************************   06731000
+067500                                                                  06750000
+067600     IF P-NEW-CBSA-GEO-RURAL-CHECK                                06760000
+067700        MOVE 1.17 TO IPF-GEO-RURAL-ADJ                            06770000
+067800     ELSE                                                         06780000
+067900        MOVE 1.00 TO IPF-GEO-RURAL-ADJ.                           06790000
+068000                                                                  06800000
+068100***************************************************************   06810000
+068200***  GET THE EMERGENCY ADJUSTMENT                                 06820000
+068210***************************************************************   06821000
+068400                                                                  06840000
+068500     IF P-NEW-TEMP-RELIEF-IND = 'Y'                               06850000
+068600        MOVE 1.31 TO IPF-EMERG-ADJ                                06860000
+068700                     DAY-VALUE2 (1)                               06870000
+068800     ELSE                                                         06880000
+068900        MOVE 1.19 TO IPF-EMERG-ADJ                                06890000
+069000                     DAY-VALUE2 (1).                              06900000
+069100                                                                  06910000
+069200***  CHECK FOR FACILITY W/O FULL SERVICE FROM CLAIM               06920000
+069300     IF BILL-SRC-OF-ADMISSION = 'D'                               06930000
+069400        MOVE 1.19 TO IPF-EMERG-ADJ                                06940000
+069500                     DAY-VALUE2 (1).                              06950000
+069600                                                                  06960000
+069700                                                                  06970000
+069800***************************************************************   06980000
+069900***  GET THE ECT ADJUSTED PAYMENT                                 06990000
+069910***************************************************************   06991000
+070100                                                                  07010000
+070200     COMPUTE IPF-ECT-PAYMENT ROUNDED =                            07020000
+070300             (((IPF-ECT-RATE-AMT * IPF-LABOR-SHARE) *             07030000
+070400                    W-CBSA-WAGE-INDEX)                            07040000
+070500                           +                                      07050000
+070600              ((IPF-ECT-RATE-AMT * IPF-NLABOR-SHARE) *            07060000
+070700                       IPF-COLA)).                                07070000
+070800                                                                  07080000
+070900     COMPUTE IPF-ECT-PAYMENT ROUNDED =                            07090000
+071000             IPF-ECT-PAYMENT * BILL-ECT-NO-OF-UNITS.              07100000
+071100                                                                  07110000
+071200 2000-EXIT.   EXIT.                                               07120000
+071300                                                                  07130000
+071400 2600-GET-DRG-FACTORS.                                            07140000
+071500                                                                  07150000
+071600     SET DRGSUB TO 1.                                             07160000
+071700     SEARCH TB-DRG-DATA2 VARYING DRGSUB                           07170000
+071800         AT END                                                   07180000
+071900            MOVE '60' TO IPF-RTC                                  07190000
+072000            GO TO 2600-EXIT                                       07200000
+072100         WHEN TB-DRG-CODE (DRGSUB) = BILL-DRG                     07210000
+072200            MOVE TB-DRG-FACTOR (DRGSUB, 1) TO IPF-DRG-FACTOR.     07220000
+072300                                                                  07230000
+072400 2600-EXIT.    EXIT.                                              07240000
+072500                                                                  07250000
+072600 2700-GET-FIRST-CODES.                                            07260000
+072700                                                                  07270000
+072800     SET FSTSUB TO 1.                                             07280000
+072900     SEARCH TB-FST-DATA2 VARYING FSTSUB                           07290000
+073000       AT END                                                     07300000
+073100          MOVE 1.00 TO IPF-DRG-FACTOR                             07310000
+073200          GO TO 2700-EXIT                                         07320000
+073300       WHEN  TB-FST-CODE (FSTSUB) = BILL-OTHER-DIAG-DATA(1)       07330000
+073400          MOVE TB-FST-FACTOR (FSTSUB, 1) TO IPF-DRG-FACTOR.       07340000
+073500                                                                  07350000
+073600                                                                  07360000
+073700 2700-EXIT.    EXIT.                                              07370000
+073800                                                                  07380000
+073900 3000-CALC-PAYMENT.                                               07390000
+074000***************************************************************   07400000
+074100***  CALCULATE THE WAGE ADJ RATES                                 07410000
+074110***************************************************************   07411000
+074300                                                                  07430000
+074400     COMPUTE IPF-LABOR-BASE-AMT ROUNDED =                         07440000
+074500                ((IPF-BUDGNUT-RATE-AMT * IPF-LABOR-SHARE) *       07450000
+074600                     W-CBSA-WAGE-INDEX).                          07460000
+074700                                                                  07470000
+074800     COMPUTE IPF-NLABOR-BASE-AMT ROUNDED =                        07480000
+074900                ((IPF-BUDGNUT-RATE-AMT * IPF-NLABOR-SHARE) *      07490000
+075000                     IPF-COLA).                                   07500000
+075100                                                                  07510000
+075200     COMPUTE IPF-WAGE-ADJ-AMT ROUNDED =                           07520000
+075300                (IPF-LABOR-BASE-AMT + IPF-NLABOR-BASE-AMT).       07530000
+075400                                                                  07540000
+075500***************************************************************   07550000
+075700***  CALCULATE ADJUSTED PER DIEM AMOUNT W/O TEACH-ADJ             07570000
+075710***************************************************************   07571000
+075900                                                                  07590000
+076000     COMPUTE WK-ADJ-PER-DIEM-STEP2 ROUNDED =                      07600000
+076100          (IPF-COMORB-FACTOR *                                    07610000
+076200           IPF-AGE-ADJ * IPF-DRG-FACTOR *                         07620000
+076300           IPF-GEO-RURAL-ADJ)                                     07630000
+076400                         *                                        07640000
+076500                IPF-WAGE-ADJ-AMT.                                 07650000
+076600                                                                  07660000
+076700***************************************************************   07670000
+076900***  CALCULATE THE DAY LOS FOR TOTAL PAYMENT W/O  TEACH-ADJ       07690000
+076910***************************************************************   07691000
+077100                                                                  07710000
+077200     MOVE WK-ADJ-PER-DIEM-STEP2 TO IPF-ADJUSTED-PER-DIEM-AMT      07720000
+077300                                   WK-PER-DIEM-AMT.               07730000
+077400                                                                  07740000
+077500     MOVE ZEROES TO DAYS-UPTO-21                                  07750000
+077600                    DAYS-OVER-21                                  07760000
+077700                    IPF-FED-PAYMENT.                              07770000
+077800     MOVE 001    TO SUB                                           07780000
+077900                    SUB2.                                         07790000
+078000                                                                  07800000
+078100     COMPUTE SUB2 = SUB2 + BILL-PRIOR-DAYS.                       07810000
+078200     COMPUTE WK-TOTAL-LOS = BILL-LOS + BILL-PRIOR-DAYS.           07820000
+078412                                                                  07841200
+078413     IF WK-TOTAL-LOS > 21                                         07841300
+078414        COMPUTE DAYS-OVER-21 = (WK-TOTAL-LOS - 21)                07841400
+078415        MOVE 21 TO DAYS-UPTO-21                                   07841500
+078416     ELSE                                                         07841600
+078417        MOVE WK-TOTAL-LOS TO DAYS-UPTO-21.                        07841700
+078430                                                                  07843000
+078440     PERFORM 3100-GET-EACH-DAY THRU 3100-EXIT  VARYING            07844000
+078450             SUB FROM SUB2 BY 1 UNTIL                             07845000
+078460             SUB > DAYS-UPTO-21.                                  07846000
+078461                                                                  07846100
+078480     IF WK-TOTAL-LOS > 21                                         07848000
+078481        IF BILL-LOS > 0                                           07848100
+078482           IF DAYS-OVER-21 > BILL-LOS                             07848200
+078483              MOVE BILL-LOS  TO DAYS-OVER-21                      07848300
+078484           END-IF                                                 07848400
+078485        END-IF                                                    07848500
+078490        COMPUTE IPF-FED-PAYMENT ROUNDED =                         07849000
+078500                IPF-FED-PAYMENT +                                 07850000
+078600       (DAYS-OVER-21 * (WK-PER-DIEM-AMT *                         07860000
+078700                         DAY-VALUE2 (22)))                        07870000
+078710     END-IF.                                                      07871000
+078800                                                                  07880000
+078900     MOVE IPF-FED-PAYMENT TO WK-FED-PORTION.                      07890000
+079200                                                                  07920000
+079300     MOVE ZEROES TO IPF-FED-PAYMENT.                              07930000
+079400                                                                  07940000
+079500***************************************************************   07950000
+079600     IF IPF-TEACH-ADJ = 1.00                                      07960000
+079700        MOVE ZEROES TO WK-ADJ-PER-DIEM-STEP1                      07970000
+079800                       WK-TEACH-PORTION                           07980000
+079900        GO TO 3000-BYPASS-TEACH.                                  07990000
+080000                                                                  08000000
+080100***************************************************************   08010000
+080300***  CALCULATE ADJUSTED PER DIEM AMOUNT WITH TEACHING-ADJ         08030000
+080310***************************************************************   08031000
+080500                                                                  08050000
+080600     COMPUTE WK-ADJ-PER-DIEM-STEP1 ROUNDED =                      08060000
+080700          (IPF-COMORB-FACTOR *                                    08070000
+080800           IPF-AGE-ADJ * IPF-DRG-FACTOR *                         08080000
+080900           IPF-TEACH-ADJ * IPF-GEO-RURAL-ADJ)                     08090000
+081000                         *                                        08100000
+081100                IPF-WAGE-ADJ-AMT.                                 08110000
+081200                                                                  08120000
+081300***************************************************************   08130000
+081400***  CALCULATE THE ADJUSTED PER DIEM AMOUNT                       08140004
+081410***************************************************************   08141000
+081420                                                                  08142000
+081500     COMPUTE  WK-PER-DIEM-AMT ROUNDED =                           08150000
+081600             WK-ADJ-PER-DIEM-STEP1 - WK-ADJ-PER-DIEM-STEP2.       08160000
+081700                                                                  08170000
+081800     MOVE WK-ADJ-PER-DIEM-STEP1 TO IPF-ADJUSTED-PER-DIEM-AMT.     08180000
+081900                                                                  08190000
+082000***************************************************************   08200000
+082200***  CALCULATE THE DAY LOS FOR TEACH ONLY                         08220000
+082210***************************************************************   08221000
+082400                                                                  08240000
+082500     MOVE ZEROES TO DAYS-UPTO-21                                  08250000
+082600                    DAYS-OVER-21                                  08260000
+082700                    IPF-FED-PAYMENT.                              08270000
+082800                                                                  08280000
+082900     MOVE 001    TO SUB                                           08290000
+083000                    SUB2.                                         08300000
+083100                                                                  08310000
+083200     COMPUTE SUB2 = SUB2 + BILL-PRIOR-DAYS.                       08320000
+083300     COMPUTE WK-TOTAL-LOS = BILL-LOS + BILL-PRIOR-DAYS.           08330000
+083400                                                                  08340000
+083500     IF WK-TOTAL-LOS > 21                                         08350000
+083600        COMPUTE DAYS-OVER-21 = (WK-TOTAL-LOS - 21)                08360000
+083700        MOVE 21 TO DAYS-UPTO-21                                   08370000
+083800     ELSE                                                         08380000
+083900        MOVE WK-TOTAL-LOS TO DAYS-UPTO-21.                        08390000
+084000                                                                  08400000
+084100     PERFORM 3100-GET-EACH-DAY THRU 3100-EXIT  VARYING            08410000
+084200             SUB FROM SUB2 BY 1 UNTIL                             08420000
+084300             SUB > DAYS-UPTO-21.                                  08430000
+084301                                                                  08430100
+084310     IF WK-TOTAL-LOS > 21                                         08431000
+084320        IF BILL-LOS > 0                                           08432000
+084330           IF DAYS-OVER-21 > BILL-LOS                             08433000
+084340              MOVE BILL-LOS  TO DAYS-OVER-21                      08434000
+084350           END-IF                                                 08435000
+084360        END-IF                                                    08436000
+084370        COMPUTE IPF-FED-PAYMENT ROUNDED =                         08437000
+084380                IPF-FED-PAYMENT +                                 08438000
+084390       (DAYS-OVER-21 * (WK-PER-DIEM-AMT *                         08439000
+084391                         DAY-VALUE2 (22)))                        08439100
+084392     END-IF.                                                      08439200
+085000                                                                  08500000
+085100     MOVE IPF-FED-PAYMENT TO WK-TEACH-PORTION.                    08510000
+085200                                                                  08520000
+085300     MOVE ZEROES TO IPF-FED-PAYMENT.                              08530000
+085310                                                                  08531000
+085400***************************************************************   08540000
+085402***  ADD FED AND TEACHING INPUT TO OULTLIER                       08540200
+085410***************************************************************   08541000
+085500 3000-BYPASS-TEACH.                                               08550000
+085900                                                                  08590000
+086000     COMPUTE IPF-FED-PAYMENT ROUNDED =                            08600000
+086100                      WK-FED-PORTION + WK-TEACH-PORTION.          08610000
+086200                                                                  08620000
+086300***************************************************************   08630000
+086400***  CHECK FOR OUTLIER TO BE APPLIED                              08640000
+086410***************************************************************   08641000
+086600                                                                  08660000
+086700     IF ((BILL-PATIENT-STATUS = '30' AND                          08670000
+086800          BILL-OUTL-OCCUR-IND  = 'Y')                             08680000
+086900                     OR                                           08690000
+087000         (BILL-PATIENT-STATUS NOT = '30'))                        08700000
+087100          PERFORM 3050-GET-OUTLIER THRU 3050-EXIT.                08710000
+087200                                                                  08720000
+087300***************************************************************   08730000
+087400***  RETURN 100% PPS AMOUNT  FOR STOP LOSS PROVISION              08740000
+087600***  NOT BLENDED                                                  08760000
+087610***************************************************************   08761000
+087700                                                                  08770000
+087800      COMPUTE IPF-100PCT-STOPLOS-AMT ROUNDED =                    08780000
+087900              WK-FED-PORTION + IPF-OUTLIER-PAYMENT +              08790000
+088000              IPF-ECT-PAYMENT + WK-TEACH-PORTION.                 08800000
+088100                                                                  08810000
+088200***************************************************************   08820000
+088300***  CHECK FOR FED PPS BLEND IND FOR FED AND FACILITY PCT         08830000
+088310***************************************************************   08831000
+088320*=============================================================*   08832000
+088330* FY2014 - THE BLEND INDICATOR IS NO LONGER REQUIRED          *   08833000
+088331*        - REMOVE COMMENTED CODE FOR FY2015 RELEASE           *   08833100
+088340*=============================================================*   08834000
+088341*  CHANGE IN THIS PROGRAM EFFECTIVE 04/01/2014 ARE:           *   08834100
+088342*  - POPULATE THE IPF-TEACH-PAYMENT FIELD                       * 08834200
+088350                                                                  08835000
+088360**   MOVE WK-TEACH-PORTION TO IPF-TEACH-PAYMENT.                  08836002
+088500                                                                  08850000
+088600**   MOVE P-NEW-FED-PPS-BLEND-IND TO                              08860000
+088700**                                IPF-FED-PPS-BLEND-IND.          08870000
+088800                                                                  08880000
+088900**   IF P-NEW-FED-PPS-BLEND-IND = 1                               08890000
+089000**      COMPUTE IPF-FED-PAYMENT ROUNDED =                         08900000
+089100**              WK-FED-PORTION * .25                              08910000
+089200**      COMPUTE IPF-ECT-PAYMENT ROUNDED =                         08920000
+089300**              IPF-ECT-PAYMENT * .25                             08930000
+089400**      COMPUTE IPF-TEACH-PAYMENT ROUNDED =                       08940000
+089500**              WK-TEACH-PORTION * .25                            08950000
+089600**      COMPUTE IPF-OUTLIER-PAYMENT ROUNDED =                     08960000
+089700**              IPF-OUTLIER-PAYMENT * .25                         08970000
+089800**      COMPUTE IPF-FAC-PAYMENT ROUNDED =                         08980000
+089900**              P-NEW-FAC-SPEC-RATE * .75.                        08990000
+090000                                                                  09000000
+090100**   IF P-NEW-FED-PPS-BLEND-IND = 2                               09010000
+090200**      COMPUTE IPF-FED-PAYMENT ROUNDED =                         09020000
+090300**              WK-FED-PORTION * .50                              09030000
+090400**      COMPUTE IPF-ECT-PAYMENT ROUNDED =                         09040000
+090500**              IPF-ECT-PAYMENT * .50                             09050000
+090600**      COMPUTE IPF-TEACH-PAYMENT ROUNDED =                       09060000
+090700**              WK-TEACH-PORTION * .50                            09070000
+090800**      COMPUTE IPF-OUTLIER-PAYMENT ROUNDED =                     09080000
+090900**              IPF-OUTLIER-PAYMENT * .50                         09090000
+091000**      COMPUTE IPF-FAC-PAYMENT ROUNDED =                         09100000
+091100**              P-NEW-FAC-SPEC-RATE * .50.                        09110000
+091200                                                                  09120000
+091300**   IF P-NEW-FED-PPS-BLEND-IND = 3                               09130000
+091400**      COMPUTE IPF-FED-PAYMENT ROUNDED =                         09140000
+091500**              WK-FED-PORTION * .75                              09150000
+091600**      COMPUTE IPF-ECT-PAYMENT ROUNDED =                         09160000
+091700**              IPF-ECT-PAYMENT * .75                             09170000
+091800**      COMPUTE IPF-TEACH-PAYMENT ROUNDED =                       09180000
+091900**              WK-TEACH-PORTION * .75                            09190000
+092000**      COMPUTE IPF-OUTLIER-PAYMENT ROUNDED =                     09200000
+092100**              IPF-OUTLIER-PAYMENT * .75                         09210000
+092200**      COMPUTE IPF-FAC-PAYMENT ROUNDED =                         09220000
+092300**              P-NEW-FAC-SPEC-RATE * .25.                        09230000
+092400                                                                  09240000
+092500**   IF P-NEW-FED-PPS-BLEND-IND = 4                               09250000
+092600**      COMPUTE IPF-FED-PAYMENT ROUNDED =                         09260000
+092700**              WK-FED-PORTION * 1.00                             09270000
+092800**      COMPUTE IPF-ECT-PAYMENT ROUNDED =                         09280000
+092900**              IPF-ECT-PAYMENT * 1.00                            09290000
+093000**      COMPUTE IPF-TEACH-PAYMENT ROUNDED =                       09300000
+093100**              WK-TEACH-PORTION * 1.00                           09310000
+093200**      COMPUTE IPF-OUTLIER-PAYMENT ROUNDED =                     09320000
+093300**              IPF-OUTLIER-PAYMENT * 1.00                        09330000
+093400**      COMPUTE IPF-FAC-PAYMENT ROUNDED =                         09340000
+093500**              P-NEW-FAC-SPEC-RATE * .0.                         09350000
+093501                                                                  09350102
+093510     COMPUTE IPF-FED-PAYMENT ROUNDED =                            09351002
+093520                WK-FED-PORTION * 1.00                             09352002
+093530     COMPUTE IPF-ECT-PAYMENT ROUNDED =                            09353002
+093540                IPF-ECT-PAYMENT * 1.00                            09354002
+093550     COMPUTE IPF-TEACH-PAYMENT ROUNDED =                          09355002
+093560                WK-TEACH-PORTION * 1.00                           09356002
+093570     COMPUTE IPF-OUTLIER-PAYMENT ROUNDED =                        09357002
+093580                IPF-OUTLIER-PAYMENT * 1.00                        09358002
+093590      COMPUTE IPF-FAC-PAYMENT ROUNDED =                           09359002
+093591                P-NEW-FAC-SPEC-RATE * .0.                         09359102
+093600                                                                  09360000
+093700     COMPUTE IPF-TOT-PAYMENT ROUNDED =                            09370000
+093800             IPF-FED-PAYMENT + IPF-FAC-PAYMENT +                  09380000
+093900             IPF-ECT-PAYMENT + IPF-TEACH-PAYMENT +                09390000
+094000             IPF-OUTLIER-PAYMENT.                                 09400000
+094100                                                                  09410000
+094200**  NOTE> IPF-FED-PAYMENT  AND IPF-TEACH-PAYMENT AND              09420000
+094300**        IPF-ECT-PAYMENT  AND IPF-FAC-PAYMENT AND                09430000
+094400**        IPF-OUTLIER-PAYMENT HAVE JUST BEEN BLENDED              09440000
+094500**           AT THIS POINT IN THE PROGRAM LOGIC                   09450000
+094600                                                                  09460000
+094700     IF IPF-RTC = 00                                              09470000
+094800        IF BILL-PRIOR-DAYS IS GREATER THAN 0                      09480000
+094900           MOVE 03 TO IPF-RTC.                                    09490000
+095000     IF IPF-RTC = 02                                              09500000
+095100        IF BILL-PRIOR-DAYS IS GREATER THAN 0                      09510000
+095200           MOVE 04 TO IPF-RTC.                                    09520000
+095300                                                                  09530000
+095400 3000-EXIT.   EXIT.                                               09540000
+095500                                                                  09550000
+095510************************************                              09551000
+095530***  CALCULATE THE OUTLIER PAYMENT                                09553000
+095540************************************                              09554000
+095600 3050-GET-OUTLIER.                                                09560000
+096000                                                                  09600000
+096100************************************                              09610000
+096200** CALCULATE THE ADJUSTED FIXED                                   09620000
+096300**    DOLLAR LOSS THRESHOLD                                       09630000
+096400************************************                              09640000
+096500                                                                  09650000
+096600     COMPUTE IPF-OUTL-LABOR-BASE-AMT ROUNDED =                    09660000
+096700                ((IPF-OUTL-THRES-AMT * IPF-LABOR-SHARE) *         09670000
+096800                     W-CBSA-WAGE-INDEX).                          09680000
+096900                                                                  09690000
+097000     COMPUTE IPF-OUTL-NLABOR-BASE-AMT ROUNDED =                   09700000
+097100                ((IPF-OUTL-THRES-AMT * IPF-NLABOR-SHARE) *        09710000
+097200                     IPF-COLA).                                   09720000
+097300                                                                  09730000
+097400     COMPUTE IPF-OUTL-THRES-ADJ-AMT ROUNDED =                     09740000
+097500           ((IPF-OUTL-LABOR-BASE-AMT +                            09750000
+097600             IPF-OUTL-NLABOR-BASE-AMT) *                          09760000
+097700             IPF-GEO-RURAL-ADJ *                                  09770000
+097800             IPF-TEACH-ADJ) +                                     09780000
+097900             IPF-FED-PAYMENT +                                    09790000
+098000             IPF-ECT-PAYMENT.                                     09800000
+098100                                                                  09810000
+098200**  NOTE> IPF-FED-PAYMENT CONTAINS NO ECT OR OUTL PAYMENT         09820000
+098300**           AT THIS POINT IN THE PROGRAM LOGIC                   09830000
+098400                                                                  09840000
+098500************************************                              09850000
+098600** CALCULATE ELIGIBLE OUTLIER COSTS                               09860000
+098700************************************                              09870000
+098710                                                                  09871012
+098830     MOVE P-NEW-OPER-CSTCHG-RATIO TO IPF-CSTCHG-RATIO.            09883014
+098900     COMPUTE IPF-OUTL-COST ROUNDED =                              09890000
+099000             (BILL-CHARGES-CLAIMED * P-NEW-OPER-CSTCHG-RATIO).    09900000
+099100                                                                  09910000
+099200     MOVE '02' TO IPF-RTC.                                        09920000
+099300                                                                  09930000
+099400     IF IPF-OUTL-COST < IPF-OUTL-THRES-ADJ-AMT                    09940000
+099500        MOVE '00' TO IPF-RTC                                      09950000
+099600        MOVE ZEROES TO IPF-OUTLIER-PAYMENT                        09960000
+099700        GO TO 3050-EXIT.                                          09970000
+099800                                                                  09980000
+099900     COMPUTE IPF-OUTL-ADJ-COST ROUNDED =                          09990000
+100000             (IPF-OUTL-COST - IPF-OUTL-THRES-ADJ-AMT).            10000000
+100100                                                                  10010000
+100200     COMPUTE IPF-OUTL-PER-DIEM-AMT ROUNDED =                      10020000
+100300            (IPF-OUTL-ADJ-COST / BILL-LOS).                       10030000
+100400                                                                  10040000
+100500     MOVE ZEROES TO DAYS-UPTO-9                                   10050000
+100600                    DAYS-OVER-9.                                  10060000
+100700                                                                  10070000
+100800     IF BILL-LOS > 9                                              10080000
+100900        COMPUTE DAYS-OVER-9 = (BILL-LOS - 9)                      10090000
+101000        MOVE 9 TO DAYS-UPTO-9                                     10100000
+101100     ELSE                                                         10110000
+101200        MOVE BILL-LOS TO DAYS-UPTO-9.                             10120000
+101300                                                                  10130000
+101400     COMPUTE IPF-OUTLIER-PAYMENT ROUNDED =                        10140000
+101500            (DAYS-UPTO-9 * (IPF-OUTL-PER-DIEM-AMT * .80)).        10150000
+101600                                                                  10160000
+101700     IF BILL-LOS > 9                                              10170000
+101800        COMPUTE IPF-OUTLIER-PAYMENT ROUNDED =                     10180000
+101900                IPF-OUTLIER-PAYMENT +                             10190000
+102000       (DAYS-OVER-9 * (IPF-OUTL-PER-DIEM-AMT * .60)).             10200000
+102100                                                                  10210000
+102200     IF IPF-OUTLIER-PAYMENT = ZEROES                              10220000
+102300        MOVE '00' TO IPF-RTC.                                     10230000
+102400                                                                  10240000
+102500 3050-EXIT.   EXIT.                                               10250000
+102510                                                                  10251000
+102520 3100-GET-EACH-DAY.                                               10252000
+102540                                                                  10254000
+102550     COMPUTE IPF-FED-PAYMENT ROUNDED =                            10255000
+102560             IPF-FED-PAYMENT + (WK-PER-DIEM-AMT *                 10256000
+102570                                  DAY-VALUE2 (SUB)).              10257000
+102800                                                                  10280000
+102900 3100-EXIT.   EXIT.                                               10290000
+103000                                                                  10300000
+103100 3300-GET-COMORBIDITY.                                            10310000
+103200                                                                  10320000
+103300     MOVE BILL-DIAG-PROC-DATA TO WK-COMORBIDITY-DATA.             10330000
+103400     MOVE 01.0000 TO HOLDADJ.                                     10340000
+103500                                                                  10350000
+103600     PERFORM 3400-ALTER-COMB-DATA THRU 3400-EXIT                  10360000
+103700         VARYING X1 FROM 1 BY 1 UNTIL X1 > 25.                    10370000
+103800                                                                  10380000
+103900     PERFORM CAT1-SEARCH THRU CAT1-SEARCH-EXIT                    10390000
+104000       VARYING X1 FROM 1 BY 1 UNTIL X1 > 25.                      10400000
+104100                                                                  10410000
+104200     PERFORM CAT2-SEARCH THRU CAT2-SEARCH-EXIT                    10420000
+104300       VARYING X1 FROM 1 BY 1 UNTIL X1 > 25.                      10430000
+104400                                                                  10440000
+104500     PERFORM CAT3-SEARCH-2 THRU CAT3-SEARCH-2-EXIT                10450000
+104600       VARYING X1 FROM 1 BY 1 UNTIL X1 > 25.                      10460000
+104700                                                                  10470000
+104800     PERFORM CAT4-SEARCH THRU CAT4-SEARCH-EXIT                    10480000
+104900       VARYING X1 FROM 1 BY 1 UNTIL X1 > 25.                      10490000
+105000                                                                  10500000
+105100     PERFORM CAT5-SEARCH-100105 THRU CAT5-SEARCH-100105-EXIT      10510000
+105200              VARYING X1 FROM 1 BY 1 UNTIL X1 > 25.               10520000
+105300                                                                  10530000
+105400     PERFORM CAT6-SEARCH-2 THRU CAT6-SEARCH-2-EXIT                10540000
+105500       VARYING X1 FROM 1 BY 1 UNTIL X1 > 25                       10550000
+105600         AFTER X2 FROM 1 BY 1 UNTIL X2 > 25.                      10560000
+105700                                                                  10570000
+105800     PERFORM CAT7-SEARCH THRU CAT7-SEARCH-EXIT                    10580000
+105900       VARYING X1 FROM 1 BY 1 UNTIL X1 > 25.                      10590000
+106000                                                                  10600000
+106100     PERFORM CAT8-SEARCH THRU CAT8-SEARCH-EXIT                    10610000
+106200       VARYING X1 FROM 1 BY 1 UNTIL X1 > 25.                      10620000
+106300                                                                  10630000
+106400     PERFORM CAT9-SEARCH THRU CAT9-SEARCH-EXIT                    10640000
+106500       VARYING X1 FROM 1 BY 1 UNTIL X1 > 25.                      10650000
+106600                                                                  10660000
+106700     PERFORM CAT10-SEARCH THRU CAT10-SEARCH-EXIT                  10670000
+106800       VARYING X1 FROM 1 BY 1 UNTIL X1 > 25.                      10680000
+106900                                                                  10690000
+107000     PERFORM CAT11-SEARCH THRU CAT11-SEARCH-EXIT                  10700000
+107100       VARYING X1 FROM 1 BY 1 UNTIL X1 > 25.                      10710000
+107200                                                                  10720000
+107300     PERFORM CAT12-SEARCH THRU CAT12-SEARCH-EXIT                  10730000
+107400       VARYING X1 FROM 1 BY 1 UNTIL X1 > 25.                      10740000
+107500                                                                  10750000
+107600     PERFORM CAT13-SEARCH THRU CAT13-SEARCH-EXIT                  10760000
+107700       VARYING X1 FROM 1 BY 1 UNTIL X1 > 25.                      10770000
+107800                                                                  10780000
+107900     PERFORM CAT14-SEARCH-100105 THRU CAT14-SEARCH-100105-EXIT    10790000
+108000          VARYING X1 FROM 1 BY 1 UNTIL X1 > 25.                   10800000
+108100                                                                  10810000
+108200     PERFORM CAT15-SEARCH THRU CAT15-SEARCH-EXIT                  10820000
+108300       VARYING X1 FROM 1 BY 1 UNTIL X1 > 25.                      10830000
+108400                                                                  10840000
+108500     PERFORM CAT16-SEARCH THRU CAT16-SEARCH-EXIT                  10850000
+108600       VARYING X1 FROM 1 BY 1 UNTIL X1 > 25.                      10860000
+108700                                                                  10870000
+108800     PERFORM CAT17-SEARCH THRU CAT17-SEARCH-EXIT                  10880000
+108900       VARYING X1 FROM 1 BY 1 UNTIL X1 > 25.                      10890000
+109000                                                                  10900000
+109100     MOVE HOLDADJ TO IPF-COMORB-FACTOR.                           10910000
+109200                                                                  10920000
+109300 3300-EXIT.   EXIT.                                               10930000
+109400                                                                  10940000
+109500 3400-ALTER-COMB-DATA.                                            10950000
+109600*                                                                 10960000
+109700     IF BILL-DDXX-1ST(X1) = 'V'                                   10970000
+109800        GO TO 3400-EXIT                                           10980000
+109900     ELSE                                                         10990000
+110000        PERFORM 3500-ZERO-FILL-DDXX THRU 3500-EXIT.               11000000
+110100                                                                  11010000
+110200 3400-EXIT.    EXIT.                                              11020000
+110300                                                                  11030000
+110400 3500-ZERO-FILL-DDXX.                                             11040000
+110500     MOVE SPACES TO OUT-DDXX-ZERO.                                11050000
+110600     IF WK-DDXX7(X1) > SPACES                                     11060000
+110700        GO TO 3500-EXIT                                           11070000
+110800     ELSE                                                         11080000
+110900     IF WK-DDXX6(X1) > SPACES                                     11090000
+111000        MOVE WK-DDXX6(X1) TO OUT-Z-DDXX7                          11100000
+111100        MOVE WK-DDXX5(X1) TO OUT-Z-DDXX6                          11110000
+111200        MOVE WK-DDXX4(X1) TO OUT-Z-DDXX5                          11120000
+111300        MOVE WK-DDXX3(X1) TO OUT-Z-DDXX4                          11130000
+111400        MOVE WK-DDXX2(X1) TO OUT-Z-DDXX3                          11140000
+111500        MOVE WK-DDXX1(X1) TO OUT-Z-DDXX2                          11150000
+111600        MOVE SPACE        TO OUT-Z-DDXX1                          11160000
+111700        MOVE OUT-DDXX-ZERO TO DDXX(X1)                            11170000
+111800        GO TO 3500-EXIT                                           11180000
+111900     ELSE                                                         11190000
+112000     IF WK-DDXX5(X1) > SPACES                                     11200000
+112100        MOVE WK-DDXX5(X1) TO OUT-Z-DDXX7                          11210000
+112200        MOVE WK-DDXX4(X1) TO OUT-Z-DDXX6                          11220000
+112300        MOVE WK-DDXX3(X1) TO OUT-Z-DDXX5                          11230000
+112400        MOVE WK-DDXX2(X1) TO OUT-Z-DDXX4                          11240000
+112500        MOVE WK-DDXX1(X1) TO OUT-Z-DDXX3                          11250000
+112600        MOVE SPACE        TO OUT-Z-DDXX2                          11260000
+112700                             OUT-Z-DDXX1                          11270000
+112800        MOVE OUT-DDXX-ZERO TO DDXX(X1)                            11280000
+112900        GO TO 3500-EXIT                                           11290000
+113000     ELSE                                                         11300000
+113100     IF WK-DDXX4(X1) > SPACES                                     11310000
+113200        MOVE WK-DDXX4(X1) TO OUT-Z-DDXX7                          11320000
+113300        MOVE WK-DDXX3(X1) TO OUT-Z-DDXX6                          11330000
+113400        MOVE WK-DDXX2(X1) TO OUT-Z-DDXX5                          11340000
+113500        MOVE WK-DDXX1(X1) TO OUT-Z-DDXX4                          11350000
+113600        MOVE SPACE        TO OUT-Z-DDXX3                          11360000
+113700                             OUT-Z-DDXX2                          11370000
+113800                             OUT-Z-DDXX1                          11380000
+113900        MOVE OUT-DDXX-ZERO TO DDXX(X1)                            11390000
+114000        GO TO 3500-EXIT                                           11400000
+114100     ELSE                                                         11410000
+114200     IF WK-DDXX3(X1) > SPACES                                     11420000
+114300        MOVE WK-DDXX3(X1) TO OUT-Z-DDXX7                          11430000
+114400        MOVE WK-DDXX2(X1) TO OUT-Z-DDXX6                          11440000
+114500        MOVE WK-DDXX1(X1) TO OUT-Z-DDXX5                          11450000
+114600        MOVE SPACE        TO OUT-Z-DDXX4                          11460000
+114700                             OUT-Z-DDXX3                          11470000
+114800                             OUT-Z-DDXX2                          11480000
+114900                             OUT-Z-DDXX1                          11490000
+115000        MOVE OUT-DDXX-ZERO TO DDXX(X1)                            11500000
+115100        GO TO 3500-EXIT                                           11510000
+115200     ELSE                                                         11520000
+115300     IF WK-DDXX2(X1) > SPACES                                     11530000
+115400        MOVE WK-DDXX2(X1) TO OUT-Z-DDXX7                          11540000
+115500        MOVE WK-DDXX1(X1) TO OUT-Z-DDXX6                          11550000
+115600        MOVE SPACE        TO OUT-Z-DDXX5                          11560000
+115700                             OUT-Z-DDXX4                          11570000
+115800                             OUT-Z-DDXX3                          11580000
+115900                             OUT-Z-DDXX2                          11590000
+116000                             OUT-Z-DDXX1                          11600000
+116100        MOVE OUT-DDXX-ZERO TO DDXX(X1)                            11610000
+116200        GO TO 3500-EXIT                                           11620000
+116300      ELSE                                                        11630000
+116400        MOVE SPACES TO DDXX(X1).                                  11640000
+116500 3500-EXIT.    EXIT.                                              11650000
+116600                                                                  11660000
+116700* DEVELOPMENTAL DISABILITIES                                      11670000
+116800 CAT1-SEARCH.                                                     11680000
+116900     IF  (DDXX (X1) = '    317' OR '   3180' OR '   3181' OR      11690000
+117000                      '   3182' OR '    319')                     11700000
+117100         COMPUTE HOLDADJ ROUNDED = HOLDADJ * 1.04                 11710000
+117200         MOVE 26 TO X1.                                           11720000
+117300 CAT1-SEARCH-EXIT.   EXIT.                                        11730000
+117400                                                                  11740000
+117500*CONGULATION FACTOR DEFICITS                                      11750000
+117600 CAT2-SEARCH.                                                     11760000
+117700     IF  (DDXX (X1) = '   2860' OR '   2861' OR '   2862' OR      11770000
+117800                      '   2863' OR '   2864')                     11780000
+117900         COMPUTE HOLDADJ ROUNDED = HOLDADJ * 1.13                 11790000
+118000         MOVE 26 TO X1.                                           11800000
+118100 CAT2-SEARCH-EXIT.   EXIT.                                        11810000
+118200                                                                  11820000
+118300*TRACHEOSTOMY                                                     11830000
+118400 CAT3-SEARCH-2.                                                   11840000
+118500      IF  (DDXX (X1) = '  51900' OR '  51901' OR '  51909' OR     11850000
+118600                       '  51902' OR                               11860000
+118700                       'V440')                                    11870000
+118800          COMPUTE HOLDADJ ROUNDED = HOLDADJ * 1.06                11880000
+118900          MOVE 26 TO X1.                                          11890000
+119000 CAT3-SEARCH-2-EXIT.   EXIT.                                      11900000
+119100                                                                  11910000
+119200*  RENAL FAILURE, ACUTE                                           11920000
+119300 CAT4-SEARCH.                                                     11930000
+119400      IF   (DDXX (X1) = '  63630' OR '  63631' OR '  63632' OR    11940000
+119500                        '  63730' OR '  63731' OR '  63732' OR    11950000
+119600                        '   6383' OR                              11960000
+119700                        '   6393' OR '  66932' OR '  66934' OR    11970000
+119800                        '   5845' OR '   5846' OR '   5847' OR    11980000
+119900                        '   5848' OR '   5849' OR                 11990000
+120000                        '   9585')                                12000000
+120100          COMPUTE HOLDADJ ROUNDED = HOLDADJ * 1.11                12010000
+120200          MOVE 26 TO X1.                                          12020000
+120300 CAT4-SEARCH-EXIT.   EXIT.                                        12030000
+120400                                                                  12040000
+120500* RENAL FAILURE, CHRONIC EFFECTIVE 10/01/2005                     12050000
+120600 CAT5-SEARCH-100105.                                              12060000
+120700      IF  (DDXX (X1) = '  40301' OR '  40311' OR '  40391' OR     12070000
+120800                       '  40402' OR '  40412' OR                  12080000
+120900                       '  40413' OR '  40492' OR '  40493' OR     12090000
+121000                       '   5853' OR '   5854' OR                  12100000
+121100                       '   5855' OR '   5856' OR                  12110000
+121200                       '   5859' OR '    586' OR                  12120000
+121300                       'V4511' OR 'V4512' OR                      12130000
+121400                       'V560'  OR                                 12140000
+121500                       'V561'  OR 'V562')                         12150000
+121600          COMPUTE HOLDADJ ROUNDED = HOLDADJ * 1.11                12160000
+121700          MOVE 26 TO X1.                                          12170000
+121800                                                                  12180000
+121900 CAT5-SEARCH-100105-EXIT.   EXIT.                                 12190000
+122000                                                                  12200000
+122100* ONCOLOGY TREATMENT                                              12210000
+122200 CAT6-SEARCH-2.                                                   12220000
+122310     IF (((DDXX (X1) > '   1399' AND < '   1730')  OR             12231000
+122400          (DDXX (X1) > '   1739' AND < '   1770')  OR             12240000
+122410          (DDXX (X1) > '   1799' AND < '   1810')  OR             12241000
+122500          (DDXX (X1) > '   1819' AND < '   1850')  OR             12250000
+122600          (DDXX (X1) > '   1859' AND < '   1930')  OR             12260000
+122700          (DDXX (X1) > '   1939' AND < '   1988')  OR             12270000
+122800          (DDXX (X1) > '   2099' AND < '   2170')  OR             12280000
+122900          (DDXX (X1) > '   2179' AND < '   2200')  OR             12290000
+123000          (DDXX (X1) > '   2209' AND < '   2234')  OR             12300000
+123100          (DDXX (X1) > '   2238' AND < '   2260')  OR             12310000
+123200          (DDXX (X1) > '   2269' AND < '   2280')  OR             12320000
+123300          (DDXX (X1) > '   2280' AND < '   2333')  OR             12330000
+123400          (DDXX (X1) > '   2333' AND < '   2368')  OR             12340000
+123500          (DDXX (X1) > '   2369' AND < '   2377')  OR             12350000
+123600          (DDXX (X1) > '   2378' AND < '   2387')  OR             12360000
+123700          (DDXX (X1) > '   2387' AND < '   2398')  OR             12370000
+123800          (DDXX (X1) > '  17299' AND < '  17400')  OR             12380000
+123810          (DDXX (X1) > '  19880' AND < '  19890')  OR             12381000
+123900          (DDXX (X1) > '  19999' AND < '  20892')  OR             12390000
+124000          (DDXX (X1) > '  20029' AND < '  20079')  OR             12400000
+124100          (DDXX (X1) > '  20269' AND < '  20279')  OR             12410000
+124200          (DDXX (X1) > '  20930' AND < '  20937')  OR             12420000
+124300          (DDXX (X1) > '  20969' AND < '  20980')  OR             12430000
+124400          (DDXX (X1) > '  22799' AND < '  22810')  OR             12440000
+124500          (DDXX (X1) > '  23329' AND < '  23333')  OR             12450000
+124600          (DDXX (X1) > '  23689' AND < '  23700')  OR             12460000
+124700          (DDXX (X1) > '  23769' AND < '  23773')  OR             12470000
+124800          (DDXX (X1) > '  23870' AND < '  23880')  OR             12480000
+124900          (DDXX (X1) = '  22381' OR '  22389' OR '  23339' OR     12490000
+125000                       '    179' OR '    181' OR '    185' OR     12500000
+125100                       '    193' OR '    217' OR '    220' OR     12510000
+125200                       '   1990' OR '   1991' OR                  12520000
+125300                       '   1992' OR '   2399' OR                  12530000
+125400                       '  20302' OR '  20312' OR                  12540000
+125500                       '  20382' OR '  20402' OR                  12550000
+125600                       '  20412' OR '  20422' OR '  20482' OR     12560000
+125700                       '  20492' OR '  20502' OR '  20512' OR     12570000
+125800                       '  20522' OR '  20532' OR                  12580000
+125900                       '  20582' OR '  20592' OR '  20602' OR     12590000
+126000                       '  20612' OR '  20622' OR '  20682' OR     12600000
+126100                       '  20692' OR '  20702' OR                  12610000
+126200                       '  20712' OR '  20722' OR '  20782' OR     12620000
+126300                       '  20802' OR '  20812' OR '  20822' OR     12630000
+126400                       '  20882' OR '  20892' OR                  12640000
+126500                       '  20900' OR '  20901' OR '  20902' OR     12650000
+126600                       '  20903' OR '  20910' OR '  20911' OR     12660000
+126700                       '  20912' OR '  20913' OR                  12670000
+126800                       '  20914' OR '  20915' OR '  20916' OR     12680000
+126900                       '  20917' OR '  20920' OR '  20921' OR     12690000
+127000                       '  20922' OR '  20923' OR                  12700000
+127100                       '  20924' OR '  20925' OR '  20926' OR     12710000
+127200                       '  20927' OR '  20929' OR '  20930' OR     12720000
+127300                       '  20940' OR '  20941' OR                  12730000
+127400                       '  20942' OR '  20943' OR '  20950' OR     12740000
+127500                       '  20951' OR '  20952' OR '  20953' OR     12750000
+127600                       '  20954' OR '  20955' OR                  12760000
+127700                       '  20956' OR '  20957' OR '  20960' OR     12770000
+127800                       '  20961' OR '  20962' OR '  20963' OR     12780000
+127900                       '  20964' OR '  20965' OR                  12790000
+128000                       '  20966' OR '  20967' OR '  20969' OR     12800000
+128100                       '  23773' OR '  23779' OR                  12810000
+128200                       '  23877' OR '  23981' OR '  23989' OR     12820000
+128300                       '    226' OR '  23873'))                   12830000
+128400      AND                                                         12840000
+128500          (SRGX (X2) = '9221' OR '9222' OR                        12850000
+128600                       '9223' OR '9224' OR                        12860000
+128700                       '9225' OR '9226' OR                        12870000
+128800                       '9227' OR '9228' OR                        12880000
+128900                       '9229' OR '9925'))                         12890000
+129000         COMPUTE HOLDADJ ROUNDED = HOLDADJ * 1.07                 12900000
+129100         MOVE 26 TO X2                                            12910000
+129200         MOVE 26 TO X1.                                           12920000
+129300 CAT6-SEARCH-2-EXIT.   EXIT.                                      12930000
+129400                                                                  12940000
+129500* UNCONTROLLED DIABETES-MELLITUS W OR WO COMPLICTIONS             12950000
+129600 CAT7-SEARCH.                                                     12960000
+129700     IF  (DDXX (X1) = '  25002' OR '  25003' OR '  25012' OR      12970000
+129800                      '  25013' OR '  25022' OR '  25023' OR      12980000
+129900                      '  25032' OR '  25033' OR '  25042' OR      12990000
+130000                      '  25043' OR '  25052' OR '  25053' OR      13000000
+130100                      '  25062' OR '  25063' OR '  25072' OR      13010000
+130200                      '  25073' OR '  25082' OR '  25083' OR      13020000
+130300                      '  25092' OR '  25093')                     13030000
+130400         COMPUTE HOLDADJ ROUNDED = HOLDADJ * 1.05                 13040000
+130500         MOVE 26 TO X1.                                           13050000
+130600 CAT7-SEARCH-EXIT.   EXIT.                                        13060000
+130700                                                                  13070000
+130800* SEVERE PROTEIN CALORIE MALNUTRITION                             13080000
+130900 CAT8-SEARCH.                                                     13090000
+131000     IF  (DDXX (X1) = '    260' OR '    261' OR '    262')        13100000
+131100         COMPUTE HOLDADJ ROUNDED = HOLDADJ * 1.13                 13110000
+131200         MOVE 26 TO X1.                                           13120000
+131300 CAT8-SEARCH-EXIT.   EXIT.                                        13130000
+131400                                                                  13140000
+131500* EATING AND CONDUCT DISORDERS                                    13150000
+131600 CAT9-SEARCH.                                                     13160000
+131700     IF  (DDXX (X1) = '   3071' OR '  30750' OR '  31203' OR      13170000
+131800                      '  31233' OR '  31234')                     13180000
+131900         COMPUTE HOLDADJ ROUNDED = HOLDADJ * 1.12                 13190000
+132000         MOVE 26 TO X1.                                           13200000
+132100 CAT9-SEARCH-EXIT.   EXIT.                                        13210000
+132200                                                                  13220000
+132300* INFECTIOUS DISEASE                                              13230000
+132400 CAT10-SEARCH.                                                    13240000
+132500     IF ((DDXX (X1) > '  00999' AND < '  01897') OR               13250000
+132600         (DDXX (X1) > '   0199' AND < '   0240') OR               13260000
+132700         (DDXX (X1) > '   0259' AND < '   0324') OR               13270000
+132800         (DDXX (X1) > '   0328' AND < '   0342') OR               13280000
+132900         (DDXX (X1) > '   0359' AND < '   0364') OR               13290000
+133000         (DDXX (X1) > '   0387' AND < '   0404') OR               13300000
+133100         (DDXX (X1) > '   0459' AND < '   0461') OR               13310000
+133200         (DDXX (X1) > '   0461' AND < '   0480') OR               13320000
+133300         (DDXX (X1) > '   0489' AND < '   0510') OR               13330000
+133400         (DDXX (X1) > '   0510' AND < '   0531') OR               13340000
+133500         (DDXX (X1) > '   0549' AND < '   0553') OR               13350000
+133600         (DDXX (X1) > '   0567' AND < '   0580') OR               13360000
+133700         (DDXX (X1) > '   0599' AND < '   0610') OR               13370000
+133800         (DDXX (X1) > '   0619' AND < '   0640') OR               13380000
+133900         (DDXX (X1) > '   0649' AND < '   0664') OR               13390000
+134000         (DDXX (X1) > '   0719' AND < '   0724') OR               13400000
+134100         (DDXX (X1) > '   0727' AND < '   0742') OR               13410000
+134200         (DDXX (X1) > '   0759' AND < '   0771') OR               13420000
+134300         (DDXX (X1) > '   0781' AND < '   0788') OR               13430000
+134400         (DDXX (X1) > '  03280' AND < '  03290') OR               13440000
+134500         (DDXX (X1) > '  03639' AND < '  03644') OR               13450000
+134600         (DDXX (X1) > '  03680' AND < '  03690') OR               13460000
+134700         (DDXX (X1) > '  03809' AND < '  03820') OR               13470000
+134800         (DDXX (X1) > '  03839' AND < '  03850') OR               13480000
+134900         (DDXX (X1) > '  04040' AND < '  04043') OR               13490000
+135000         (DDXX (X1) > '  04080' AND < '  04090') OR               13500000
+135100         (DDXX (X1) > '  04099' AND < '  04111') OR               13510000
+135200         (DDXX (X1) > '  04499' AND < '  04594') OR               13520000
+135300         (DDXX (X1) > '  05309' AND < '  05320') OR               13530000
+135400         (DDXX (X1) > '  05439' AND < '  05450') OR               13540000
+135500         (DDXX (X1) > '  05570' AND < '  05580') OR               13550000
+135600         (DDXX (X1) > '  05599' AND < '  05610') OR               13560000
+135700         (DDXX (X1) > '  05670' AND < '  05680') OR               13570000
+135800         (DDXX (X1) > '  05809' AND < '  05813') OR               13580000
+135900         (DDXX (X1) > '  05880' AND < '  05883') OR               13590000
+136000         (DDXX (X1) > '  06639' AND < '  06650') OR               13600000
+136100         (DDXX (X1) > '  07019' AND < '  07060') OR               13610000
+136200         (DDXX (X1) > '  07270' AND < '  07280') OR               13620000
+136300         (DDXX (X1) > '  07419' AND < '  07424') OR               13630000
+136400         (DDXX (X1) > '  07880' AND < '  07890') OR               13640000
+136500         (DDXX (X1) > '  07949' AND < '  07960') OR               13650000
+136600         (DDXX (X1) = '    042' OR '    024' OR '    025' OR      13660000
+136700                      '    035' OR '    037' OR '    048' OR      13670000
+136800                      '    061' OR '    064' OR '    071' OR      13680000
+136900                      '   0382' OR '   0383' OR '   0558' OR      13690000
+137000                      '   0559' OR '   0668' OR '   0669' OR      13700000
+137100                      '   0700' OR '   0701' OR '   0706' OR      13710000
+137200                      '  07070' OR '  07071' OR '   0709' OR      13720000
+137300                      '  05821' OR '  05829' OR '  05889' OR      13730000
+137400                      '   0743' OR '   0748' OR '    075' OR      13740000
+137500                      '  05900' OR '  03812' OR '  04611' OR      13750000
+137600                      '  04619' OR '  04671' OR '  04672' OR      13760000
+137700                      '  04679' OR '  05101' OR '  05102' OR      13770000
+137800                      '  05901' OR '  05909' OR '  05910' OR      13780000
+137900                      '  05911' OR '  05912' OR '  05919' OR      13790000
+138000                      '  05920' OR '  05921' OR '  05922' OR      13800000
+138100                      '   0598' OR '   0599' OR                   13810000
+138200                      '   0380'))                                 13820000
+138300         COMPUTE HOLDADJ ROUNDED = HOLDADJ * 1.07                 13830000
+138400         MOVE 26 TO X1.                                           13840000
+138500 CAT10-SEARCH-EXIT.   EXIT.                                       13850000
+138600                                                                  13860000
+138700* DRUG AND/OR ALCOHOL INDUCED MENTAL DISORDERS                    13870000
+138800 CAT11-SEARCH.                                                    13880000
+138900     IF  (DDXX (X1) = '   2910' OR '   2920' OR '  29212' OR      13890000
+139000                      '   2922' OR '  30300' OR                   13900000
+139100                      '  30400')                                  13910000
+139200         COMPUTE HOLDADJ ROUNDED = HOLDADJ * 1.03                 13920000
+139300         MOVE 26 TO X1.                                           13930000
+139400 CAT11-SEARCH-EXIT.   EXIT.                                       13940000
+139500                                                                  13950000
+139600* CARDIAC CONDITIONS                                              13960000
+139700 CAT12-SEARCH.                                                    13970000
+139800     IF  (DDXX (X1) = '   3910' OR '   3911' OR '   3912' OR      13980000
+139900                      '  40201' OR '  40403' OR '   4160' OR      13990000
+140000                      '   4210' OR '   4211' OR '   4219')        14000000
+140100         COMPUTE HOLDADJ ROUNDED = HOLDADJ * 1.11                 14010000
+140200         MOVE 26 TO X1.                                           14020000
+140300 CAT12-SEARCH-EXIT.   EXIT.                                       14030000
+140400                                                                  14040000
+140500* GANGRENE                                                        14050000
+140600 CAT13-SEARCH.                                                    14060000
+140700     IF  (DDXX (X1) = '  44024' OR '   7854')                     14070000
+140800         COMPUTE HOLDADJ ROUNDED = HOLDADJ * 1.10                 14080000
+140900         MOVE 26 TO X1.                                           14090000
+141000 CAT13-SEARCH-EXIT.   EXIT.                                       14100000
+141100                                                                  14110000
+141200* CHRONIC OBSTRUCTIVE PULMONARY DISEASE EFFECTIVE 10/01/2005      14120000
+141300 CAT14-SEARCH-100105.                                             14130000
+141400     IF  (DDXX (X1) = '  49121' OR '   4941' OR '   5100' OR      14140000
+141500                      '  51883' OR '  51884' OR                   14150000
+141600                      'V4611' OR 'V4612' OR                       14160000
+141700                      'V4613' OR 'V4614')                         14170000
+141800         COMPUTE HOLDADJ ROUNDED = HOLDADJ * 1.12                 14180000
+141900         MOVE 26 TO X1.                                           14190000
+142000 CAT14-SEARCH-100105-EXIT.   EXIT.                                14200000
+142100                                                                  14210000
+142200* ARTIFICIAL OPENINGS - DIGESTIVE AND URINARY                     14220000
+142300 CAT15-SEARCH.                                                    14230000
+142400     IF  (DDXX (X1) = '  56960' OR '  56961' OR                   14240000
+142500                      '  56962' OR '  56969' OR '   9975'  OR     14250000
+142600                      'V441'  OR 'V442'  OR 'V443'  OR            14260000
+142700                      'V444'  OR 'V4450' OR 'V4451' OR            14270000
+142800                      'V4452' OR 'V4459' OR 'V446')               14280000
+142900         COMPUTE HOLDADJ ROUNDED = HOLDADJ * 1.08                 14290000
+143000         MOVE 26 TO X1.                                           14300000
+143100 CAT15-SEARCH-EXIT.   EXIT.                                       14310000
+143200                                                                  14320000
+143300* SEVERE MUSCLOSKELETAL AND CONNECTIVE TISSUE                     14330000
+143400 CAT16-SEARCH.                                                    14340000
+143500     IF  ((DDXX (X1) > '  72999' AND < '  73030') OR              14350000
+143600          (DDXX (X1) = '   6960' OR '   7100'))                   14360000
+143700         COMPUTE HOLDADJ ROUNDED = HOLDADJ * 1.09                 14370000
+143800         MOVE 26 TO X1.                                           14380000
+143900 CAT16-SEARCH-EXIT.   EXIT.                                       14390000
+144000                                                                  14400000
+144100* POISONING                                                       14410000
+144200 CAT17-SEARCH.                                                    14420000
+144300     IF ((DDXX (X1) > '   9669'  AND < '   9690')  OR             14430000
+144400         (DDXX (X1) > '   9799'  AND < '   9810')  OR             14440000
+144500         (DDXX (X1) > '   9829'  AND < '   9840')  OR             14450000
+144600         (DDXX (X1) > '   9889'  AND < '   9898')  OR             14460000
+144700         (DDXX (X1) > '  96499'  AND < '  96510')  OR             14470000
+144800         (DDXX (X1) > '  96899'  AND < '  96906')  OR             14480000
+144900         (DDXX (X1) > '  96969'  AND < '  96974')  OR             14490000
+145000         (DDXX (X1) = '   9691' OR '   9692' OR '   9693' OR      14500000
+145100                      '   9694' OR '   9695' OR '   9696' OR      14510000
+145200                      '   9698' OR '   9699' OR                   14520000
+145300                      '   9654' OR '    986' OR '   9770' OR      14530000
+145400                      '  96909' OR '  96979'))                    14540000
+145500        COMPUTE HOLDADJ ROUNDED = HOLDADJ * 1.11                  14550000
+145600        MOVE 26 TO X1.                                            14560000
+145700 CAT17-SEARCH-EXIT.   EXIT.                                       14570000
+145710                                                                  14571003
+145800***************************************************************   14580000
+145900******       L A S T   S O U R C E   S T A T E M E N T    *****   14590000
+146000***************************************************************   14600000
+

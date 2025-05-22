@@ -1,0 +1,83 @@
+==============================================================
+MU00.@BFN2699.SNNDM210 (README)
+==============================================================
+
+NOTE TO: Shared System Coordinators, MEDICARE Coordinators
+
+SUBJECT: Skilled Nursing Facilities System (SNF) Pricer Release
+         Version 2021.1
+
+November 13, 2020  --ACTION-- refer to CMS CRs 11797 and 11859
+
+
+This SNF Pricer release is the PROD version effective October 1, 2020.
+It includes the following changes:
+
+  - NEW: SNFDR211 - FY 2021 Driver module (replaces SNFDR210)
+    Revised to correct the special wage index value:
+    Move SNF-SPEC-WI (numeric) instead of SNF-SPEC-WI-X to
+    CBSA-WIR-AREA-WAGEIND
+    QCN: 201104003
+
+  - UPDATED member, "README", to describe the release.
+
+  - UPDATED member, "MANIFEST", which lists members included and
+    omitted from the release dataset.  CMS is now only sending members
+    that are new since the previous release.
+
+
+========================================================================
+
+A partitioned data set (PDS) of the Version FY2021.1 code
+(MU00.@BFN2699.SNNDM211) is at the CMS Data Center for users
+to obtain by Connect:Direct (Network DataMover).
+
+The 15 members listed below comprise the Pricer, but only the
+modules that changed or are new since the previous release are
+included in the PDS.
+The changed members should be used in conjunction
+w/ MU00.@BFN2699.SNNDM210.
+
+
+CMS now only sends the program modules in the release. The supporting
+files and unchanged or unused program modules are no longer included in
+the release.
+
+NAME        DESCRIPTION
+-------     ------------------------------------------------------------
+
+SNFDR211 R* 2021.0 SNF DRIVER PROGRAM  - FY 2021.1 PROD
+SNFPR210 R* 2021.0 SNF PRICING PROGRAM - FY 2021.0 PROD
+SNFPR205    2020.5 SNF PRICING PROGRAM - FY 2020.5 PROD
+
+CBSA2021    2021.0 SNF CORE BASED STATISTICAL AREA FILE - FY 2021
+
+MANIFEST R* 2020.5 LIST OF RELEASE MEMBERS
+README   R* 2020.5 DESCRIPTION OF RELEASE UPDATES
+
+SNF300B     SNF FY 2020 PDPM RECORD LAYOUT
+SNF300P  R* SNF FY 2021 PDPM RECORD LAYOUT
+VPDTAB      VARIABLE-PER-DIEM-ADJUSTMENT-FACTORS - SNF FY2020.1
+
+RURNTA      PDPM NTA RURAL RATE TABLE - SNF FY2020
+RURNURS     PDPM NURSING RURAL RATE TABLE - SNF FY2020
+RURPTOT     PDPM PT/TO RURAL RATE TABLE - SNF FY2020
+RURSLP      PDPM SLP RURAL RATE TABLE - SNF FY2020
+URBNTA      PDPM NTA URBAN RATE TABLE - SNF FY2020
+URBNURS     PDPM NURSING URBAN RATE TABLE - SNF FY2020
+URBPTOT     PDPM PT/TO URBAN RATE TABLE - SNF FY2020
+URBSLP      PDPM SLP URBAN RATE TABLE - SNF FY2020
+
+RURNTA21    PDPM NTA RURAL RATE TABLE - SNF FY2021
+RURNUR21    PDPM NURSING RURAL RATE TABLE - SNF FY2021
+RURPTO21    PDPM PT/TO RURAL RATE TABLE - SNF FY2021
+RURSLP21    PDPM SLP RURAL RATE TABLE - SNF FY2021
+URBNTA21    PDPM NTA URBAN RATE TABLE - SNF FY2021
+URBNUR21    PDPM NURSING URBAN RATE TABLE - SNF FY2021
+URBPTO21    PDPM PT/TO URBAN RATE TABLE - SNF FY2021
+URBSLP21    PDPM SLP URBAN RATE TABLE - SNF FY2021
+
+R* = REVISED WITH THIS RELEASE
+R  = REVISED FOR VERSION UPDATE ONLY
+
+

@@ -1,0 +1,464 @@
+000100 IDENTIFICATION DIVISION.                                         00010006
+000200 PROGRAM-ID.          HHOPN20Y.                                   00020016
+000300                                                                  00030006
+000400*----------------------------------------------------------------*00040006
+000500*  THIS PROGRAM CALLS HHDRV20Y                                   *00050016
+000600*----------------------------------------------------------------*00060006
+000700                                                                  00070006
+000800 DATE-COMPILED.                                                   00080006
+000900 ENVIRONMENT                     DIVISION.                        00090006
+001000                                                                  00100006
+001100 CONFIGURATION                   SECTION.                         00110006
+001200 SOURCE-COMPUTER.                IBM-370.                         00120006
+001300 OBJECT-COMPUTER.                IBM-370.                         00130006
+001400                                                                  00140006
+001500 INPUT-OUTPUT SECTION.                                            00150006
+001600 FILE-CONTROL.                                                    00160006
+001700                                                                  00170006
+001800     SELECT MSAFILE    ASSIGN TO UT-S-MSAFILE                     00180006
+001900         FILE STATUS IS MSA-STAT.                                 00190006
+002000     SELECT CBSAFILE   ASSIGN TO UT-S-CBSAFILE                    00200006
+002100         FILE STATUS IS CBSA-STAT.                                00210006
+002200     SELECT HRGTABL    ASSIGN TO UT-S-HRGTABL                     00220006
+002300         FILE STATUS IS HRG-STAT.                                 00230006
+002400     SELECT REVTABL    ASSIGN TO UT-S-REVTABL                     00240006
+002500         FILE STATUS IS REV-STAT.                                 00250006
+002600                                                                  00260006
+002700 DATA DIVISION.                                                   00270006
+002800 FILE SECTION.                                                    00280006
+002900                                                                  00290006
+003000 FD  MSAFILE                                                      00300006
+003100     RECORDING MODE IS F                                          00310006
+003200     LABEL RECORDS ARE STANDARD.                                  00320006
+003300 01  MSA-REC.                                                     00330006
+003400     05  MSA-CODE.                                                00340006
+003500         10  MSA-BLANK            PIC X(02).                      00350006
+003600         10  MSA-STATE            PIC X(02).                      00360006
+003700     05  FILLER                   PIC X.                          00370006
+003800     05  MSA-EFFDATE              PIC X(08).                      00380006
+003900     05  FILLER                   PIC X.                          00390006
+004000     05  MSA-WAGEIND              PIC 9(02)V9(04).                00400006
+004100     05  FILLER                   PIC X(08).                      00410006
+004200     05  MSA-NAME                 PIC X(52).                      00420006
+004300                                                                  00430006
+004400 FD  CBSAFILE                                                     00440006
+004500     RECORDING MODE IS F                                          00450006
+004600     LABEL RECORDS ARE STANDARD.                                  00460006
+004700 01  F-CBSA-REC.                                                  00470006
+004800     05  F-CBSA.                                                  00480006
+004900         10  F-CBSA-BLANK            PIC X(03).                   00490006
+005000         10  F-CBSA-STATE            PIC X(02).                   00500006
+005100     05  FILLER                   PIC X.                          00510006
+005200     05  F-CBSA-EFFDATE           PIC X(08).                      00520006
+005300     05  FILLER                   PIC X.                          00530006
+005400     05  F-CBSA-WAGEIND           PIC 9(02)V9(04).                00540006
+005500     05  FILLER                   PIC X(08).                      00550006
+005600     05  F-CBSA-NAME              PIC X(51).                      00560006
+005700                                                                  00570006
+005800 FD  HRGTABL                                                      00580006
+005900     RECORDING MODE IS F                                          00590006
+006000     LABEL RECORDS ARE STANDARD.                                  00600006
+006100 01  HRG-TABL-REC.                                                00610006
+006200     05  HRG-CODE                 PIC X(05).                      00620006
+006300     05  FILLER                   PIC X.                          00630006
+006400     05  HRG-EFFDATE              PIC X(08).                      00640006
+006500     05  FILLER                   PIC X.                          00650006
+006600     05  HRG-WGTS                 PIC 9(02)V9(04).                00660006
+006700     05  FILLER                   PIC X.                          00670006
+006800     05  HRG-CODE2                PIC X(05).                      00680006
+006900     05  FILLER                   PIC X.                          00690006
+007000     05  HRG-WGTS2                PIC 9(02)V9(04).                00700006
+007100     05  FILLER                   PIC X(46).                      00710006
+007200                                                                  00720006
+007300 FD  REVTABL                                                      00730006
+007400     RECORDING MODE IS F                                          00740006
+007500     LABEL RECORDS ARE STANDARD.                                  00750006
+007600 01  REV-TABL-REC.                                                00760006
+007700     05  REV-CODE                       PIC X(04).                00770006
+007800     05  FILLER                         PIC X.                    00780006
+007900     05  REV-EFFDATE                    PIC X(08).                00790006
+008000     05  FILLER                         PIC X.                    00800006
+008100     05  REV-DOLL-RATE-NRURAL           PIC 9(07)V9(02).          00810006
+008200     05  FILLER                         PIC X.                    00820006
+008300     05  REV-DOLL-RATE-RURAL            PIC 9(07)V9(02).          00830006
+008400     05  FILLER                         PIC X.                    00840006
+008500     05  REV-DOLL-RATE-NRURAL-NOSUBMIT  PIC 9(07)V9(02).          00850006
+008600     05  FILLER                         PIC X.                    00860006
+008700     05  REV-DOLL-RATE-RURAL-NOSUBMIT   PIC 9(07)V9(02).          00870006
+008800     05  FILLER                         PIC X.                    00880006
+008900     05  REV-UDOLL-RATE-NRURAL          PIC 9(07)V9(02).          00890006
+009000     05  FILLER                         PIC X.                    00900006
+009100     05  REV-UDOLL-RATE-RURAL           PIC 9(07)V9(02).          00910006
+009200     05  FILLER                         PIC X.                    00920006
+009300     05  REV-UDOLL-RATE-NRURAL-NOSUBMIT PIC 9(07)V9(02).          00930006
+009400     05  FILLER                         PIC X.                    00940006
+009500     05  REV-UDOLL-RATE-RURAL-NOSUBMIT  PIC 9(07)V9(02).          00950006
+009600                                                                  00960006
+009700 WORKING-STORAGE SECTION.                                         00970006
+009800 77  W-STORAGE-REF               PIC X(36)  VALUE                 00980006
+009900     'HHOPN - W O R K I N G  S T O R A G E'.                      00990006
+010000 01  OPN-VERSION                 PIC X(07)  VALUE 'O2020.Y'.      01000016
+010100 01  DRV-VERSION                 PIC X(07)  VALUE 'D2020.Y'.      01010016
+010200 01  HHDRV20Y                    PIC X(08)  VALUE 'HHDRV20Y'.     01020016
+010300 01  SUB1                        PIC 9(03)  VALUE 0.              01030006
+010400 01  EOF-SW                      PIC 9(01)  VALUE 0.              01040006
+010500 01  EOF-MSA                     PIC 9(01)  VALUE 0.              01050006
+010600 01  EOF-CBSA                    PIC 9(01)  VALUE 0.              01060006
+010700 01  EOF-HRG                     PIC 9(01)  VALUE 0.              01070006
+010800 01  EOF-REV                     PIC 9(01)  VALUE 0.              01080006
+010900 01  LOAD-TABLES-SW              PIC 9(01)  VALUE 0.              01090006
+011000 01  TABLES-LOADED-SW            PIC 9(01)  VALUE 0.              01100006
+011100 01  HRG-CT                      PIC 9(10)  VALUE 0.              01110006
+011200 01  MSA-STAT.                                                    01120006
+011300     05  MSA-STAT1               PIC X.                           01130006
+011400     05  MSA-STAT2               PIC X.                           01140006
+011500 01  CBSA-STAT.                                                   01150006
+011600     05  CBSA-STAT1               PIC X.                          01160006
+011700     05  CBSA-STAT2               PIC X.                          01170006
+011800 01  HRG-STAT.                                                    01180006
+011900     05  HRG-STAT1               PIC X.                           01190006
+012000     05  HRG-STAT2               PIC X.                           01200006
+012100 01  REV-STAT.                                                    01210006
+012200     05  REV-STAT1               PIC X.                           01220006
+012300     05  REV-STAT2               PIC X.                           01230006
+012400*******************************************************           01240006
+012500*    PASSED TO HHDRV PROGRAM                          *           01250006
+012600*******************************************************           01260006
+012700 01  WAGE-INDEX-DATA.                                             01270006
+012800     02  WIR-MSA               PIC X(04).                         01280006
+012900     02  WIR-EFFDATE           PIC X(08).                         01290006
+013000     02  WIR-AREA-WAGEIND      PIC 9(02)V9(04).                   01300006
+013100                                                                  01310006
+013200 01  MSA-WI-TABLE.                                                01320006
+013300     05  M-MSA-DATA        OCCURS 4000                            01330006
+013400                           INDEXED BY MU1 MU2 MU3.                01340006
+013500         10  TB-MSA        PIC X(04).                             01350006
+013600         10  FILLER        PIC X(01).                             01360006
+013700         10  TB-EFFDATE    PIC X(08).                             01370006
+013800         10  FILLER        PIC X(01).                             01380006
+013900         10  TB-WAGEIND    PIC 9(02)V9(04).                       01390006
+014000                                                                  01400006
+014100 01  CBSA-WAGE-INDEX-DATA.                                        01410006
+014200     02  WIR-CBSA              PIC X(05).                         01420006
+014300     02  WIR-CBSA-EFFDATE      PIC X(08).                         01430006
+014400     02  WIR-CBSA-WAGEIND      PIC 9(02)V9(04).                   01440006
+014500                                                                  01450006
+014600 01  CBSA-WI-TABLE.                                               01460006
+014700     05  T-CBSA-DATA        OCCURS 7500                           01470015
+014800                           INDEXED BY MA1 MA2 MA3.                01480006
+014900         10  T-CBSA            PIC X(05).                         01490006
+015000         10  FILLER            PIC X(01).                         01500006
+015100         10  T-CBSA-EFFDATE    PIC X(08).                         01510006
+015200         10  FILLER            PIC X(01).                         01520006
+015300         10  T-CBSA-WAGEIND    PIC 9(02)V9(04).                   01530006
+015400                                                                  01540006
+015500 01  HRG-WI-TABLE.                                                01550006
+015600     05  M-HRG-DATA        OCCURS 4000                            01560006
+015700                           INDEXED BY HU1 HU2 HU3.                01570006
+015800         10  TB-HRG-HRG        PIC X(05).                         01580006
+015900         10  FILLER            PIC X(01).                         01590006
+016000         10  TB-HRG-EFFDATE    PIC X(08).                         01600006
+016100         10  FILLER            PIC X(01).                         01610006
+016200         10  TB-HRG-WGTS       PIC 9(02)V9(04).                   01620006
+016300         10  FILLER            PIC X(01).                         01630006
+016400         10  TB-HRG-HRG2       PIC X(05).                         01640006
+016500         10  FILLER            PIC X(01).                         01650006
+016600         10  TB-HRG-WGTS2      PIC 9(02)V9(04).                   01660006
+016700                                                                  01670006
+016800 01  REVENUE-TABLE.                                               01680006
+016900     05  M-REV-DATA        OCCURS 200                             01690006
+017000                           INDEXED BY RU1 RU2 RU3.                01700006
+017100         10  TB-REV-CODE.                                         01710006
+017200             15  TB-REV-CODE-1ST.                                 01720006
+017300                 88  TB-REV-CODE-RURAL-CHECK   VALUE '99'.        01730006
+017400                 20  TB-REV-CODE-RURAL       PIC XX.              01740006
+017500             15  TB-REV-CODE-2ND          PIC XX.                 01750006
+017600         10  FILLER                       PIC X(01).              01760006
+017700         10  TB-REV-EFFDATE               PIC X(08).              01770006
+017800         10  FILLER                       PIC X(01).              01780006
+017900         10  TB-REV-DOLL-RATE-NRURAL      PIC 9(07)V9(02).        01790006
+018000         10  FILLER                       PIC X(01).              01800006
+018100         10  TB-REV-DOLL-RATE-RURAL       PIC 9(07)V9(02).        01810006
+018200         10  FILLER                       PIC X.                  01820006
+018300         10  TB-DOLL-RATE-NRURAL-NOSUBMIT PIC 9(07)V9(02).        01830006
+018400         10  FILLER                       PIC X.                  01840006
+018500         10  TB-DOLL-RATE-RURAL-NOSUBMIT  PIC 9(07)V9(02).        01850006
+018600         10  FILLER                       PIC X(01).              01860006
+018700         10  TB-REV-UDOLL-RATE-NRURAL     PIC 9(07)V9(02).        01870006
+018800         10  FILLER                       PIC X(01).              01880006
+018900         10  TB-REV-UDOLL-RATE-RURAL      PIC 9(07)V9(02).        01890006
+019000         10  FILLER                       PIC X.                  01900006
+019100         10  TB-UDOLL-RATE-NRURAL-NOSUBMIT PIC 9(07)V9(02).       01910006
+019200         10  FILLER                       PIC X.                  01920006
+019300         10  TB-UDOLL-RATE-RURAL-NOSUBMIT PIC 9(07)V9(02).        01930006
+019400                                                                  01940006
+019500 LINKAGE SECTION.                                                 01950006
+019600*----------------------------------------------------------------*01960006
+019700*  INPUT/OUTPUT RECORD LAYOUT                                    *01970006
+019800*----------------------------------------------------------------*01980006
+019900 01  HHA-INPUT-DATA.                                              01990006
+020000     05  HHA-DATA.                                                02000006
+020100         10  HHA-NPI                 PIC X(10).                   02010006
+020200         10  HHA-HIC                 PIC X(12).                   02020006
+020300         10  HHA-PROV-NO             PIC X(06).                   02030006
+020400         10  HHA-TOB                 PIC XXX.                     02040006
+020500         10  HHA-PEP-INDICATOR       PIC X.                       02050006
+020600         10  HHA-PEP-DAYS            PIC 999.                     02060006
+020700         10  HHA-INIT-PAY-INDICATOR  PIC X.                       02070006
+020800             88  HHA-WITH-DATA-CHECK VALUE '0', '1'.              02080006
+020900             88  HHA-NO-DATA-CHECK   VALUE '2', '3'.              02090006
+021000         10  HHA-COUNTY-CODE         PIC X(05).                   02100012
+021010         10  FILLER                  PIC X(02).                   02101012
+021100         10  HHA-MSA1                PIC 9(07)V9(02).             02110006
+021200         10  HHA-MSA2-DATA REDEFINES HHA-MSA1.                    02120006
+021300             15  FILLER             PIC XXX.                      02130006
+021400             15  HHA-MSA2.                                        02140006
+021500                 20  HHA-MSA2-1ST.                                02150006
+021600                     25  HHA-MSA2-RURAL        PIC XX.            02160006
+021700                         88  HHA-MSA2-RURAL-CHECK  VALUE '99'.    02170006
+021800                 20  HHA-MSA2-2ND              PIC XX.            02180006
+021900             15  FILLER             PIC XX.                       02190006
+022000         10  HHA-CBSA-DATA REDEFINES HHA-MSA1.                    02200006
+022100             15  FILLER             PIC XX.                       02210006
+022200             15  HHA-CBSA.                                        02220006
+022300                 20  HHA-CBSA-1ST.                                02230006
+022400                     25  HHA-CBSA-RURAL        PIC XXX.           02240006
+022500                         88  HHA-CBSA-RURAL-CHECK  VALUE '999'.   02250006
+022600                 20  HHA-CBSA-2ND              PIC XX.            02260006
+022700             15  FILLER             PIC XX.                       02270006
+022800         10  HHA-SERV-FROM-DATE.                                  02280006
+022900             15  HHA-FROM-CC         PIC XX.                      02290006
+023000             15  HHA-FROM-YYMMDD.                                 02300006
+023100                 25  HHA-FROM-YY     PIC XX.                      02310006
+023200                 25  HHA-FROM-MM     PIC XX.                      02320006
+023300                 25  HHA-FROM-DD     PIC XX.                      02330006
+023400         10  HHA-SERV-THRU-DATE.                                  02340006
+023500             15  HHA-THRU-CC         PIC XX.                      02350006
+023600             15  HHA-THRU-YYMMDD.                                 02360006
+023700                 25  HHA-THRU-YY     PIC XX.                      02370006
+023800                 25  HHA-THRU-MM     PIC XX.                      02380006
+023900                 25  HHA-THRU-DD     PIC XX.                      02390006
+024000         10  HHA-ADMIT-DATE.                                      02400006
+024100             15  HHA-ADMIT-CC        PIC XX.                      02410006
+024200             15  HHA-ADMIT-YYMMDD.                                02420006
+024300                 25  HHA-ADMIT-YY    PIC XX.                      02430006
+024400                 25  HHA-ADMIT-MM    PIC XX.                      02440006
+024500                 25  HHA-ADMIT-DD    PIC XX.                      02450006
+024600         10  HHA-HRG-DATA      OCCURS 6.                          02460006
+024700             15  HHA-MED-REVIEW-INDICATOR PIC X.                  02470006
+024800             15  HHA-HRG-INPUT-CODE       PIC X(05).              02480006
+024900             15  HHA-HRG-OUTPUT-CODE      PIC X(05).              02490006
+025000             15  HHA-HRG-NO-OF-DAYS       PIC 9(03).              02500006
+025100             15  HHA-HRG-WGTS             PIC 9(02)V9(04).        02510006
+025200             15  HHA-HRG-PAY              PIC 9(07)V9(02).        02520006
+025300         10  HHA-REVENUE-DATA     OCCURS 6.                       02530006
+025400             15  HHA-REVENUE-CODE                PIC X(04).       02540006
+025500             15  HHA-REVENUE-QTY-COV-VISITS      PIC 9(03).       02550006
+025600             15  HHA-REVENUE-QTY-OUTL-UNITS      PIC 9(05).       02560006
+025700             15  H-HHA-REVENUE-EARLIEST-DATE     PIC 9(08).       02570006
+025800             15  HHA-REVENUE-DOLL-RATE           PIC 9(07)V9(02). 02580006
+025900             15  HHA-REVENUE-COST                PIC 9(07)V9(02). 02590006
+026000             15  H-HHA-REVENUE-ADD-ON-VISIT-AMT  PIC 9(07)V9(02). 02600006
+026100     05  HHA-PASSBACK-DATA.                                       02610006
+026200         10  HHA-PAY-RTC                PIC 99.                   02620006
+026300         10  HHA-REVENUE-SUM1-3-QTY-THR PIC 9(05).                02630006
+026400         10  HHA-REVENUE-SUM1-6-QTY-ALL PIC 9(05).                02640006
+026500         10  HHA-OUTLIER-PAYMENT        PIC 9(07)V9(02).          02650006
+026600         10  HHA-TOTAL-PAYMENT          PIC 9(07)V9(02).          02660006
+026700     05  HHA-CASE-MIX-DATA.                                       02670006
+026800         10  HHA-LUPA-ADD-ON-PAYMENT    PIC 9(03)V9(02).          02680006
+026900         10  HHA-LUPA-SRC-ADM           PIC X.                    02690006
+027000         10  HHA-RECODE-IND             PIC X.                    02700006
+027100         10  HHA-EPISODE-TIMING         PIC 9.                    02710006
+027200         10  HHA-SEVERITY-POINTS.                                 02720006
+027300             15  HHA-CLINICAL-SEV-EQ1   PIC X(01).                02730006
+027400             15  HHA-FUNCTION-SEV-EQ1   PIC X(01).                02740006
+027500             15  HHA-CLINICAL-SEV-EQ2   PIC X(01).                02750006
+027600             15  HHA-FUNCTION-SEV-EQ2   PIC X(01).                02760006
+027700             15  HHA-CLINICAL-SEV-EQ3   PIC X(01).                02770006
+027800             15  HHA-FUNCTION-SEV-EQ3   PIC X(01).                02780006
+027900             15  HHA-CLINICAL-SEV-EQ4   PIC X(01).                02790006
+028000             15  HHA-FUNCTION-SEV-EQ4   PIC X(01).                02800006
+028100     05  HHA-PROV-TOTAL-DATA.                                     02810006
+028200         10  HHA-PROV-OUTLIER-PAY-TOTAL PIC 9(08)V9(02).          02820006
+028300         10  HHA-PROV-PAYMENT-TOTAL     PIC 9(09)V9(02).          02830006
+028400     05  HHA-PROV-VBP-ADJ-FAC           PIC 9V9(5).               02840006
+028500     05  HHA-VBP-ADJ-AMT                PIC S9(7)V99.             02850006
+028600     05  HHA-PPS-STD-VALUE              PIC 9(7)V99.              02860006
+028710     05  FILLER                         PIC X(27).                02871009
+028800                                                                  02880006
+028900 01  HOLD-VARIABLES-DATA.                                         02890006
+029000     02  HOLD-VAR-DATA.                                           02900006
+029100         05  PRICER-OPTION-SW              PIC X(01).             02910006
+029200         05  HHOPN-VERSION                 PIC X(07).             02920006
+029300         05  HHDRV-VERSION                 PIC X(07).             02930006
+029400         05  HHCAL-VERSION                 PIC X(07).             02940006
+029500         05  FILLER                        PIC X(20).             02950006
+029600                                                                  02960006
+029700**==================================================***           02970006
+029800 PROCEDURE  DIVISION USING HHA-INPUT-DATA                         02980006
+029900                           HOLD-VARIABLES-DATA.                   02990006
+030000                                                                  03000006
+030100 0000-MAINLINE  SECTION.                                          03010006
+030200                                                                  03020006
+030300     MOVE OPN-VERSION TO HHOPN-VERSION.                           03030006
+030400                                                                  03040006
+030500**** IF PRICER-OPTION-SW = 'A'                                    03050006
+030600        IF TABLES-LOADED-SW NOT NUMERIC                           03060006
+030700            MOVE 1 TO TABLES-LOADED-SW.                           03070006
+030800                                                                  03080006
+030900        IF TABLES-LOADED-SW = 0                                   03090006
+031000            PERFORM 1100-LOAD-CBSAFILE THRU 1100-EXIT             03100006
+031100            PERFORM 1300-LOAD-MSAFILE THRU 1300-EXIT              03110006
+031200            PERFORM 1800-LOAD-HRGTABL THRU 1800-EXIT              03120006
+031300            PERFORM 2500-LOAD-REVTABL THRU 2500-EXIT              03130006
+031400            MOVE 1 TO TABLES-LOADED-SW.                           03140006
+031500                                                                  03150006
+031600                                                                  03160006
+031700     MOVE ALL '0' TO HHA-PASSBACK-DATA.                           03170006
+031800                                                                  03180006
+031900 0100-PROCESS-RECORDS.                                            03190006
+032000                                                                  03200006
+032100******************************************************************03210006
+032200*        FY 2018 VERSION B                                       *03220006
+032300******************************************************************03230006
+032400         CALL HHDRV20Y USING WAGE-INDEX-DATA                      03240016
+032500                             MSA-WI-TABLE                         03250006
+032600                             CBSA-WAGE-INDEX-DATA                 03260006
+032700                             CBSA-WI-TABLE                        03270006
+032800                             HRG-WI-TABLE                         03280006
+032900                             REVENUE-TABLE                        03290006
+033000                             HHA-INPUT-DATA                       03300006
+033100                             HOLD-VARIABLES-DATA.                 03310006
+033200         GOBACK.                                                  03320006
+033300                                                                  03330006
+033400******************************************************************03340006
+033500                                                                  03350006
+033600 0100-EXIT.  EXIT.                                                03360006
+033700                                                                  03370006
+033800                                                                  03380006
+033900 1100-LOAD-CBSAFILE.                                              03390006
+034000     OPEN INPUT CBSAFILE.                                         03400006
+034100     INITIALIZE CBSA-WI-TABLE.                                    03410006
+034200     MOVE 0 TO EOF-CBSA.                                          03420006
+034300     SET MA3 TO EOF-CBSA.                                         03430006
+034400                                                                  03440006
+034500     PERFORM 1200-READ-CBSAFILE THRU 1200-EXIT                    03450006
+034600             UNTIL EOF-CBSA = 1.                                  03460006
+034700                                                                  03470006
+034800     CLOSE CBSAFILE.                                              03480006
+034900                                                                  03490006
+035000 1100-EXIT.  EXIT.                                                03500006
+035100                                                                  03510006
+035200 1200-READ-CBSAFILE.                                              03520006
+035300     READ CBSAFILE                                                03530006
+035400          AT END   MOVE 1 TO EOF-CBSA.                            03540006
+035500                                                                  03550006
+035600     IF EOF-CBSA = 0                                              03560006
+035700        IF F-CBSA-EFFDATE > '20050930' OR                         03570006
+035800          (F-CBSA-STATE = '98' OR '99')                           03580006
+035900           SET MA3 UP BY 1                                        03590006
+036000               MOVE F-CBSA         TO T-CBSA         (MA3)        03600006
+036100               MOVE F-CBSA-EFFDATE TO T-CBSA-EFFDATE (MA3)        03610006
+036200               MOVE F-CBSA-WAGEIND TO T-CBSA-WAGEIND (MA3).       03620006
+036300                                                                  03630006
+036400 1200-EXIT.  EXIT.                                                03640006
+036500                                                                  03650006
+036600 1300-LOAD-MSAFILE.                                               03660006
+036700     OPEN INPUT MSAFILE.                                          03670006
+036800     INITIALIZE MSA-WI-TABLE.                                     03680006
+036900     MOVE 0 TO EOF-MSA.                                           03690006
+037000     SET MU3 TO EOF-MSA.                                          03700006
+037100                                                                  03710006
+037200     PERFORM 1400-READ-MSAFILE THRU 1400-EXIT                     03720006
+037300             UNTIL EOF-MSA = 1.                                   03730006
+037400                                                                  03740006
+037500     CLOSE MSAFILE.                                               03750006
+037600                                                                  03760006
+037700 1300-EXIT.  EXIT.                                                03770006
+037800                                                                  03780006
+037900 1400-READ-MSAFILE.                                               03790006
+038000     READ MSAFILE                                                 03800006
+038100          AT END   MOVE 1 TO EOF-MSA.                             03810006
+038200                                                                  03820006
+038300     IF EOF-MSA = 0                                               03830006
+038400        IF MSA-EFFDATE > '19970930' OR                            03840006
+038500          (MSA-STATE = '98' OR '99')                              03850006
+038600           SET MU3 UP BY 1                                        03860006
+038700               MOVE MSA-CODE    TO TB-MSA     (MU3)               03870006
+038800               MOVE MSA-EFFDATE TO TB-EFFDATE (MU3)               03880006
+038900               MOVE MSA-WAGEIND TO TB-WAGEIND (MU3).              03890006
+039000                                                                  03900006
+039100 1400-EXIT.  EXIT.                                                03910006
+039200                                                                  03920006
+039300                                                                  03930006
+039400 1800-LOAD-HRGTABL.                                               03940006
+039500     OPEN INPUT HRGTABL.                                          03950006
+039600     INITIALIZE HRG-WI-TABLE.                                     03960006
+039700     MOVE 0 TO EOF-HRG.                                           03970006
+039800     SET HU3 TO EOF-HRG.                                          03980006
+039900                                                                  03990006
+040000     PERFORM 1900-READ-HRGTABL THRU 1900-EXIT                     04000006
+040100             UNTIL EOF-HRG = 1.                                   04010006
+040200                                                                  04020006
+040300     CLOSE HRGTABL.                                               04030006
+040400                                                                  04040006
+040500 1800-EXIT.  EXIT.                                                04050006
+040600                                                                  04060006
+040700 1900-READ-HRGTABL.                                               04070006
+040800     READ HRGTABL                                                 04080006
+040900          AT END   MOVE 1 TO EOF-HRG.                             04090006
+041000     ADD 1 TO HRG-CT.                                             04100006
+041100     IF EOF-HRG = 0                                               04110006
+041200        SET HU3 UP BY 1                                           04120006
+041300            MOVE HRG-CODE     TO TB-HRG-HRG      (HU3)            04130006
+041400            MOVE HRG-EFFDATE  TO TB-HRG-EFFDATE  (HU3)            04140006
+041500            MOVE HRG-WGTS     TO TB-HRG-WGTS     (HU3)            04150006
+041600            MOVE HRG-CODE2    TO TB-HRG-HRG2     (HU3)            04160006
+041700            MOVE HRG-WGTS2    TO TB-HRG-WGTS2    (HU3).           04170006
+041800                                                                  04180006
+041900 1900-EXIT.  EXIT.                                                04190006
+042000                                                                  04200006
+042100                                                                  04210006
+042200 2500-LOAD-REVTABL.                                               04220006
+042300     OPEN INPUT REVTABL.                                          04230006
+042400     INITIALIZE REVENUE-TABLE.                                    04240006
+042500     MOVE 0 TO EOF-REV.                                           04250006
+042600     SET RU3 TO EOF-REV.                                          04260006
+042700                                                                  04270006
+042800     PERFORM 2600-READ-REVTABL THRU 2600-EXIT                     04280006
+042900             UNTIL EOF-REV = 1.                                   04290006
+043000                                                                  04300006
+043100     CLOSE REVTABL.                                               04310006
+043200                                                                  04320006
+043300 2500-EXIT.  EXIT.                                                04330006
+043400                                                                  04340006
+043500 2600-READ-REVTABL.                                               04350006
+043600     READ REVTABL                                                 04360006
+043700          AT END   MOVE 1 TO EOF-REV.                             04370006
+043800                                                                  04380006
+043900     IF EOF-REV = 0                                               04390006
+044000        SET RU3 UP BY 1                                           04400006
+044100            MOVE REV-CODE      TO TB-REV-CODE     (RU3)           04410006
+044200            MOVE REV-EFFDATE   TO TB-REV-EFFDATE  (RU3)           04420006
+044300            MOVE REV-DOLL-RATE-NRURAL TO                          04430006
+044400                              TB-REV-DOLL-RATE-NRURAL (RU3)       04440006
+044500            MOVE REV-DOLL-RATE-RURAL TO                           04450006
+044600                              TB-REV-DOLL-RATE-RURAL (RU3)        04460006
+044700            MOVE REV-DOLL-RATE-NRURAL-NOSUBMIT TO                 04470006
+044800                          TB-DOLL-RATE-NRURAL-NOSUBMIT (RU3)      04480006
+044900            MOVE REV-DOLL-RATE-RURAL-NOSUBMIT TO                  04490006
+045000                         TB-DOLL-RATE-RURAL-NOSUBMIT (RU3)        04500006
+045100                                                                  04510006
+045200            MOVE REV-UDOLL-RATE-NRURAL TO                         04520006
+045300                              TB-REV-UDOLL-RATE-NRURAL (RU3)      04530006
+045400            MOVE REV-UDOLL-RATE-RURAL TO                          04540006
+045500                              TB-REV-UDOLL-RATE-RURAL (RU3)       04550006
+045600            MOVE REV-UDOLL-RATE-NRURAL-NOSUBMIT TO                04560006
+045700                          TB-UDOLL-RATE-NRURAL-NOSUBMIT (RU3)     04570006
+045800            MOVE REV-UDOLL-RATE-RURAL-NOSUBMIT TO                 04580006
+045900                         TB-UDOLL-RATE-RURAL-NOSUBMIT (RU3)       04590006
+046000     END-IF.                                                      04600006
+046100                                                                  04610006
+046200 2600-EXIT.  EXIT.                                                04620006
+

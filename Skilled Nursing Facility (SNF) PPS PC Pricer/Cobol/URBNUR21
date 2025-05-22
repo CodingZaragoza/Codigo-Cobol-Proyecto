@@ -1,0 +1,53 @@
+      ****************************************************
+      * NURSING URBAN RATE TABLE                         *
+      *                                                  *
+      * REVISED 08/05/2020 FY2021)                       *
+      ****************************************************
+       01 PDPM-NURS-TABLE-U.
+         02  PDPM-NURS-DATA-U.
+          05  FILLER  PIC X(29) VALUE 'A 043913 051817 043060 050811'.
+          05  FILLER  PIC X(29) VALUE 'B 033205 039182 032560 038421'.
+          05  FILLER  PIC X(29) VALUE 'C 031691 037395 031076 036670'.
+          05  FILLER  PIC X(29) VALUE 'D 025958 030630 025454 030036'.
+          05  FILLER  PIC X(29) VALUE 'E 021524 025398 021106 024905'.
+          05  FILLER  PIC X(29) VALUE 'F 024228 028589 023757 028033'.
+          05  FILLER  PIC X(29) VALUE 'G 020118 023739 019727 023278'.
+          05  FILLER  PIC X(29) VALUE 'H 022497 026546 022060 026031'.
+          05  FILLER  PIC X(29) VALUE 'I 018712 022080 018348 021651'.
+          05  FILLER  PIC X(29) VALUE 'J 018604 021953 018242 021526'.
+          05  FILLER  PIC X(29) VALUE 'K 015467 018251 015167 017897'.
+          05  FILLER  PIC X(29) VALUE 'L 020226 023867 019833 023403'.
+          05  FILLER  PIC X(29) VALUE 'M 017522 020676 017182 020275'.
+          05  FILLER  PIC X(29) VALUE 'N 016765 019783 016439 019398'.
+          05  FILLER  PIC X(29) VALUE 'O 011789 013911 011561 013642'.
+          05  FILLER  PIC X(29) VALUE 'P 014493 017102 014212 016770'.
+          05  FILLER  PIC X(29) VALUE 'Q 010167 011997 009970 011765'.
+          05  FILLER  PIC X(29) VALUE 'R 011249 013274 011030 013015'.
+          05  FILLER  PIC X(29) VALUE 'S 010708 012635 010500 012390'.
+          05  FILLER  PIC X(29) VALUE 'T 016981 020038 016651 019648'.
+          05  FILLER  PIC X(29) VALUE 'U 015900 018762 015591 018397'.
+          05  FILLER  PIC X(29) VALUE 'V 013196 015571 012939 015268'.
+          05  FILLER  PIC X(29) VALUE 'W 007679 009061 007530 008885'.
+          05  FILLER  PIC X(29) VALUE 'X 012222 014422 011985 014142'.
+          05  FILLER  PIC X(29) VALUE 'Y 007139 008424 007000 008260'.
+         02  PDPM-NURS-DATA2-U REDEFINES PDPM-NURS-DATA-U
+                OCCURS 25 TIMES
+                   ASCENDING KEY IS PDPM-NURS-GROUP-U
+                      INDEXED BY PDPM-NURS-IDX-U.
+                   10  PDPM-NURS-DATA-TAB-U.
+                       15  PDPM-NURS-GROUP-U   PIC X(01).
+                       15  FILLER              PIC X(01).
+                       15  PDPM-RATE-NUR-U     PIC 9999V99.
+                       15  FILLER              PIC X(01).
+                       15  PDPM-ARATE-NUR-U    PIC 9999V99.
+                       15  FILLER              PIC X(01).
+                       15  PDPM-QRATE-NUR-U    PIC 9999V99.
+                       15  FILLER              PIC X(01).
+                       15  PDPM-AQ-RATE-NUR-U  PIC 9999V99.
+
+      ****************************************************
+      *     END OF COPYBOOK FOR NURS URBAN RATES         *
+      ****************************************************
+
+
+

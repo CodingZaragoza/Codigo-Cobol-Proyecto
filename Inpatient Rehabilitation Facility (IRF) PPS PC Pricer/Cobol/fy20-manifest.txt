@@ -1,0 +1,72 @@
+************************************************************************00001000
+*                                                                      *00002000
+*                           MANIFEST LIST                              *00003000
+*                                                                      *00004000
+* DATASET NAME:        MU00.@BFN2699.IRNDM200                          *00005001
+* PRICER:              INPATIENT REHAB PAYMENT SYSTEM (IRF)            *00006000
+* VERSION:             2020.0                                          *00007001
+*                                                                      *00008000
+* IMPLEMENTATION DATE: 10/01/2019                                      *00009001
+* BETA/PRODUCTION:     PRODUCTION                                      *00010000
+* RELEASE DATE:        08/06/2019                                      *00011003
+*                                                                      *00012000
+*----------------------------------------------------------------------*00013000
+*                                                                      *00013100
+* TOTAL NUMBER OF MEMBERS ASSOCIATED WITH THIS PRICER: 24              *00013202
+*                                                                      *00013300
+*     - NUMBER OF MEMBERS INCLUDED IN THIS DATASET: 5                  *00013400
+*       - NEW MEMBERS: 3                                               *00013500
+*         (LISTED BELOW UNDER "NON-PAIRED NEW FILE MEMBERS")           *00013600
+*       - MEMBERS WITH CHANGES: 2                                      *00013700
+*         (LISTED BELOW WITH "**" IN THE "CHNG" COLUMN)                *00013800
+*                                                                      *00013900
+*     - NUMBER OF MEMBERS NOT INCLUDED IN THIS DATASET: 19             *00014002
+*       - MEMBERS WITH NO CHANGES: 19                                  *00014102
+*         (LISTED BELOW WITH NOTHING IN THE "CHNG" COLUMN)             *00014200
+*                                                                      *00014300
+*                                                                      *00014400
+************************************************************************00014500
+                                                                        00014600
+1  ISRSUPC   -   MVS/PDF FILE/LINE/WORD/BYTE/SFOR COMPARE UTILITY- ISPF 00014700
+ NEW: MU00.@BFN2699.IRNDM200.ALL                                        00014802
+ OLD: MU00.@BFN2699.IRNDM190.ALL                                        00014902
+                                                                        00015000
+                       MEMBER SUMMARY LISTING (LINE COMPARE)            00016000
+                                                                        00017000
+ CHNG MEMBERS-COMPARED NEW-PROC OLD-PROC  MATCHED NEW-INS OLD-DEL REFM-L00018000
+                                                                        00019000
+      IRCAL021              953      953      953                       00020000
+      IRCAL031              968      968      968                       00030000
+      IRCAL041              967      967      967                       00040000
+      IRCAL051              966      966      966                       00050000
+      IRCAL064             1006     1006     1006                       00060000
+      IRCAL070             1023     1023     1023                       00070000
+      IRCAL080             1041     1041     1041                       00080000
+      IRCAL090             1031     1031     1031                       00090000
+      IRCAL100             1058     1058     1058                       00100000
+      IRCAL110             1033     1033     1033                       00110000
+      IRCAL120             1033     1033     1033                       00120000
+      IRCAL130             1033     1033     1033                       00130000
+      IRCAL140             1053     1053     1053                       00140000
+      IRCAL150             1054     1054     1054                       00150000
+      IRCAL160             1076     1076     1076                       00160000
+      IRCAL170             1075     1075     1075                       00170000
+      IRCAL180             1064     1064     1064                       00180000
+      IRCAL190             1064     1064     1064                       00181002
+      IRDRIVER              428      428      425       3       3       00190000
+                                                                        00200000
+    19   TOTAL MEMBER(S) PROCESSED AS A PDS                             00210002
+     1   TOTAL MEMBER(S) PROCESSED HAD CHANGES                          00220000
+    18   TOTAL MEMBER(S) PROCESSED HAD NO CHANGES                       00230002
+     3   TOTAL NEW FILE MEMBER(S) NOT PAIRED                            00240000
+     0   TOTAL OLD FILE MEMBER(S) NOT PAIRED                            00250000
+                       MEMBER SUMMARY LISTING (LINE COMPARE)            00260000
+                                                                        00270000
+    NON-PAIRED NEW FILE MEMBERS         ³   NON-PAIRED OLD FILE MEMBERS 00280000
+                                                                        00290000
+        IRCAL200                        ³                               00300002
+        IRCBS200                        ³                               00310002
+        IRDRV200                        ³                               00320002
+    **  README                          ³                               00330000
+    **  MANIFEST                        ³                               00340000
+

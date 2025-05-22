@@ -1,0 +1,36 @@
+************************************************************************
+*                                                                      *
+*                           README                                     *
+*                                                                      *
+* DATASET NAME:        MU00.@BFN2699.IPNDM221                          *
+* PRICER:              INPATIENT PSYCH PAYMENT SYSTEM (IPF)            *
+* VERSION:             2022.1                                          *
+* CR#:                 12417                                           *
+*                                                                      *
+* IMPLEMENTATION DATE: 10/01/2021                                      *
+* BETA/PRODUCTION:     PRODUCTION                                      *
+* RELEASE DATE:        09/14/2021                                      *
+*                                                                      *
+************************************************************************
+
+DESCRIPTION:
+
+******************************************************************
+*  CHANGES/UPDATES FOR FY2022.1                                  *
+******************************************************************
+* THIS CHANGE IS ASSOCIATED WITH THE IPF CORRECTION NOTICE       *
+*================================================================*
+*  IPDRV221 - CREATED TO CALL IPCAL221                           *
+*  IPCAL221 - UPDATE THE OUTLIER THRESHOLD AMOUNT                *
+*             FROM  14470.00 TO  16040.00                        *
+******************************************************************
+
+RELEASE CONTENTS:
+
+MU00.@BFN2699.IPNDM221:
+
+README   - DESCRIPTION OF RELEASE
+MANIFEST - GENERAL RELEASE INFORMATION
+IPCAL221 - NEW CALC PROGRAM FOR FY2022.1
+IPDRV221 - NEW DRIVER PROGRAM FOR FY2022.1
+

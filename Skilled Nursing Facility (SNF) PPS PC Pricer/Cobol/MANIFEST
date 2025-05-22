@@ -1,0 +1,68 @@
+************************************************************************
+*                                                                      *
+*                           MANIFEST LIST                              *
+*                                                                      *
+*                                                                      *
+* PDS NAME:              MU00.@BFN2699.SNNDM211                        *
+* PRICER:                SNF PROSPECTIVE PAYMENT SYSTEM (SNF)          *
+* VERSION:               2021.1                                        *
+* EFFECTIVE DATE:        10/01/2020                                    *
+* BETA/PRODUCTION:       PROD                                          *
+* RELEASE DATE:          11/13/2020                                    *
+*                                                                      *
+*                                                                      *
+* TOTAL NUMBER OF MEMBERS ASSOCIATED WITH THIS PRICER: 25              *
+*                                                                      *
+*     - NUMBER OF MEMBERS INCLUDED IN THIS DATASET: 3                  *
+*       - NEW MEMBERS: 0                                               *
+*         (LISTED BELOW UNDER "NON-PAIRED NEW FILE MEMBERS")           *
+*       - MEMBERS THAT REPLACE THE PREVIOUS VERSION: 1                 *
+*         (LISTED BELOW WITH "**" IN THE "CHNG" COLUMN)                *
+*       - MEMBERS WITH CHANGES: 2                                      *
+*         (LISTED BELOW WITH "**" IN THE "CHNG" COLUMN)                *
+*                                                                      *
+*     - NUMBER OF MEMBERS NOT INCLUDED IN THIS DATASET: 22             *
+*       - MEMBERS WITH NO CHANGES: 22                                  *
+*         (LISTED BELOW WITH NOTHING IN THE "CHNG" COLUMN)             *
+*                                                                      *
+************************************************************************
+
+                       MEMBER SUMMARY LISTING
+
+ CHNG MEMBERS-COMPARED                                                  N N-DP-L
+
+      CBSA2021
+ **   MANIFEST
+ **   README
+      RURNTA
+      RURNTA21
+      RURNURS
+      RURNUR21
+      RURPTOT
+      RURPTO21
+      RURSLP
+      RURSLP21
+ **   SNFDR211:SNFDR210
+      SNFPR205
+      SNFPR210
+      SNF300B
+      SNF300P
+      URBNTA
+      URBNTA21
+      URBNURS
+      URBNUR21
+      URBPTOT
+      URBPTO21
+      URBSLP
+      URBSLP21
+      VPDTAB
+
+
+      25  TOTAL MEMBER(S) PROCESSED AS A PDS
+       2  TOTAL MEMBER(S) PROCESSED HAD CHANGES
+      22  TOTAL MEMBER(S) PROCESSED HAD NO CHANGES
+       1  TOTAL NEW FILE MEMBER(S) PAIRED
+       0  TOTAL NEW FILE MEMBER(S) NOT PAIRED
+
+
+

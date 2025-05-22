@@ -1,0 +1,52 @@
+      ****************************************************
+      * NURSING RURAL RATE TABLE                         *
+      *                                                  *
+      * REVISED 08/05/2020 (FY 2021)                     *
+      ****************************************************
+       01  PDPM-NURS-TABLE.
+          02  PDPM-NURS-DATA-RURAL.
+          05  FILLER  PIC X(29) VALUE 'A 041956 049508 041136 048540'.
+          05  FILLER  PIC X(29) VALUE 'B 031725 037436 031105 036704'.
+          05  FILLER  PIC X(29) VALUE 'C 030279 035729 029687 035031'.
+          05  FILLER  PIC X(29) VALUE 'D 024802 029266 024317 028694'.
+          05  FILLER  PIC X(29) VALUE 'E 020565 024267 020163 023792'.
+          05  FILLER  PIC X(29) VALUE 'F 023148 027315 022696 026781'.
+          05  FILLER  PIC X(29) VALUE 'G 019221 022681 018846 022238'.
+          05  FILLER  PIC X(29) VALUE 'H 021495 025364 021075 024869'.
+          05  FILLER  PIC X(29) VALUE 'I 017878 021096 017528 020683'.
+          05  FILLER  PIC X(29) VALUE 'J 017774 020973 017427 020564'.
+          05  FILLER  PIC X(29) VALUE 'K 014778 017438 014489 017097'.
+          05  FILLER  PIC X(29) VALUE 'L 019325 022804 018947 022357'.
+          05  FILLER  PIC X(29) VALUE 'M 016741 019754 016414 019369'.
+          05  FILLER  PIC X(29) VALUE 'N 016018 018901 015705 018532'.
+          05  FILLER  PIC X(29) VALUE 'O 011264 013292 011044 013032'.
+          05  FILLER  PIC X(29) VALUE 'P 013848 016341 013577 016021'.
+          05  FILLER  PIC X(29) VALUE 'Q 009714 011463 009524 011238'.
+          05  FILLER  PIC X(29) VALUE 'R 010747 012681 010537 012434'.
+          05  FILLER  PIC X(29) VALUE 'S 010231 012073 010031 011837'.
+          05  FILLER  PIC X(29) VALUE 'T 016224 019144 015907 018770'.
+          05  FILLER  PIC X(29) VALUE 'U 015191 017925 014894 017575'.
+          05  FILLER  PIC X(29) VALUE 'V 012607 014876 012361 014586'.
+          05  FILLER  PIC X(29) VALUE 'W 007337 008658 007194 008489'.
+          05  FILLER  PIC X(29) VALUE 'X 011677 013779 011449 013510'.
+          05  FILLER  PIC X(29) VALUE 'Y 006820 008048 006687 007891'.
+         02  PDPM-NURS-DATA2-R REDEFINES PDPM-NURS-DATA-RURAL
+                 OCCURS 25 TIMES
+                    ASCENDING KEY IS PDPM-NURS-GROUP-R
+                       INDEXED BY PDPM-NURS-IDX-R.
+                   10  PDPM-NURS-DATA-TAB-R.
+                       15  PDPM-NURS-GROUP-R   PIC X(01).
+                       15  FILLER              PIC X(01).
+                       15  PDPM-RATE-NURS-R    PIC 9999V99.
+                       15  FILLER              PIC X(01).
+                       15  PDPM-ARATE-NURS-R   PIC 9999V99.
+                       15  FILLER              PIC X(01).
+                       15  PDPM-QRATE-NURS-R   PIC 9999V99.
+                       15  FILLER              PIC X(01).
+                       15  PDPM-AQRATE-NURS-R PIC 9999V99.
+
+      ****************************************************
+      *     END OF COPYBOOK FOR NURS RURAL RATES         *
+      ****************************************************
+
+

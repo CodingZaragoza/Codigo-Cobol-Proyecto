@@ -1,0 +1,1499 @@
+000100 IDENTIFICATION DIVISION.                                         08/31/92
+000200 PROGRAM-ID.           PPCAL884.                                  PPCAL881
+000300 AUTHOR.              DDS TEAM.                                      LV005
+000400 REMARKS.      MODIFIED BY DDS TEAM.                                 CL**4
+000500*                       HCFA.                                        CL**4
+000600 DATE-COMPILED.                                                      CL**4
+000700 ENVIRONMENT DIVISION.                                               CL**4
+000800 CONFIGURATION SECTION.                                              CL**4
+000900 SOURCE-COMPUTER.            IBM-370.                                CL**4
+001000 OBJECT-COMPUTER.            IBM-370.                                CL**4
+001100 INPUT-OUTPUT  SECTION.                                              CL**4
+001200 FILE-CONTROL.                                                       CL**4
+001300                                                                     CL**4
+001400 DATA DIVISION.                                                      CL**4
+001500 FILE SECTION.                                                       CL**4
+001600                                                                     CL**4
+001700 WORKING-STORAGE SECTION.                                            CL**4
+001800 77  PAN-VALET PICTURE X(24) VALUE '005PPCAL884  08/31/92'.          CL**4
+001900 01  W-STORAGE-REF                  PIC X(46)  VALUE                 CL**4
+002000     'PPCAL884 - WORKING   STORAGE'.                                 CL**4
+002100 01  CAL-VERSION                    PIC X(05)  VALUE 'C88.4'.        CL**4
+002200 01  TABLES-LOADED-SW               PIC 9(01)  VALUE 0.              CL**4
+002300 01  EOF-SW                         PIC 9(01)  VALUE 0.              CL**4
+002400 01  SUBV                           PIC S9(04) COMP SYNC.            CL**4
+002500 01  R1                             PIC S9(04) COMP SYNC.            CL**4
+002600 01  R2                             PIC S9(04) COMP SYNC.            CL**4
+002700 01  R3                             PIC S9(04) COMP SYNC.            CL**4
+002800 01  R4                             PIC S9(04) COMP SYNC.            CL**4
+002900 01  U1                             PIC S9(04) COMP SYNC.            CL**4
+003000 01  U2                             PIC S9(04) COMP SYNC.            CL**4
+003100 01  U3                             PIC S9(04) COMP SYNC.            CL**4
+003200 01  BLEND-RURAL-PCT                PIC V9(09) COMP SYNC.            CL**4
+003300 01  HSP-FY                         PIC S9(04) COMP SYNC VALUE +1.   CL**4
+003400 01  MO-DIFF                        PIC  9(02).                      CL**4
+003500                                                                     CL**4
+003600 01  BLEND-TABLE.                                                    CL**4
+003700     05  BLEND-PCTS.                                                 CL**4
+003800         10  FILLER      PIC X(15)  VALUE '075050045025000'.         CL**4
+003900         10  FILLER      PIC X(15)  VALUE '025050055075100'.         CL**4
+004000     05  FILLER REDEFINES BLEND-PCTS.                                CL**4
+004100         10  HSP                    PIC 9(01)V9(02)  OCCURS 5.       CL**4
+004200         10  FSP                    PIC 9(01)V9(02)  OCCURS 5.       CL**4
+004300                                                                     CL**4
+004400 01  CAL-MO-DAYS.                                                    CL**4
+004500     05  CAL-YYMMDD.                                                 CL**4
+004600         10  T-YY                   PIC 99.                          CL**4
+004700         10  T-MM                   PIC 99.                          CL**4
+004800         10  T-DD                   PIC 99.                          CL**4
+004900     05  DAYS-MO.                                                    CL**4
+005000         10  FILLER                 PIC X(36)  VALUE                 CL**4
+005100            '000031059090120151181212243273304334'.                  CL**4
+005200     05  FILLER           REDEFINES DAYS-MO.                         CL**4
+005300         10  T-DAYS                 PIC 999 OCCURS 12.               CL**4
+005400                                                                     CL**4
+005500 01  HOLD-AREA.                                                      CL**4
+005600     02  HOLD-DATES.                                                 CL**4
+005700         05  HOLD-BILL-DATE.                                         CL**4
+005800             10  H-BILL-YY              PIC 9(02).                   CL**4
+005900             10  H-BILL-MM              PIC 9(02).                   CL**4
+006000             10  H-BILL-DD              PIC 9(02).                   CL**4
+006100         05  HOLD-BILL-DATE-9 REDEFINES HOLD-BILL-DATE               CL**4
+006200                                        PIC 9(06).                   CL**4
+006300         05  HOLD-BILL-DAYS             PIC 9(06).                   CL**4
+006400                                                                     CL**4
+006500         05  HOLD-PROV-DATE.                                         CL**4
+006600             10  H-PROV-YY              PIC 9(02).                   CL**4
+006700             10  H-PROV-MM              PIC 9(02).                   CL**4
+006800             10  H-PROV-DD              PIC 9(02).                   CL**4
+006900         05  HOLD-PROV-DATE-9 REDEFINES HOLD-PROV-DATE               CL**4
+007000                                        PIC 9(06).                   CL**4
+007100         05  HOLD-PROV-FYE-DATE.                                     CL**4
+007200             10  H-FYE-YY               PIC 9(02).                   CL**4
+007300             10  H-FYE-MMDD.                                         CL**4
+007400             15  H-FYE-MM           PIC 9(02).                       CL**4
+007500             15  H-FYE-DD           PIC 9(02).                       CL**4
+007600         05  HOLD-PROV-FYE-9  REDEFINES HOLD-PROV-FYE-DATE           CL**4
+007700                                        PIC 9(06).                   CL**4
+007800         05  HOLD-PROV-DAYS             PIC 9(06).                   CL**4
+007900                                                                     CL**4
+008000     02  H-IND-TEACHING                 PIC  9(06)V9(09).            CL**4
+008100     02  H-DSH-PERCENT                  PIC  V9(04).                 CL**4
+008200                                                                     CL**4
+008300     02  HOLD-PROV-MSA.                                              CL**4
+008400         05  H-PROV-BLANK               PIC X(02).                   CL**4
+008500         05  H-PROV-STATE               PIC X(02).                   CL**4
+008600                                                                     CL**4
+008700     02  HOLD-PPS-COMPONENTS.                                        CL**4
+008800         05  H-HSP-PART                 PIC 9(06)V9(09).             CL**4
+008900         05  H-FSP-PART                 PIC 9(06)V9(09).             CL**4
+009000         05  H-OUTLIER-PART             PIC 9(07)V9(09).             CL**4
+009100         05  H-OUTDAY-PART              PIC 9(07)V9(09).             CL**4
+009200         05  H-OUTCST-PART              PIC 9(07)V9(09).             CL**4
+009300         05  H-COV-DAYS                 PIC 9(03).                   CL**4
+009400         05  H-REG-DAYS                 PIC 9(03).                   CL**4
+009500         05  H-LTR-DAYS                 PIC 9(03).                   CL**4
+009600         05  H-WAGE-INDX                PIC 9(02)V9(04).             CL**4
+009700         05  H-ALOS                     PIC 9(02)V9(01).             CL**4
+009800         05  H-DAYS-CUTOFF              PIC 9(02)V9(01).             CL**4
+009900         05  H-DAYOUT-PCT               PIC 9(01)V9(02).             CL**4
+010000         05  H-CSTOUT-PCT               PIC 9(01)V9(02).             CL**4
+010100         05  H-CSTCHG-RATIO             PIC 9(01)V9(03).             CL**4
+010200         05  H-CST-MULTIPLE             PIC 9(01)V9(03).             CL**4
+010300         05  H-CST-THRESH               PIC 9(05)V9(02).             CL**4
+010400         05  H-LABOR-PCT                PIC 9(01)V9(04).             CL**4
+010500         05  H-NLABOR-PCT               PIC 9(01)V9(04).             CL**4
+010600                                                                     CL**4
+010700     02  HOLD-ADDITIONAL-VARIABLES.                                  CL**4
+010800         05  H-HSP-PCT                  PIC 9(01)V9(02).             CL**4
+010900         05  H-FSP-PCT                  PIC 9(01)V9(02).             CL**4
+011000         05  H-NAT-PCT                  PIC 9(01)V9(02).             CL**4
+011100         05  H-REG-PCT                  PIC 9(01)V9(02).             CL**4
+011200         05  H-CMI-ADJ-CPD              PIC 9(05)V9(02).             CL**4
+011300         05  H-UPDATE-FACTOR            PIC 9(01)V9(05).             CL**4
+011400         05  H-DRG-WT                   PIC 9(02)V9(04).             CL**4
+011500         05  H-NAT-LABOR                PIC 9(05)V9(02).             CL**4
+011600         05  H-NAT-NLABOR               PIC 9(05)V9(02).             CL**4
+011700         05  H-REG-LABOR                PIC 9(05)V9(02).             CL**4
+011800         05  H-REG-NLABOR               PIC 9(05)V9(02).             CL**4
+011900         05  H-COLA                     PIC 9(01)V9(03).             CL**4
+012000         05  H-INTERN-RATIO             PIC 9(01)V9(04).             CL**4
+012100         05  H-COST-OUTLIER             PIC 9(07)V9(09).             CL**4
+012200         05  H-BILL-COSTS               PIC 9(07)V9(09).             CL**4
+012300         05  H-DOLLAR-THRESHOLD         PIC 9(07)V9(09).             CL**4
+012400                                                                     CL**4
+012500     02  HOLD-WORK-VARIABLES.                                        CL**4
+012600         05  H-HSP-RATE                 PIC 9(06)V9(09).             CL**4
+012700         05  H-FSP-RATE                 PIC 9(06)V9(09).             CL**4
+012800         05  OUTLIER-FACT               PIC 9(01)V9(06).             CL**4
+012900                                                                     CL**4
+013000***************************************************************      CL**4
+013100*    LAYUP TABLE AREA                                         *      CL**4
+013200***************************************************************      CL**4
+013300 01  RATE-TABLE.                                                     CL**4
+013400     02  RATE-WORK.                                                  CL**4
+013500*RATE 871001 REGION-NATION/URBAN-RURAL/LABOR-NLABOR                  CL**4
+013600     05  FILLER PIC X(06) VALUE '871001'.                            CL**4
+013700     05  FILLER PIC X(30) VALUE ' 0237806 083725 0228844 067856'.    CL**4
+013800     05  FILLER PIC X(30) VALUE ' 0215625 080262 0219454 064020'.    CL**4
+013900     05  FILLER PIC X(30) VALUE ' 0228631 073403 0209887 055719'.    CL**4
+014000     05  FILLER PIC X(30) VALUE ' 0241197 086870 0212345 061812'.    CL**4
+014100     05  FILLER PIC X(30) VALUE ' 0219578 066666 0208012 051945'.    CL**4
+014200     05  FILLER PIC X(30) VALUE ' 0228493 079076 0201819 055442'.    CL**4
+014300     05  FILLER PIC X(30) VALUE ' 0229457 073356 0193847 051039'.    CL**4
+014400     05  FILLER PIC X(30) VALUE ' 0218932 078040 0196971 059055'.    CL**4
+014500     05  FILLER PIC X(30) VALUE ' 0214109 089549 0190692 066141'.    CL**4
+014600     05  FILLER PIC X(30) VALUE ' 0227565 080635 0206738 057251'.    CL**4
+014700     05  FILLER PIC X(30) VALUE ' 0199258 035826 0133054 025358'.    CL**4
+014800     05  FILLER PIC X(30) VALUE ' 0222501 074950 0222501 074950'.    CL**4
+014900*RATE 871121 REGION-NATION/URBAN-RURAL/LABOR-NLABOR                  CL**4
+015000     05  FILLER PIC X(06) VALUE '871121'.                            CL**4
+015100     05  FILLER PIC X(30) VALUE ' 0244227 085986 0235023 069688'.    CL**4
+015200     05  FILLER PIC X(30) VALUE ' 0221447 082429 0225379 065749'.    CL**4
+015300     05  FILLER PIC X(30) VALUE ' 0234804 075385 0215554 057223'.    CL**4
+015400     05  FILLER PIC X(30) VALUE ' 0247709 089215 0218078 063481'.    CL**4
+015500     05  FILLER PIC X(30) VALUE ' 0225507 068466 0213628 053347'.    CL**4
+015600     05  FILLER PIC X(30) VALUE ' 0234662 081211 0207268 056939'.    CL**4
+015700     05  FILLER PIC X(30) VALUE ' 0235652 075337 0199081 052417'.    CL**4
+015800     05  FILLER PIC X(30) VALUE ' 0224843 080147 0202289 060649'.    CL**4
+015900     05  FILLER PIC X(30) VALUE ' 0219890 091967 0195841 067927'.    CL**4
+016000     05  FILLER PIC X(30) VALUE ' 0233709 082812 0212320 058797'.    CL**4
+016100     05  FILLER PIC X(30) VALUE ' 0204638 036793 0136646 026043'.    CL**4
+016200     05  FILLER PIC X(30) VALUE ' 0228509 076974 0228509 076974'.    CL**4
+016300     02  RATE-TAB REDEFINES RATE-WORK.                               CL**4
+016400     05  RATE-PERIOD            OCCURS 2.                            CL**4
+016500         10  RATE-EFF-DATE      PIC X(06).                           CL**4
+016600         10  REG-NAT            OCCURS 12.                           CL**4
+016700             15  R-URBAN-RURAL  OCCURS 2.                            CL**4
+016800                 20  FILLER     PIC X(01).                           CL**4
+016900                 20  REG-LABOR  PIC 9(05)V9(02).                     CL**4
+017000                 20  FILLER     PIC X(01).                           CL**4
+017100                 20  REG-NLABOR PIC 9(04)V9(02).                     CL**4
+017200                                                                     CL**4
+017300 01  RATE-TABLE2.                                                    CL**4
+017400     02  RATE-WORK2.                                                 CL**4
+017500*RATE 880401 REGION-NATION/LURBAN-OURBAN-RURAL/LABOR-NLABOR          CL**4
+017600     05  FILLER PIC X(06) VALUE '880401'.                            CL**4
+017700     05  FILLER PIC X(45) VALUE                                      CL**4
+017800        ' 0240746 084760 0239560 084342 0235108 069714'.             CL**4
+017900     05  FILLER PIC X(45) VALUE                                      CL**4
+018000        ' 0218290 081254 0217215 080854 0225462 065773'.             CL**4
+018100     05  FILLER PIC X(45) VALUE                                      CL**4
+018200        ' 0231457 074310 0230317 073944 0215633 057245'.             CL**4
+018300     05  FILLER PIC X(45) VALUE                                      CL**4
+018400        ' 0244179 087944 0242976 087511 0218158 063504'.             CL**4
+018500     05  FILLER PIC X(45) VALUE                                      CL**4
+018600        ' 0222293 067490 0221198 067158 0213706 053367'.             CL**4
+018700     05  FILLER PIC X(45) VALUE                                      CL**4
+018800        ' 0231317 080053 0230178 079659 0207344 056960'.             CL**4
+018900     05  FILLER PIC X(45) VALUE                                      CL**4
+019000        ' 0232294 074263 0231150 073897 0199153 052436'.             CL**4
+019100     05  FILLER PIC X(45) VALUE                                      CL**4
+019200        ' 0221639 079005 0220546 078615 0202363 060672'.             CL**4
+019300     05  FILLER PIC X(45) VALUE                                      CL**4
+019400        ' 0216756 090656 0215688 090209 0195912 067951'.             CL**4
+019500     05  FILLER PIC X(45) VALUE                                      CL**4
+019600        ' 0230378 081632 0229244 081229 0212397 058819'.             CL**4
+019700     05  FILLER PIC X(45) VALUE                                      CL**4
+019800        ' 0201721 036269 0200728 036090 0136697 026052'.             CL**4
+019900     05  FILLER PIC X(45) VALUE                                      CL**4
+020000        ' 0225416 075714 0225416 075714 0225416 075714'.             CL**4
+020100*RATE 881001 REGION-NATION/LURBAN-OURBAN-RURAL/LABOR-NLABOR          CL**4
+020200     05  FILLER PIC X(06) VALUE '881001'.                            CL**4
+020300     05  FILLER PIC X(45) VALUE                                      CL**4
+020400        ' 0249276 087787 0246848 086932 0245967 072925'.             CL**4
+020500     05  FILLER PIC X(45) VALUE                                      CL**4
+020600        ' 0223944 083305 0221763 082494 0235850 068799'.             CL**4
+020700     05  FILLER PIC X(45) VALUE                                      CL**4
+020800        ' 0239057 076755 0236729 076007 0225181 059780'.             CL**4
+020900     05  FILLER PIC X(45) VALUE                                      CL**4
+021000        ' 0252039 090778 0249585 089894 0228173 066415'.             CL**4
+021100     05  FILLER PIC X(45) VALUE                                      CL**4
+021200        ' 0229431 069500 0227196 068823 0223178 055745'.             CL**4
+021300     05  FILLER PIC X(45) VALUE                                      CL**4
+021400        ' 0239122 082747 0236793 081941 0216919 059556'.             CL**4
+021500     05  FILLER PIC X(45) VALUE                                      CL**4
+021600        ' 0238408 076235 0236087 075492 0208031 054770'.             CL**4
+021700     05  FILLER PIC X(45) VALUE                                      CL**4
+021800        ' 0229260 081728 0227027 080933 0211498 063406'.             CL**4
+021900     05  FILLER PIC X(45) VALUE                                      CL**4
+022000        ' 0223084 093277 0220912 092368 0204607 070966'.             CL**4
+022100     05  FILLER PIC X(45) VALUE                                      CL**4
+022200        ' 0237422 084095 0235110 083275 0221989 061482'.             CL**4
+022300     05  FILLER PIC X(45) VALUE                                      CL**4
+022400        ' 0210903 037731 0208851 037363 0148355 027462'.             CL**4
+022500     05  FILLER PIC X(45) VALUE                                      CL**4
+022600        ' 0232677 078076 0232677 078076 0232677 078076'.             CL**4
+022700     02  RATE-TAB2 REDEFINES RATE-WORK2.                             CL**4
+022800     05  RATE-PERIOD2           OCCURS 2.                            CL**4
+022900         10  RATE-EFF-DATE2     PIC X(06).                           CL**4
+023000         10  REG-NAT2           OCCURS 12.                           CL**4
+023100             15  R-URBAN-RURAL2   OCCURS 3.                          CL**4
+023200                 20  FILLER       PIC X(01).                         CL**4
+023300                 20  REG-LABOR2   PIC 9(05)V9(02).                   CL**4
+023400                 20  FILLER       PIC X(01).                         CL**4
+023500                 20  REG-NLABOR2  PIC 9(04)V9(02).                   CL**4
+023600                                                                     CL**4
+023700 01  UPDT-ENTRIES               PIC 9(02) VALUE 6.                   CL**4
+023800 01  UPDT-TABLE.                                                     CL**4
+023900     02  UPDT-WORK.                                                  CL**4
+024000*UPDT 831001 UPDATING FACTORS EFFECTIVE DATE                         CL**4
+024100     05  FILLER PIC X(06) VALUE '831001'.                            CL**4
+024200     05  FILLER PIC X(18) VALUE 'UP01 830131 112509'.                CL**4
+024300     05  FILLER PIC X(18) VALUE 'UP02 830228 112570'.                CL**4
+024400     05  FILLER PIC X(18) VALUE 'UP03 830331 112631'.                CL**4
+024500     05  FILLER PIC X(18) VALUE 'UP04 830430 112693'.                CL**4
+024600     05  FILLER PIC X(18) VALUE 'UP05 830531 112754'.                CL**4
+024700     05  FILLER PIC X(18) VALUE 'UP06 830630 112815'.                CL**4
+024800     05  FILLER PIC X(18) VALUE 'UP07 830731 112877'.                CL**4
+024900     05  FILLER PIC X(18) VALUE 'UP08 830831 112938'.                CL**4
+025000     05  FILLER PIC X(18) VALUE 'UP09 820930 113570'.                CL**4
+025100     05  FILLER PIC X(18) VALUE 'UP10 821031 113265'.                CL**4
+025200     05  FILLER PIC X(18) VALUE 'UP11 821130 112961'.                CL**4
+025300     05  FILLER PIC X(18) VALUE 'UP12 821231 112448'.                CL**4
+025400*UPDT 840203 UPDATING FACTORS EFFECTIVE DATE                         CL**4
+025500     05  FILLER PIC X(06) VALUE '840203'.                            CL**4
+025600     05  FILLER PIC X(18) VALUE 'UP01 830131 112395'.                CL**4
+025700     05  FILLER PIC X(18) VALUE 'UP02 830228 112456'.                CL**4
+025800     05  FILLER PIC X(18) VALUE 'UP03 830331 112517'.                CL**4
+025900     05  FILLER PIC X(18) VALUE 'UP04 830430 112578'.                CL**4
+026000     05  FILLER PIC X(18) VALUE 'UP05 830531 112639'.                CL**4
+026100     05  FILLER PIC X(18) VALUE 'UP06 830630 112701'.                CL**4
+026200     05  FILLER PIC X(18) VALUE 'UP07 830731 112762'.                CL**4
+026300     05  FILLER PIC X(18) VALUE 'UP08 830831 112823'.                CL**4
+026400     05  FILLER PIC X(18) VALUE 'UP09 820930 113242'.                CL**4
+026500     05  FILLER PIC X(18) VALUE 'UP10 821031 112938'.                CL**4
+026600     05  FILLER PIC X(18) VALUE 'UP11 821130 112635'.                CL**4
+026700     05  FILLER PIC X(18) VALUE 'UP12 821231 112333'.                CL**4
+026800*UPDT 841001 UPDATING FACTORS EFFECTIVE DATE                         CL**4
+026900     05  FILLER PIC X(06) VALUE '841001'.                            CL**4
+027000     05  FILLER PIC X(18) VALUE 'UP01 830131 119197'.                CL**4
+027100     05  FILLER PIC X(18) VALUE 'UP02 830228 119318'.                CL**4
+027200     05  FILLER PIC X(18) VALUE 'UP03 830331 119438'.                CL**4
+027300     05  FILLER PIC X(18) VALUE 'UP04 830430 119559'.                CL**4
+027400     05  FILLER PIC X(18) VALUE 'UP05 830531 119680'.                CL**4
+027500     05  FILLER PIC X(18) VALUE 'UP06 830630 119801'.                CL**4
+027600     05  FILLER PIC X(18) VALUE 'UP07 830731 119922'.                CL**4
+027700     05  FILLER PIC X(18) VALUE 'UP08 830831 120044'.                CL**4
+027800     05  FILLER PIC X(18) VALUE 'UP09 820930 119898'.                CL**4
+027900     05  FILLER PIC X(18) VALUE 'UP10 821031 119624'.                CL**4
+028000     05  FILLER PIC X(18) VALUE 'UP11 821130 119349'.                CL**4
+028100     05  FILLER PIC X(18) VALUE 'UP12 821231 119076'.                CL**4
+028200*UPDT 860501 UPDATING FACTORS EFFECTIVE DATE  ----1.0050             CL**4
+028300     05  FILLER PIC X(06) VALUE '860501'.                            CL**4
+028400     05  FILLER PIC X(18) VALUE 'UP01 830131 119793'.                CL**4
+028500     05  FILLER PIC X(18) VALUE 'UP02 830228 119915'.                CL**4
+028600     05  FILLER PIC X(18) VALUE 'UP03 830331 120035'.                CL**4
+028700     05  FILLER PIC X(18) VALUE 'UP04 830430 120157'.                CL**4
+028800     05  FILLER PIC X(18) VALUE 'UP05 830531 120278'.                CL**4
+028900     05  FILLER PIC X(18) VALUE 'UP06 830630 120400'.                CL**4
+029000     05  FILLER PIC X(18) VALUE 'UP07 830731 120522'.                CL**4
+029100     05  FILLER PIC X(18) VALUE 'UP08 830831 120644'.                CL**4
+029200     05  FILLER PIC X(18) VALUE 'UP09 820930 120497'.                CL**4
+029300     05  FILLER PIC X(18) VALUE 'UP10 821031 120222'.                CL**4
+029400     05  FILLER PIC X(18) VALUE 'UP11 821130 119946'.                CL**4
+029500     05  FILLER PIC X(18) VALUE 'UP12 821231 119671'.                CL**4
+029600*UPDT 861001 UPDATING FACTORS EFFECTIVE DATE  ----1.0115             CL**4
+029700     05  FILLER PIC X(06) VALUE '861001'.                            CL**4
+029800     05  FILLER PIC X(18) VALUE 'UP01 830131 121171'.                CL**4
+029900     05  FILLER PIC X(18) VALUE 'UP02 830228 121294'.                CL**4
+030000     05  FILLER PIC X(18) VALUE 'UP03 830331 121415'.                CL**4
+030100     05  FILLER PIC X(18) VALUE 'UP04 830430 121539'.                CL**4
+030200     05  FILLER PIC X(18) VALUE 'UP05 830531 121661'.                CL**4
+030300     05  FILLER PIC X(18) VALUE 'UP06 830630 121785'.                CL**4
+030400     05  FILLER PIC X(18) VALUE 'UP07 830731 121908'.                CL**4
+030500     05  FILLER PIC X(18) VALUE 'UP08 830831 122031'.                CL**4
+030600     05  FILLER PIC X(18) VALUE 'UP09 820930 121883'.                CL**4
+030700     05  FILLER PIC X(18) VALUE 'UP10 821031 121605'.                CL**4
+030800     05  FILLER PIC X(18) VALUE 'UP11 821130 121325'.                CL**4
+030900     05  FILLER PIC X(18) VALUE 'UP12 821231 121047'.                CL**4
+031000*UPDT 871121 UPDATING FACTORS EFFECTIVE DATE  ----1.0270             CL**4
+031100     05  FILLER PIC X(06) VALUE '871121'.                            CL**4
+031200     05  FILLER PIC X(18) VALUE 'UP01 830131 124443'.                CL**4
+031300     05  FILLER PIC X(18) VALUE 'UP02 830228 124569'.                CL**4
+031400     05  FILLER PIC X(18) VALUE 'UP03 830331 124693'.                CL**4
+031500     05  FILLER PIC X(18) VALUE 'UP04 830430 124821'.                CL**4
+031600     05  FILLER PIC X(18) VALUE 'UP05 830531 124946'.                CL**4
+031700     05  FILLER PIC X(18) VALUE 'UP06 830630 125073'.                CL**4
+031800     05  FILLER PIC X(18) VALUE 'UP07 830731 125200'.                CL**4
+031900     05  FILLER PIC X(18) VALUE 'UP08 830831 125326'.                CL**4
+032000     05  FILLER PIC X(18) VALUE 'UP09 820930 125174'.                CL**4
+032100     05  FILLER PIC X(18) VALUE 'UP10 821031 124888'.                CL**4
+032200     05  FILLER PIC X(18) VALUE 'UP11 821130 124601'.                CL**4
+032300     05  FILLER PIC X(18) VALUE 'UP12 821231 124315'.                CL**4
+032400     02  UPDATE-TABLE REDEFINES UPDT-WORK.                           CL**4
+032500     05  UPDT-PERIOD             OCCURS 6.                           CL**4
+032600         10  UPDT-EFF-DATE       PIC X(06).                          CL**4
+032700         10  UPDT-MONTH          OCCURS 12.                          CL**4
+032800             15  FILLER          PIC X(05).                          CL**4
+032900             15  UP-BASE-DATE    PIC X(06).                          CL**4
+033000             15  FILLER          PIC X(01).                          CL**4
+033100             15  UPDATE-FACTOR   PIC 9(01)V9(05).                    CL**4
+033200                                                                     CL**4
+033300 01  UPDT-ENTRIES2              PIC 9(02) VALUE 4.                   CL**4
+033400 01  UPDT-TABLE2.                                                    CL**4
+033500     02  UPDT-WORK2.                                                 CL**4
+033600*UPDT 880401 UPDATING FACTORS EFFECTIVE DATE                         CL**4
+033700*     LURBAN=1.0150 OURBAN=1.0100 RURAL=1.0300                       CL**4
+033800     05  FILLER PIC X(06) VALUE '880401'.                            CL**4
+033900     05  FILLER PIC X(27) VALUE '830131 122989 122383 124806'.       CL**4
+034000     05  FILLER PIC X(27) VALUE '830228 123113 122507 124933'.       CL**4
+034100     05  FILLER PIC X(27) VALUE '830331 123236 122629 125057'.       CL**4
+034200     05  FILLER PIC X(27) VALUE '830430 123362 122754 125185'.       CL**4
+034300     05  FILLER PIC X(27) VALUE '830531 123486 122878 125311'.       CL**4
+034400     05  FILLER PIC X(27) VALUE '830630 123612 123003 125439'.       CL**4
+034500     05  FILLER PIC X(27) VALUE '830731 123737 123127 125565'.       CL**4
+034600     05  FILLER PIC X(27) VALUE '830831 123861 123251 125692'.       CL**4
+034700     05  FILLER PIC X(27) VALUE '820930 123711 123102 125539'.       CL**4
+034800     05  FILLER PIC X(27) VALUE '821031 123429 122821 125253'.       CL**4
+034900     05  FILLER PIC X(27) VALUE '821130 123145 122538 124965'.       CL**4
+035000     05  FILLER PIC X(27) VALUE '821231 122863 122257 124678'.       CL**4
+035100*UPDT 881001 UPDATING FACTORS EFFECTIVE DATE                         CL**4
+035200*     LURBAN=1.0340 OURBAN=1.0290 RURAL=1.0390                       CL**4
+035300     05  FILLER PIC X(06) VALUE '881001'.                            CL**4
+035400     05  FILLER PIC X(27) VALUE '830131 127171 125932 129673'.       CL**4
+035500     05  FILLER PIC X(27) VALUE '830228 127299 126060 129805'.       CL**4
+035600     05  FILLER PIC X(27) VALUE '830331 127426 126185 129934'.       CL**4
+035700     05  FILLER PIC X(27) VALUE '830430 127556 126314 130067'.       CL**4
+035800     05  FILLER PIC X(27) VALUE '830531 127685 126441 130198'.       CL**4
+035900     05  FILLER PIC X(27) VALUE '830630 127815 126570 130331'.       CL**4
+036000     05  FILLER PIC X(27) VALUE '830731 127944 126698 130462'.       CL**4
+036100     05  FILLER PIC X(27) VALUE '830831 128072 126825 130594'.       CL**4
+036200     05  FILLER PIC X(27) VALUE '820930 127917 126672 130435'.       CL**4
+036300     05  FILLER PIC X(27) VALUE '821031 127626 126383 130138'.       CL**4
+036400     05  FILLER PIC X(27) VALUE '821130 127332 126092 129839'.       CL**4
+036500     05  FILLER PIC X(27) VALUE '821231 127040 125802 129540'.       CL**4
+036600*UPDT 891001 UPDATING FACTORS EFFECTIVE DATE                         CL**4
+036700*     LURBAN=1.0550 OURBAN=1.0550 RURAL=1.0550 (OCT - DEC)           CL**4
+036800     05  FILLER PIC X(06) VALUE '891001'.                            CL**4
+036900     05  FILLER PIC X(27) VALUE '830131 134165 132858 136805'.       CL**4
+037000     05  FILLER PIC X(27) VALUE '830228 134300 132993 136944'.       CL**4
+037100     05  FILLER PIC X(27) VALUE '830331 134434 133125 137080'.       CL**4
+037200     05  FILLER PIC X(27) VALUE '830430 134572 133261 137221'.       CL**4
+037300     05  FILLER PIC X(27) VALUE '830531 134708 133395 137359'.       CL**4
+037400     05  FILLER PIC X(27) VALUE '830630 134845 133531 137499'.       CL**4
+037500     05  FILLER PIC X(27) VALUE '830731 134981 133666 137637'.       CL**4
+037600     05  FILLER PIC X(27) VALUE '830831 135116 133800 137777'.       CL**4
+037700     05  FILLER PIC X(27) VALUE '820930 134952 133639 137609'.       CL**4
+037800     05  FILLER PIC X(27) VALUE '821031 134645 133334 137296'.       CL**4
+037900     05  FILLER PIC X(27) VALUE '821130 134335 133027 136980'.       CL**4
+038000     05  FILLER PIC X(27) VALUE '821231 134027 132721 136665'.       CL**4
+038100*UPDT 900101 UPDATING FACTORS EFFECTIVE DATE                         CL**4
+038200*     LURBAN=1.0562 OURBAN=1.0497 RURAL=1.0972 (JAN - SEP)           CL**4
+038300     05  FILLER PIC X(06) VALUE '900101'.                            CL**4
+038400     05  FILLER PIC X(27) VALUE '830131 134318 132191 142277'.       CL**4
+038500     05  FILLER PIC X(27) VALUE '830228 134453 132325 142422'.       CL**4
+038600     05  FILLER PIC X(27) VALUE '830331 134587 132456 142564'.       CL**4
+038700     05  FILLER PIC X(27) VALUE '830430 134725 132592 142710'.       CL**4
+038800     05  FILLER PIC X(27) VALUE '830531 134861 132725 142853'.       CL**4
+038900     05  FILLER PIC X(27) VALUE '830630 134998 132861 142999'.       CL**4
+039000     05  FILLER PIC X(27) VALUE '830731 135134 132995 143143'.       CL**4
+039100     05  FILLER PIC X(27) VALUE '830831 135270 133128 143288'.       CL**4
+039200     05  FILLER PIC X(27) VALUE '820930 135106 132968 143113'.       CL**4
+039300     05  FILLER PIC X(27) VALUE '821031 134799 132664 142787'.       CL**4
+039400     05  FILLER PIC X(27) VALUE '821130 134488 132359 142459'.       CL**4
+039500     05  FILLER PIC X(27) VALUE '821231 134180 132054 142131'.       CL**4
+039600     02  UPDATE-TABLE2 REDEFINES UPDT-WORK2.                         CL**4
+039700     05  UPDT-PERIOD2             OCCURS 4.                          CL**4
+039800         10  UPDT-EFF-DATE2       PIC X(06).                         CL**4
+039900         10  UPDT-MONTH2          OCCURS 12.                         CL**4
+040000             15  UP-BASE-DATE2    PIC X(06).                         CL**4
+040100             15  UP-L-O-R2        OCCURS 3.                          CL**4
+040200                 20  FILLER           PIC X(01).                     CL**4
+040300                 20  UPDATE-FACTOR2   PIC 9(01)V9(05).               CL**4
+040400                                                                     CL**4
+040500 01  DRG-TABLE.                                                      CL**4
+040600     05  D-TAB.                                                      CL**4
+040700         10  FILLER                  PIC X(06) VALUE                 CL**4
+040800        '871001'.                                                    CL**4
+040900         10  FILLER                  PIC X(44) VALUE                 CL**4
+041000        '03443414232038160126310291831273102590412530'.              CL**4
+041100         10  FILLER                  PIC X(44) VALUE                 CL**4
+041200        '01568506721004393020070252691122900736703419'.              CL**4
+041300         10  FILLER                  PIC X(44) VALUE                 CL**4
+041400        '01263907125012123076260077290522300945906925'.              CL**4
+041500         10  FILLER                  PIC X(44) VALUE                 CL**4
+041600        '00932407225012429075250062930421701038406625'.              CL**4
+041700         10  FILLER                  PIC X(44) VALUE                 CL**4
+041800        '00635804720009557063240061580452201622007726'.              CL**4
+041900         10  FILLER                  PIC X(44) VALUE                 CL**4
+042000        '01361307125007055046180095050452200922805223'.              CL**4
+042100         10  FILLER                  PIC X(44) VALUE                 CL**4
+042200        '00538603615005635025130147530432201169405624'.              CL**4
+042300         10  FILLER                  PIC X(44) VALUE                 CL**4
+042400        '00585603420003539020080065500422200400502813'.              CL**4
+042500         10  FILLER                  PIC X(44) VALUE                 CL**4
+042600        '00245701605012038060240060350402100682003110'.              CL**4
+042700         10  FILLER                  PIC X(44) VALUE                 CL**4
+042800        '00710403014003779022090051670180500467502007'.              CL**4
+042900         10  FILLER                  PIC X(44) VALUE                 CL**4
+043000        '00365701604006600025090037270371400635205620'.              CL**4
+043100         10  FILLER                  PIC X(44) VALUE                 CL**4
+043200        '00559503314006195038220036110261300401802913'.              CL**4
+043300         10  FILLER                  PIC X(44) VALUE                 CL**4
+043400        '02892311930006681028090054240230800703302711'.              CL**4
+043500         10  FILLER                  PIC X(44) VALUE                 CL**4
+043600        '00615902310006889032110045980180600447101807'.              CL**4
+043700         10  FILLER                  PIC X(44) VALUE                 CL**4
+043800        '00790703220003097015030038450170500261601503'.              CL**4
+043900         10  FILLER                  PIC X(44) VALUE                 CL**4
+044000        '00540102111003089013030115380462301054804723'.              CL**4
+044100         10  FILLER                  PIC X(44) VALUE                 CL**4
+044200        '00460003512004272032120099640441900721705117'.              CL**4
+044300         10  FILLER                  PIC X(44) VALUE                 CL**4
+044400        '00536604114005345032130060260391400489503115'.              CL**4
+044500         10  FILLER                  PIC X(44) VALUE                 CL**4
+044600        '00740403722003427021090302581233002088508827'.              CL**4
+044700         10  FILLER                  PIC X(44) VALUE                 CL**4
+044800        '01097004422014817090270207770972801334107726'.              CL**4
+044900         10  FILLER                  PIC X(44) VALUE                 CL**4
+045000        '01103207025011899065240096980652500537204317'.              CL**4
+045100         10  FILLER                  PIC X(44) VALUE                 CL**4
+045200        '01145106825007720049230156910612401126306324'.              CL**4
+045300         10  FILLER                  PIC X(44) VALUE                 CL**4
+045400        '01286207325008961061190094480492301282106825'.              CL**4
+045500         10  FILLER                  PIC X(44) VALUE                 CL**4
+045600        '00826405123013954074250075710522100980406020'.              CL**4
+045700         10  FILLER                  PIC X(44) VALUE                 CL**4
+045800        '00715104915005744030110078030421900523802911'.              CL**4
+045900         10  FILLER                  PIC X(44) VALUE                 CL**4
+046000        '00958505423006625040191192252584407342417435'.              CL**4
+046100         10  FILLER                  PIC X(44) VALUE                 CL**4
+046200        '05781113231055415142320428581112905370311029'.              CL**4
+046300         10  FILLER                  PIC X(44) VALUE                 CL**4
+046400        '03914207425036718127310226390932701891105924'.              CL**4
+046500         10  FILLER                  PIC X(44) VALUE                 CL**4
+046600        '02459014733017040103280405161293102769406625'.              CL**4
+046700         10  FILLER                  PIC X(44) VALUE                 CL**4
+046800        '01226104522017563030140086920432202477611129'.              CL**4
+046900         10  FILLER                  PIC X(44) VALUE                 CL**4
+047000        '01716209427012002073250139790292101180604522'.              CL**4
+047100         10  FILLER                  PIC X(44) VALUE                 CL**4
+047200        '00688402510030575172350102220622400851308022'.              CL**4
+047300         10  FILLER                  PIC X(44) VALUE                 CL**4
+047400        '01571503021008776056240058620402200797604719'.              CL**4
+047500         10  FILLER                  PIC X(44) VALUE                 CL**4
+047600        '00599703714006088044170092210522300610303815'.              CL**4
+047700         10  FILLER                  PIC X(44) VALUE                 CL**4
+047800        '00631503321008535048200059120361400668904114'.              CL**4
+047900         10  FILLER                  PIC X(44) VALUE                 CL**4
+048000        '00680104417005244034130055000301101144905824'.              CL**4
+048100         10  FILLER                  PIC X(44) VALUE                 CL**4
+048200        '00668903817034379156340213441202703237614533'.              CL**4
+048300         10  FILLER                  PIC X(44) VALUE                 CL**4
+048400        '01834110724026797127310148850892401598808426'.              CL**4
+048500         10  FILLER                  PIC X(44) VALUE                 CL**4
+048600        '01056606723037961134310181950892700838206021'.              CL**4
+048700         10  FILLER                  PIC X(44) VALUE                 CL**4
+048800        '00932405323005449033130114540602300681004014'.              CL**4
+048900         10  FILLER                  PIC X(44) VALUE                 CL**4
+049000        '00754104016005004028090077170391102401411029'.              CL**4
+049100         10  FILLER                  PIC X(44) VALUE                 CL**4
+049200        '01467508118014954074230086510481201406704823'.              CL**4
+049300         10  FILLER                  PIC X(44) VALUE                 CL**4
+049400        '00668902612027316115290140180672501186106925'.              CL**4
+049500         10  FILLER                  PIC X(44) VALUE                 CL**4
+049600        '00704904422009878056220066000441500996406124'.              CL**4
+049700         10  FILLER                  PIC X(44) VALUE                 CL**4
+049800        '00783405518005838043140104160712500915005824'.              CL**4
+049900         10  FILLER                  PIC X(44) VALUE                 CL**4
+050000        '00541504116007224049190052520371400422302413'.              CL**4
+050100         10  FILLER                  PIC X(44) VALUE                 CL**4
+050200        '00753004322004112029110045400220800914404923'.              CL**4
+050300         10  FILLER                  PIC X(44) VALUE                 CL**4
+050400        '00496603015008147039150468811673503862514432'.              CL**4
+050500         10  FILLER                  PIC X(44) VALUE                 CL**4
+050600        '03025214532018505100280238541243001689810022'.              CL**4
+050700         10  FILLER                  PIC X(44) VALUE                 CL**4
+050800        '01876809827011152070150226931233002473109427'.              CL**4
+050900         10  FILLER                  PIC X(44) VALUE                 CL**4
+051000        '02393308326012075072250104220642401026906124'.              CL**4
+051100         10  FILLER                  PIC X(44) VALUE                 CL**4
+051200        '01213206725006806042220092430562300581603815'.              CL**4
+051300         10  FILLER                  PIC X(44) VALUE                 CL**4
+051400        '02414512328021776135320161041112701376406217'.              CL**4
+051500         10  FILLER                  PIC X(44) VALUE                 CL**4
+051600        '01846010529021385128310137680902601597308426'.              CL**4
+051700         10  FILLER                  PIC X(44) VALUE                 CL**4
+051800        '02815512931016224090270101860592000924205323'.              CL**4
+051900         10  FILLER                  PIC X(44) VALUE                 CL**4
+052000        '01452306324007995033180112020522200658803112'.              CL**4
+052100         10  FILLER                  PIC X(44) VALUE                 CL**4
+052200        '00677503214013570068250068780341600820103214'.              CL**4
+052300         10  FILLER                  PIC X(44) VALUE                 CL**4
+052400        '00520202108008868046230083460352100860303121'.              CL**4
+052500         10  FILLER                  PIC X(44) VALUE                 CL**4
+052600        '01726709027009057049230120600822600903607225'.              CL**4
+052700         10  FILLER                  PIC X(44) VALUE                 CL**4
+052800        '00595904823016579107290095500752601093207325'.              CL**4
+052900         10  FILLER                  PIC X(44) VALUE                 CL**4
+053000        '00664405422014100089270066940532300730505724'.              CL**4
+053100         10  FILLER                  PIC X(44) VALUE                 CL**4
+053200        '00534504419005769046180054070391800609704519'.              CL**4
+053300         10  FILLER                  PIC X(44) VALUE                 CL**4
+053400        '00683004422006721045220041480251100349601807'.              CL**4
+053500         10  FILLER                  PIC X(44) VALUE                 CL**4
+053600        '00790905924004557038180046380291500658504121'.              CL**4
+053700         10  FILLER                  PIC X(44) VALUE                 CL**4
+053800        '01044806618008462053130100460522300601003011'.              CL**4
+053900         10  FILLER                  PIC X(44) VALUE                 CL**4
+054000        '00620402709004312020060259671533301617910829'.              CL**4
+054100         10  FILLER                  PIC X(44) VALUE                 CL**4
+054200        '01390906825006865034190062480341500593402412'.              CL**4
+054300         10  FILLER                  PIC X(44) VALUE                 CL**4
+054400        '01517707626006834034180120170872701037507425'.              CL**4
+054500         10  FILLER                  PIC X(44) VALUE                 CL**4
+054600        '00724706024010494064240063950382200524502916'.              CL**4
+054700         10  FILLER                  PIC X(44) VALUE                 CL**4
+054800        '00969507225007063058190073670461600619704522'.              CL**4
+054900         10  FILLER                  PIC X(44) VALUE                 CL**4
+055000        '00430603416003424022090076820552400479503718'.              CL**4
+055100         10  FILLER                  PIC X(44) VALUE                 CL**4
+055200        '02991917536027063120300222741383202001808226'.              CL**4
+055300         10  FILLER                  PIC X(44) VALUE                 CL**4
+055400        '01147005420008428040130049910230802602712030'.              CL**4
+055500         10  FILLER                  PIC X(44) VALUE                 CL**4
+055600        '01169806224007493061210072280451900925906024'.              CL**4
+055700         10  FILLER                  PIC X(44) VALUE                 CL**4
+055800        '00579104517007065032200082710472301086206925'.              CL**4
+055900         10  FILLER                  PIC X(44) VALUE                 CL**4
+056000        '00675804722038463165350277471283102365110328'.              CL**4
+056100         10  FILLER                  PIC X(44) VALUE                 CL**4
+056200        '01366506224014376082260091210561701535407325'.              CL**4
+056300         10  FILLER                  PIC X(44) VALUE                 CL**4
+056400        '00862004322009026046220056810291100824604421'.              CL**4
+056500         10  FILLER                  PIC X(44) VALUE                 CL**4
+056600        '00528602812004323023110236350822601284006224'.              CL**4
+056700         10  FILLER                  PIC X(44) VALUE                 CL**4
+056800        '00354201807010441060240057770321901023006825'.              CL**4
+056900         10  FILLER                  PIC X(44) VALUE                 CL**4
+057000        '00731605518006829043140070200361600513902409'.              CL**4
+057100         10  FILLER                  PIC X(44) VALUE                 CL**4
+057200        '00678904520004553032130055110332100626603918'.              CL**4
+057300         10  FILLER                  PIC X(44) VALUE                 CL**4
+057400        '00443102612002788016050090500532300591303618'.              CL**4
+057500         10  FILLER                  PIC X(44) VALUE                 CL**4
+057600        '00688703419019237116280140800941901077406619'.              CL**4
+057700         10  FILLER                  PIC X(44) VALUE                 CL**4
+057800        '00750505011007865035220059300281300433502407'.              CL**4
+057900         10  FILLER                  PIC X(44) VALUE                 CL**4
+058000        '01029404315004494021080037880170401130205724'.              CL**4
+058100         10  FILLER                  PIC X(44) VALUE                 CL**4
+058200        '00828404321009360057240050910271400658803820'.              CL**4
+058300         10  FILLER                  PIC X(44) VALUE                 CL**4
+058400        '00405902309006734048160033330160500488602914'.              CL**4
+058500         10  FILLER                  PIC X(44) VALUE                 CL**4
+058600        '02299712831015482091230099290671300798305714'.              CL**4
+058700         10  FILLER                  PIC X(44) VALUE                 CL**4
+058800        '02159111429012941081200090250631200695703619'.              CL**4
+058900         10  FILLER                  PIC X(44) VALUE                 CL**4
+059000        '00644202713004095017050065970351600426202208'.              CL**4
+059100         10  FILLER                  PIC X(44) VALUE                 CL**4
+059200        '01906009628010916061240054810321800830805722'.              CL**4
+059300         10  FILLER                  PIC X(44) VALUE                 CL**4
+059400        '00492003317010303065190071640500900492703412'.              CL**4
+059500         10  FILLER                  PIC X(44) VALUE                 CL**4
+059600        '00321202406005641031070068170441500352002511'.              CL**4
+059700         10  FILLER                  PIC X(44) VALUE                 CL**4
+059800        '00988202921007787042090028430210900312401908'.              CL**4
+059900         10  FILLER                  PIC X(44) VALUE                 CL**4
+060000        '00369401605001309012020039640331700351202613'.              CL**4
+060100         10  FILLER                  PIC X(44) VALUE                 CL**4
+060200        '01223203722036480179360182671333101157108627'.              CL**4
+060300         10  FILLER                  PIC X(44) VALUE                 CL**4
+060400        '01412707425009416042200022180310703525212831'.              CL**4
+060500         10  FILLER                  PIC X(44) VALUE                 CL**4
+060600        '01520609127012250048230072640442200344101707'.              CL**4
+060700         10  FILLER                  PIC X(44) VALUE                 CL**4
+060800        '01014505523012115064240068300392102690011229'.              CL**4
+060900         10  FILLER                  PIC X(44) VALUE                 CL**4
+061000        '02087109928009252046230152220792600808504823'.              CL**4
+061100         10  FILLER                  PIC X(44) VALUE                 CL**4
+061200        '01040704923027146125300144990742500895504222'.              CL**4
+061300         10  FILLER                  PIC X(44) VALUE                 CL**4
+061400        '01080207125004742024100049190291300395402008'.              CL**4
+061500         10  FILLER                  PIC X(44) VALUE                 CL**4
+061600        '01238507125008128051230350671453201589407425'.              CL**4
+061700         10  FILLER                  PIC X(44) VALUE                 CL**4
+061800        '00934605021009743067250097780592400694904717'.              CL**4
+061900         10  FILLER                  PIC X(44) VALUE                 CL**4
+062000        '00625504416006274034180153330802602217612230'.              CL**4
+062100         10  FILLER                  PIC X(44) VALUE                 CL**4
+062200        '00600404321006580060240063150562400730506124'.              CL**4
+062300         10  FILLER                  PIC X(44) VALUE                 CL**4
+062400        '00886807125009329088270071340582400709704322'.              CL**4
+062500         10  FILLER                  PIC X(44) VALUE                 CL**4
+062600        '00423203220008149059240059030502300978809127'.              CL**4
+062700         10  FILLER                  PIC X(44) VALUE                 CL**4
+062800        '01330613732000000000000175230722502249809628'.              CL**4
+062900         10  FILLER                  PIC X(44) VALUE                 CL**4
+063000        '00718502414019218059240121690432200820705323'.              CL**4
+063100         10  FILLER                  PIC X(44) VALUE                 CL**4
+063200        '00518303717004796024100047030271200347002909'.              CL**4
+063300         10  FILLER                  PIC X(44) VALUE                 CL**4
+063400        '00792204522004917030140059070341400897604623'.              CL**4
+063500         10  FILLER                  PIC X(44) VALUE                 CL**4
+063600        '00513703317009067045220046920291401981104623'.              CL**4
+063700         10  FILLER                  PIC X(44) VALUE                 CL**4
+063800        '02531704122037113161340179641002801049506424'.              CL**4
+063900         10  FILLER                  PIC X(44) VALUE                 CL**4
+064000        '00719802417017517137320076330532300474003415'.              CL**4
+064100         10  FILLER                  PIC X(44) VALUE                 CL**4
+064200        '00317201806005383028200047230292102467909928'.              CL**4
+064300         10  FILLER                  PIC X(44) VALUE                 CL**4
+064400        '00000000000000000000000408961813610729617135'.              CL**4
+064500         10  FILLER                  PIC X(44) VALUE                 CL**4
+064600        '02710708326118772333510317570882700000000000'.              CL**4
+064700         10  FILLER                  PIC X(44) VALUE                 CL**4
+064800        '00000000000000000000000000000000000000000000'.              CL**4
+064900     05  DRGX-TAB REDEFINES D-TAB.                                   CL**4
+065000     10  DRGX-PERIOD                OCCURS 1                         CL**4
+065100                                    INDEXED BY DX1.                  CL**4
+065200         15  DRGX-EFF-DATE          PIC X(06).                       CL**4
+065300         15  DRG-DATA               OCCURS 480                       CL**4
+065400                                    INDEXED BY DX2.                  CL**4
+065500             20  DRG-WT             PIC 9(02)V9(04).                 CL**4
+065600             20  DRG-ALOS           PIC 9(02)V9(01).                 CL**4
+065700             20  DRG-DAYS-CUTOFF    PIC 9(02).                       CL**4
+065800                                                                     CL**4
+065900                                                                     CL**4
+066000 LINKAGE SECTION.                                                    CL**4
+066100                                                                     CL**4
+066200***************************************************************      CL**4
+066300*                 * * * * * * * * *                           *      CL**4
+066400*    REVIEW CODES ARE USED TO DIRECT THE PPCAL  SUBROUTINE    *      CL**4
+066500*    IN HOW TO PAY THE BILL.                                  *      CL**4
+066600*         REVIEW-CODE:                                        *      CL**4
+066700*            00 = PAY-WITH-OUTLIER.                           *      CL**4
+066800*                 WILL CALCULATE THE STANDARD PAYMENT.        *      CL**4
+066900*                 WILL ALSO ATTEMPT TO PAY DAY AND COST       *      CL**4
+067000*                 OUTLIERS. PPS-RTC CODES 01 AND 02 NOW SENT  *      CL**4
+067100*                 TO THE PRO FOR POST PAYMENT REVIEW.       . *      CL**4
+067200*            01 = PAY-DAYS-OUTLIER.                           *      CL**4
+067300*                 WILL CALCULATE THE STANDARD PAYMENT. WILL   *      CL**4
+067400*                 ALSO CALCULATE THE DAY OUTLIER PORTION OF   *      CL**4
+067500*                 THE PAYMENT IF THE COVERED DAYS EXCEED THE  *      CL**4
+067600*                 OUTLIER CUTOFF FOR THE DRG.                 *      CL**4
+067700*            02 = PAY-COST-OUTLIER.                           *      CL**4
+067800*                 WILL CALCULATE THE STANDARD PAYMENT. WILL   *      CL**4
+067900*                 ALSO CALCULATE THE COST OUTLIER PORTION OF  *      CL**4
+068000*                 THE PAYMENT IF THE ADJUSTED CHARGES ON THE  *      CL**4
+068100*                 BILL EXCEED THE COST THRESHOLD.             *      CL**4
+068200*                 IF  LENGTH OF STAY EXCEED OUTLIER CUTOFF, NO*      CL**4
+068300*                 PAYMENT WILL BE MADE AND A RETURN-CODE OF   *      CL**4
+068400*                 60 WILL BE RETURNED.                        *      CL**4
+068500*            03 = PAY-PERDIEM-DAYS.                           *      CL**4
+068600*                 WILL CALCULATE A PERDIEM PAYMENT BASED ON   *      CL**4
+068700*                 THE STANDARD PAYMENT IF THE COVERED DAYS    *      CL**4
+068800*                 ARE LESS THAN THE AVERAGE LENGTH OF STAY    *      CL**4
+068900*                 FOR THE DRG. IF COVERED DAYS EQUAL OR       *      CL**4
+069000*                 EXCEED THE AVERAGE LENGTH OF STAY, THE      *      CL**4
+069100*                 STANDARD PAYMENT IS CALCULATED.             *      CL**4
+069200*                 TRANSFERS AFTER 093084 POTENTIALLY          *      CL**4
+069300*                 ELIGABLE FOR COST OUTLIER PAYMENT.          *      CL**4
+069400*            04 = PAY-AVG-STAY-ONLY.                          *      CL**4
+069500*                 WILL CALCULATE THE STANDARD PAYMENT.        *      CL**4
+069600*                 WILL NOT TEST FOR DAYS OR COST OUTLIERS.    *      CL**4
+069700*            05 = PAY-XFER-WITH-COST                          *      CL**4
+069800*                 PAY TRANSFER WITH COST OUTLIER APPROVED.    *      CL**4
+069900*            06 = PAY-XFER-NO-COST                            *      CL**4
+070000*                 PAY TRANSFER WITH COST OUTLIER DENIED.      *      CL**4
+070100*            07 = PAY-WITHOUT-COST                            *      CL**4
+070200*                 PAY WITHOUT COST OUTLIER.                   *      CL**4
+070300*                                                             *      CL**4
+070400***************************************************************      CL**4
+070500 01  BILL-DATA.                                                      CL**4
+070600         10  B-PROVIDER-NO          PIC X(06).                       CL**4
+070700         10  B-REVIEW-CODE          PIC 9(02).                       CL**4
+070800             88  VALID-REVIEW-CODE  VALUE 00 THRU 07.                CL**4
+070900             88  PAY-WITH-OUTLIER   VALUE 00 07.                     CL**4
+071000             88  PAY-DAYS-OUTLIER   VALUE 01.                        CL**4
+071100             88  PAY-COST-OUTLIER   VALUE 02.                        CL**4
+071200             88  PAY-PERDIEM-DAYS   VALUE 03.                        CL**4
+071300             88  PAY-AVG-STAY-ONLY  VALUE 04.                        CL**4
+071400             88  PAY-XFER-WITH-COST VALUE 05.                        CL**4
+071500             88  PAY-XFER-NO-COST   VALUE 06.                        CL**4
+071600             88  PAY-WITHOUT-COST   VALUE 07.                        CL**4
+071700         10  B-DRG                  PIC 9(03).                       CL**4
+071800         10  B-LOS                  PIC 9(03).                       CL**4
+071900         10  B-COVERED-DAYS         PIC 9(03).                       CL**4
+072000         10  B-LTR-DAYS             PIC 9(02).                       CL**4
+072100         10  B-DISCHARGE-DATE.                                       CL**4
+072200             15  B-DISCHG-MM        PIC 9(02).                       CL**4
+072300             15  B-DISCHG-DD        PIC 9(02).                       CL**4
+072400             15  B-DISCHG-YY        PIC 9(02).                       CL**4
+072500         10  B-CHARGES-CLAIMED      PIC 9(07)V9(02).                 CL**5
+072600***************************************************************      CL**4
+072700*    THIS DATA IS CALCULATED BY THIS PPCAL  SUBROUTINE        *      CL**4
+072800*    AND PASSED BACK TO THE CALLING PROGRAM                   *      CL**4
+072900*            RETURN CODE VALUES (PPS-RTC)                     *      CL**4
+073000*                                                             *      CL**4
+073100*            PPS-RTC 00-49 = HOW THE BILL WAS PAID            *      CL**4
+073200*              00 = PAID NORMAL DRG PAYMENT                   *      CL**4
+073300*                                                             *      CL**4
+073400*              01 = PAID AS A DAY-OUTLIER. SEND TO PRO FOR    *      CL**4
+073500*                   POST PAYMENT REVIEW.                      *      CL**4
+073600*              02 = PAID AS A COST-OUTLIER. SEND TO PRO FOR   *      CL**4
+073700*                   POST PAYMENT REVIEW.                      *      CL**4
+073800*              03 = PAID ON PERDIEM BASIS (XFER OR REVIEW 03) *      CL**4
+073900*                   NOT POTENTIALLY ELIGEABLE FOR COST OUTLIER*      CL**4
+074000*              04 = PAID NORMAL DRG PAYMENT ONLY. DAY AND     *      CL**4
+074100*                   COST OUTLIER CRITERIA IGNORED.            *      CL**4
+074200*              05 = PAID TRANSFER ON PERDIEM BASIS WITH COST  *      CL**4
+074300*                   OUTLIER APPROVED.                         *      CL**4
+074400*              06 = PAID TRANSFER ON PERDIEM BASIS WITH COST  *      CL**4
+074500*                   OUTLIER DENIED.                           *      CL**4
+074600*                                                             *      CL**4
+074700*            PPS-RTC 50-99 = WHY THE BILL WAS NOT PAID        *      CL**4
+074800*              51 = NO PROVIDER SPECIFIC INFO FOUND           *      CL**4
+074900*              52 = INVALID MSA # IN PROVIDER FILE            *      CL**4
+075000*              53 = WAIVER STATE - NOT CALCULATED BY PPS      *      CL**4
+075100*              54 = DRG NOT 001-468 OR 471-490                *      CL**4
+075200*              55 = DISCHARGE DATE < PROVIDER PPS START DATE  *      CL**4
+075300*              56 = INVALID LENGTH OF STAY                    *      CL**4
+075400*              57 = REVIEW CODE INVALID (NOT 00 - 07)         *      CL**4
+075500*              58 = TOTAL CHARGES NOT NUMERIC                 *      CL**4
+075600*              59 = POSSIBLE DAY OUTLIER CANDIDATE            *      CL**4
+075700*              60 = REVIEW CODE 02 (POSSIBLE COST OUTLIER)    *      CL**4
+075800*                   AND POSSIBLE DAY OUTLIER CANDIDATE. NOT   *      CL**4
+075900*                   ELIGABLE FOR COST OUTLIER.                *      CL**4
+076000*              61 = LIFETIME RESERVE DAYS NOT NUMERIC         *      CL**4
+076100*              62 = INVALID NUMBER OF COVERED DAYS            *      CL**4
+076200*              63 = POSSIBLE COST OUTLIER CANDIDATE.          *      CL**4
+076300*              64 = DISPROPORTIONATE SHARE PERCENTAGE AND     *      CL**4
+076400*                   BED-SIZE CONFLICT ON PROVIDER SPECIFIC FILE      CL**4
+076500*              98 = CANNOT PROCESS BILL OLDER THEN 871001     *      CL**4
+076600***************************************************************      CL**4
+076700 01  PPS-DATA.                                                       CL**4
+076800         10  PPS-RTC                PIC 9(02).                       CL**4
+076900         10  PPS-WAGE-INDX          PIC 9(02)V9(04).                 CL**4
+077000         10  PPS-OUTLIER-DAYS       PIC 9(03).                       CL**4
+077100         10  PPS-AVG-LOS            PIC 9(02)V9(01).                 CL**4
+077200         10  PPS-DAYS-CUTOFF        PIC 9(02)V9(01).                 CL**4
+077300         10  PPS-INDTEACH-ADJ       PIC 9(06)V9(02).                 CL**4
+077400         10  PPS-TOTAL-PAYMENT      PIC 9(07)V9(02).                 CL**4
+077500         10  PPS-HSP-PART           PIC 9(06)V9(02).                 CL**4
+077600         10  PPS-FSP-PART           PIC 9(06)V9(02).                 CL**4
+077700         10  PPS-OUTLIER-PART       PIC 9(07)V9(02).                 CL**4
+077800         10  PPS-REG-DAYS-USED      PIC 9(03).                       CL**4
+077900         10  PPS-LTR-DAYS-USED      PIC 9(02).                       CL**4
+078000         10  PPS-DSH-ADJ            PIC 9(06)V9(02).                 CL**4
+078100         10  PPS-CALC-VERS          PIC X(05).                       CL**4
+078200                                                                     CL**4
+078300******************************************************************   CL**4
+078400*            THESE ARE THE VERSIONS OF THE PPCAL                     CL**4
+078500*           PROGRAMS THAT WILL BE PASSED BACK----                    CL**4
+078600*          ASSOCIATED WITH THE BILL BEING PROCESSED                  CL**4
+078700******************************************************************   CL**4
+078800 01  PRICER-OPT-VERS-SW.                                             CL**4
+078900     02  PRICER-OPTION-SW          PIC X(01).                        CL**4
+079000         88  ALL-TABLES-PASSED          VALUE 'A'.                   CL**4
+079100         88  PROV-RECORD-PASSED         VALUE 'P'.                   CL**4
+079200         88  ADDITIONAL-VARIABLES       VALUE 'M'.                   CL**4
+079300     02  PPS-VERSIONS.                                               CL**4
+079400         10  PPDRV-VERSION        PIC X(05).                         CL**4
+079500                                                                     CL**4
+079600******************************************************************   CL**4
+079700*        THIS IS THE VARIABLES THAT WILL BE PASSED BACK              CL**4
+079800*          ASSOCIATED WITH THE BILL BEING PROCESSED                  CL**4
+079900******************************************************************   CL**4
+080000 01  PPS-ADDITIONAL-VARIABLES.                                       CL**4
+080100     05  PPS-HSP-PCT                PIC 9(01)V9(02).                 CL**4
+080200     05  PPS-FSP-PCT                PIC 9(01)V9(02).                 CL**4
+080300     05  PPS-NAT-PCT                PIC 9(01)V9(02).                 CL**4
+080400     05  PPS-REG-PCT                PIC 9(01)V9(02).                 CL**4
+080500     05  PPS-CMI-ADJ-CPD            PIC 9(05)V9(02).                 CL**4
+080600     05  PPS-UPDATE-FACTOR          PIC 9(01)V9(05).                 CL**4
+080700     05  PPS-DRG-WT                 PIC 9(02)V9(04).                 CL**4
+080800     05  PPS-NAT-LABOR              PIC 9(05)V9(02).                 CL**4
+080900     05  PPS-NAT-NLABOR             PIC 9(05)V9(02).                 CL**4
+081000     05  PPS-REG-LABOR              PIC 9(05)V9(02).                 CL**4
+081100     05  PPS-REG-NLABOR             PIC 9(05)V9(02).                 CL**4
+081200     05  PPS-COLA                   PIC 9(01)V9(03).                 CL**4
+081300     05  PPS-INTERN-RATIO           PIC 9(01)V9(04).                 CL**4
+081400     05  PPS-COST-OUTLIER           PIC 9(07)V9(09).                 CL**4
+081500     05  PPS-BILL-COSTS             PIC 9(07)V9(09).                 CL**4
+081600     05  PPS-DOLLAR-THRESHOLD       PIC 9(07)V9(09).                 CL**4
+081700                                                                     CL**4
+081800******************************************************************   CL**4
+081900*               THIS IS THE PROVIDER RECORD                          CL**4
+082000*          ASSOCIATED WITH THE BILL BEING PROCESSED                  CL**4
+082100******************************************************************   CL**4
+082200 01  PROV-HOLD.                                                      CL**4
+082300     02  PROV-REC-HOLD.                                              CL**4
+082400         05  P-PROVIDER-NO.                                          CL**4
+082500             10  P-STATE                PIC 9(02).                   CL**4
+082600             10  FILLER                 PIC X(04).                   CL**4
+082700         05  P-EFF-DATE.                                             CL**4
+082800             10  P-EFF-YY               PIC 9(02).                   CL**4
+082900             10  P-EFF-MM               PIC 9(02).                   CL**4
+083000             10  P-EFF-DD               PIC 9(02).                   CL**4
+083100         05  P-WAIVER-CODE              PIC X(01).                   CL**4
+083200             88  WAIVER-STATE           VALUE 'Y'.                   CL**4
+083300         05  P-PROVIDER-TYPE            PIC X(02).                   CL**4
+083400             88  SOLE-COMMUNITY-PROV    VALUE '01' '11'.             CL**4
+083500             88  REFERRAL-CENTER        VALUE '07' '11' '15' '17'.   CL**4
+083600             88  INDIAN-HEALTH-SERVICE  VALUE '08'.                  CL**4
+083700             88  REDESIGNATED-RURAL-YR1 VALUE '09'.                  CL**4
+083800             88  REDESIGNATED-RURAL-YR2 VALUE '10'.                  CL**4
+083900             88  SOLE-COM-REF-CENT      VALUE '11'.                  CL**4
+084000             88  MDH-REBASED-FY90       VALUE '14' '15'.             CL**4
+084100             88  MDH-RRC-REBASED-FY90   VALUE '15'.                  CL**4
+084200             88  SCH-REBASED-FY90       VALUE '16' '17'.             CL**4
+084300             88  SCH-RRC-REBASED-FY90   VALUE '17'.                  CL**4
+084400         05  P-CURRENT-CENSUS-DIV       PIC 9(01).                   CL**4
+084500             88  NEW-ENGLAND            VALUE  1.                    CL**4
+084600             88  MIDDLE-ATLANTIC        VALUE  2.                    CL**4
+084700             88  SOUTH-ATLANTIC         VALUE  3.                    CL**4
+084800             88  EAST-NORTH-CENTRAL     VALUE  4.                    CL**4
+084900             88  EAST-SOUTH-CENTRAL     VALUE  5.                    CL**4
+085000             88  WEST-NORTH-CENTRAL     VALUE  6.                    CL**4
+085100             88  WEST-SOUTH-CENTRAL     VALUE  7.                    CL**4
+085200             88  MOUNTAIN               VALUE  8.                    CL**4
+085300             88  PACIFIC                VALUE  9.                    CL**4
+085400         05  P-PPS-BLEND-YEAR           PIC 9(01).                   CL**4
+085500             88  VALID-PPS-BLEND-YEAR   VALUE 1 THRU 8.              CL**4
+085600         05  P-MSA-X.                                                CL**4
+085700             10  P-RURAL                PIC X(04).                   CL**4
+085800                 88  RURAL              VALUE  '9999'.               CL**4
+085900         05  P-MSA-9 REDEFINES P-MSA-X  PIC 9(04).                   CL**4
+086000         05  P-FISCAL-YEAR-END.                                      CL**4
+086100             10  P-MM                   PIC 9(02).                   CL**4
+086200             10  P-DD                   PIC 9(02).                   CL**4
+086300             10  P-YY                   PIC 9(02).                   CL**4
+086400         05  P-VARIABLES.                                            CL**4
+086500             10  P-CMI-ADJ-CPD          PIC S9(05)V9(02).            CL**4
+086600             10  P-COLA                 PIC S9(01)V9(03).            CL**4
+086700             10  P-INTERN-RATIO         PIC S9(01)V9(04).            CL**4
+086800             10  PRUP-UPDT-FACTOR       PIC S9(01)V9(05).            CL**4
+086900             10  P-BED-SIZE             PIC  9(05).                  CL**4
+087000             10  P-DSH-PERCENT          PIC V9(04).                  CL**4
+087100             10  P-CCR                  PIC  9(01)V9(03).            CL**4
+087200             10  P-CMI                  PIC  9(01)V9(04).            CL**4
+087300             10  FILLER                 PIC  9(01).                  CL**4
+087400             10  P-REPORT-DATE          PIC  9(06).                  CL**4
+087500             10  FILLER                 PIC  9(01).                  CL**4
+087600             10  P-INTER-NO             PIC  9(05).                  CL**4
+087700     02  FILLER                         PIC X(80).                   CL**4
+087800                                                                     CL**4
+087900******************************************************************   CL**4
+088000*                   THIS IS THE WAGE-INDEX                           CL**4
+088100*          ASSOCIATED WITH THE BILL BEING PROCESSED                  CL**4
+088200******************************************************************   CL**4
+088300 01  WAGE-INDEX-RECORD.                                              CL**4
+088400     05  W-MSA               PIC X(4).                               CL**4
+088500     05  W-SIZE              PIC X(01).                              CL**4
+088600         88  LARGE-URBAN       VALUE 'L'.                            CL**4
+088700         88  OTHER-URBAN       VALUE 'O'.                            CL**4
+088800         88  ALL-RURAL         VALUE 'R'.                            CL**4
+088900     05  W-EFF-DATE          PIC X(6).                               CL**4
+089000     05  FILLER              PIC X.                                  CL**4
+089100     05  W-INDEX-RECORD      PIC S9(02)V9(04).                       CL**4
+089200                                                                     CL**4
+089300 PROCEDURE DIVISION  USING BILL-DATA                                 CL**4
+089400                           PPS-DATA                                  CL**4
+089500                           PRICER-OPT-VERS-SW                        CL**4
+089600                           PPS-ADDITIONAL-VARIABLES                  CL**4
+089700                           PROV-HOLD                                 CL**4
+089800                           WAGE-INDEX-RECORD.                        CL**4
+089900                                                                     CL**4
+090000***************************************************************      CL**4
+090100*    PROCESSING:                                              *      CL**4
+090200*        A. WILL PROCESS CASES BASED ON DISCHARGE DATE               CL**4
+090300*        B. INITIALIZE PPCAL  WORK VARIABLES.                 *      CL**4
+090400*        C. EDIT THE DATA PASSED FROM THE BILL BEFORE         *      CL**4
+090500*           ATTEMPTING TO CALCULATE PPS. IF THIS BILL         *      CL**4
+090600*           CANNOT BE PROCESSED, SET A RETURN CODE AND        *      CL**4
+090700*           GOBACK.                                           *      CL**4
+090800*        D. ASSEMBLE PRICING COMPONENTS.                      *      CL**4
+090900*        E. CALCULATE THE BLENDED PRICE.                      *      CL**4
+091000***************************************************************      CL**4
+091100                                                                     CL**4
+091200     PERFORM 0200-MAINLINE-CONTROL.                                  CL**4
+091300                                                                     CL**4
+091400     MOVE HOLD-ADDITIONAL-VARIABLES TO  PPS-ADDITIONAL-VARIABLES.    CL**4
+091500     MOVE CAL-VERSION               TO  PPS-CALC-VERS.               CL**4
+091600                                                                     CL**4
+091700     GOBACK.                                                         CL**4
+091800                                                                     CL**4
+091900 0200-MAINLINE-CONTROL.                                              CL**4
+092000     MOVE ALL '0' TO PPS-DATA.                                       CL**4
+092100     MOVE ALL '0' TO HOLD-PPS-COMPONENTS.                            CL**4
+092200     MOVE ALL '0' TO HOLD-ADDITIONAL-VARIABLES.                      CL**4
+092300     PERFORM 1000-EDIT-THE-BILL-INFO.                                CL**4
+092400     IF  PPS-RTC = 00                                                CL**4
+092500         PERFORM 2000-ASSEMBLE-PPS-VARIABLES                         CL**4
+092600         PERFORM 3000-CALC-BLENDED-PAYMENT.                          CL**4
+092700                                                                     CL**4
+092800 1000-EDIT-THE-BILL-INFO.                                            CL**4
+092900***************************************************************      CL**4
+093000*    BILL DATA EDITS IF ANY FAIL SET PPS-RTC                  *      CL**4
+093100*    AND DO NOT ATTEMPT TO PRICE.                             *      CL**4
+093200***************************************************************      CL**4
+093300     MOVE B-DISCHG-YY TO H-BILL-YY.                                  CL**4
+093400     MOVE B-DISCHG-MM TO H-BILL-MM.                                  CL**4
+093500     MOVE B-DISCHG-DD TO H-BILL-DD.                                  CL**4
+093600     IF  PPS-RTC = 00                                                CL**4
+093700         IF  WAIVER-STATE                                            CL**4
+093800             MOVE 53 TO PPS-RTC.                                     CL**4
+093900     IF  PPS-RTC = 00                                                CL**4
+094000         IF  B-DRG < 001 OR > 490 OR = 469 OR = 470                  CL**4
+094100             MOVE 54 TO PPS-RTC.                                     CL**4
+094200     IF  PPS-RTC = 00                                                CL**4
+094300         MOVE P-EFF-DATE  TO HOLD-PROV-DATE                          CL**4
+094400         MOVE P-FISCAL-YEAR-END TO HOLD-PROV-FYE-DATE                   *1
+094500         MOVE P-YY        TO H-FYE-YY                                CL**4
+094600         MOVE P-MM        TO H-FYE-MM                                CL**4
+094700         MOVE P-DD        TO H-FYE-DD                                CL**4
+094800         IF  HOLD-BILL-DATE < HOLD-PROV-DATE                         CL**4
+094900             MOVE 55 TO PPS-RTC.                                     CL**4
+095000     IF  PPS-RTC = 00                                                CL**1
+095100         IF  B-REVIEW-CODE NOT NUMERIC                               CL**1
+095200             MOVE 57 TO PPS-RTC.                                     CL**1
+095300     IF  PPS-RTC = 00                                                CL**4
+095400         IF  B-LOS NOT NUMERIC                                       CL**4
+095500             MOVE 56 TO PPS-RTC                                      CL**4
+095600         ELSE                                                        CL**4
+095700         IF  B-LOS = 0 AND B-REVIEW-CODE NOT = 03                    CL**4
+095800             MOVE 56 TO PPS-RTC.                                     CL**4
+095900     IF  PPS-RTC = 00                                                CL**4
+096000         IF  B-LTR-DAYS NOT NUMERIC                                  CL**4
+096100             MOVE 61 TO PPS-RTC                                      CL**4
+096200         ELSE                                                        CL**4
+096300             MOVE B-LTR-DAYS TO H-LTR-DAYS.                          CL**4
+096400     IF  PPS-RTC = 00                                                CL**4
+096500         IF  B-COVERED-DAYS NOT NUMERIC                              CL**4
+096600             MOVE 62 TO PPS-RTC                                      CL**4
+096700         ELSE                                                        CL**4
+096800         IF  B-COVERED-DAYS = 0 AND B-LOS > 0                        CL**4
+096900             MOVE 62 TO PPS-RTC                                      CL**4
+097000         ELSE                                                        CL**4
+097100             MOVE B-COVERED-DAYS TO H-COV-DAYS.                      CL**4
+097200     IF  PPS-RTC = 00                                                CL**4
+097300         IF  H-LTR-DAYS  > H-COV-DAYS                                CL**4
+097400             MOVE 62 TO PPS-RTC                                      CL**4
+097500         ELSE                                                        CL**4
+097600             COMPUTE H-REG-DAYS = H-COV-DAYS - H-LTR-DAYS.           CL**4
+097700     IF  PPS-RTC = 00                                                CL**4
+097800         IF  NOT VALID-REVIEW-CODE                                   CL**4
+097900             MOVE 57 TO PPS-RTC.                                     CL**4
+098000     IF  PPS-RTC = 00                                                CL**4
+098100         IF  B-CHARGES-CLAIMED NOT NUMERIC                           CL**4
+098200             MOVE 58 TO PPS-RTC.                                     CL**4
+098300                                                                     CL**4
+098400 2000-ASSEMBLE-PPS-VARIABLES.                                        CL**4
+098500***************************************************************      CL**4
+098600*    THE APPROPRIATE SET OF THESE PPS VARIABLES ARE SELECTED  *      CL**4
+098700*    DEPENDING ON THE BILL DISCHARGE DATE AND EFFECTIVE DATE  *      CL**4
+098800*    OF THAT VARIABLE.                                        *      CL**4
+098900***************************************************************      CL**4
+099000***  GET THE PROVIDER SPECIFIC VARIABLES.                            CL**4
+099100                                                                     CL**4
+099200     MOVE P-CMI-ADJ-CPD  TO H-CMI-ADJ-CPD.                           CL**4
+099300     MOVE P-INTERN-RATIO TO H-INTERN-RATIO.                          CL**4
+099400                                                                     CL**4
+099500     IF  NOT (P-STATE = 02 OR 12)                                    CL**4
+099600         MOVE 1 TO H-COLA                                            CL**4
+099700     ELSE                                                            CL**4
+099800         MOVE P-COLA TO H-COLA.                                      CL**4
+099900***************************************************************      CL**4
+100000***  GET THE DRG RELATIVE WEIGHTS, ALOS, DAYS CUTOFF                 CL**4
+100100                                                                     CL**4
+100200     PERFORM 2400-GET-DRG-WEIGHT VARYING DX1                         CL**4
+100300             FROM 1 BY 1 UNTIL DX1 > 1.                              CL**4
+100400                                                                     CL**4
+100500***************************************************************      CL**4
+100600***  GET THE WAGE-INDEX                                              CL**4
+100700                                                                     CL**4
+100800     MOVE W-INDEX-RECORD TO H-WAGE-INDX.                             CL**4
+100900                                                                     CL**4
+101000***************************************************************      CL**4
+101100***  GET THE LABOR, NON-LABOR STANDARD RATES                         CL**4
+101200                                                                     CL**4
+101300     IF  P-CURRENT-CENSUS-DIV NUMERIC                                CL**4
+101400         MOVE P-CURRENT-CENSUS-DIV TO R2                             CL**4
+101500     ELSE                                                            CL**4
+101600         MOVE 10 TO R2.                                              CL**4
+101700                                                                     CL**4
+101800     MOVE 10 TO R4.                                                  CL**4
+101900                                                                     CL**4
+102000     IF  P-STATE = 40                                                CL**4
+102100         MOVE 11 TO R2                                               CL**4
+102200         MOVE 12 TO R4.                                              CL**4
+102300                                                                     CL**4
+102400     IF  RURAL                                                       CL**4
+102500         MOVE 2 TO R3                                                CL**4
+102600     ELSE                                                            CL**4
+102700         MOVE 1 TO R3.                                               CL**4
+102800                                                                     CL**4
+102900     IF  REFERRAL-CENTER                                             CL**4
+103000         MOVE 1 TO R3.                                               CL**4
+103100                                                                     CL**4
+103200     IF HOLD-BILL-DATE > '880331'                                    CL**4
+103300        PERFORM 2300-GET-LABOR-NLABOR-RATES2 VARYING R1              CL**4
+103400             FROM 1 BY 1 UNTIL R1 > 2                                CL**4
+103500     ELSE                                                            CL**4
+103600        PERFORM 2200-GET-LABOR-NLABOR-RATES VARYING R1               CL**4
+103700             FROM 1 BY 1 UNTIL R1 > 2.                               CL**4
+103800                                                                     CL**4
+103900***************************************************************      CL**4
+104000***  GET THE HSP & FSP BLEND PERCENTS FOR THIS BILL                  CL**4
+104100                                                                     CL**4
+104200     IF  H-FYE-MMDD > '0929'                                         CL**4
+104300         MOVE 83 TO H-FYE-YY                                         CL**4
+104400     ELSE                                                            CL**4
+104500         MOVE 84 TO H-FYE-YY.                                        CL**4
+104600                                                                     CL**4
+104700     IF  (H-FYE-MM = 04 OR 06 OR 09 OR 11) AND H-FYE-DD = 30         CL**4
+104800         MOVE 31 TO H-FYE-DD                                         CL**4
+104900     ELSE                                                            CL**4
+105000     IF  H-FYE-MM = 02 AND H-FYE-DD > 27                             CL**4
+105100         MOVE 31 TO H-FYE-DD.                                        CL**4
+105200                                                                     CL**4
+105300     COMPUTE MO-DIFF =                                               CL**4
+105400         ((H-BILL-YY - 83) * 12 + H-BILL-MM) -                       CL**4
+105500         ((H-FYE-YY  - 83) * 12 + H-FYE-MM).                         CL**4
+105600                                                                     CL**4
+105700     IF  H-BILL-DD > H-FYE-DD                                        CL**4
+105800         ADD 1 TO MO-DIFF.                                           CL**4
+105900                                                                     CL**4
+106000     IF  MO-DIFF < 13 MOVE 1 TO HSP-FY                               CL**4
+106100     ELSE                                                            CL**4
+106200     IF  MO-DIFF < 32 MOVE 2 TO HSP-FY                               CL**4
+106300     ELSE                                                            CL**4
+106400     IF  MO-DIFF < 37 MOVE 3 TO HSP-FY                               CL**4
+106500     ELSE                                                            CL**4
+106600     IF  MO-DIFF < 49 MOVE 4 TO HSP-FY.                              CL**4
+106700                                                                     CL**4
+106800     IF  MO-DIFF > 48 AND < 61                                       CL**4
+106900         MOVE 4 TO HSP-FY                                            CL**4
+107000         IF  HOLD-BILL-DATE > '871120'                               CL**4
+107100             PERFORM 2100-CHECK-HSP-FY5.                             CL**4
+107200                                                                     CL**4
+107300     IF  MO-DIFF > 60 MOVE 7 TO HSP-FY.                              CL**4
+107400                                                                     CL**4
+107500     IF  MO-DIFF > 72                                                CL**4
+107600         MOVE 8 TO HSP-FY.                                           CL**4
+107700                                                                     CL**4
+107800     IF  P-PPS-BLEND-YEAR NUMERIC AND VALID-PPS-BLEND-YEAR           CL**4
+107900         MOVE P-PPS-BLEND-YEAR TO HSP-FY.                            CL**4
+108000                                                                     CL**4
+108100     IF  HSP-FY < 5                                                  CL**4
+108200         MOVE HSP (HSP-FY) TO H-HSP-PCT                              CL**4
+108300         MOVE FSP (HSP-FY) TO H-FSP-PCT                              CL**4
+108400     ELSE                                                            CL**4
+108500         MOVE 0.00  TO H-HSP-PCT MOVE 1.00 TO H-FSP-PCT.             CL**4
+108600                                                                     CL**4
+108700     IF  P-STATE = 38                                                CL**4
+108800         IF HSP-FY = 3                                               CL**4
+108900            MOVE 0.25  TO H-HSP-PCT MOVE 0.75 TO H-FSP-PCT           CL**4
+109000         ELSE                                                        CL**4
+109100         IF HSP-FY > 3                                               CL**4
+109200            MOVE 0.00  TO H-HSP-PCT MOVE 1.00 TO H-FSP-PCT.          CL**4
+109300                                                                     CL**4
+109400***************************************************************      CL**4
+109500***  GET THE NATIONAL & REGIONAL BLEND PERCENTS FOR THIS BILL        CL**4
+109600                                                                     CL**4
+109700     IF  HOLD-BILL-DATE > '860930' AND < '871121'                    CL**4
+109800         MOVE 0.50 TO H-NAT-PCT MOVE 0.50 TO H-REG-PCT               CL**4
+109900     ELSE                                                            CL**4
+110000     IF  HOLD-BILL-DATE > '871120'                                   CL**4
+110100         MOVE 1.00 TO H-NAT-PCT MOVE 0.00 TO H-REG-PCT.              CL**4
+110200                                                                     CL**4
+110300     IF  P-STATE = 38                                                CL**4
+110400             MOVE 1.00 TO H-NAT-PCT MOVE 0.00 TO H-REG-PCT.          CL**4
+110500                                                                     CL**4
+110600***************************************************************      CL**4
+110700*    REGIONAL FLOOR                                                  CL**4
+110800                                                                     CL**4
+110900     IF  HOLD-BILL-DATE > '880331'                                   CL**4
+111000         IF  (H-REG-LABOR + H-REG-NLABOR) >                          CL**4
+111100             (H-NAT-LABOR + H-NAT-NLABOR)                            CL**4
+111200             MOVE 0.85 TO H-NAT-PCT MOVE 0.15 TO H-REG-PCT.          CL**4
+111300                                                                     CL**4
+111400     IF  P-STATE = 40                                                CL**4
+111500         MOVE 0.00 TO H-HSP-PCT MOVE 1.00 TO H-FSP-PCT               CL**4
+111600         MOVE 0.25 TO H-NAT-PCT MOVE 0.75 TO H-REG-PCT.              CL**4
+111700                                                                     CL**4
+111800     IF  SOLE-COMMUNITY-PROV                                         CL**4
+111900         MOVE 0.75 TO H-HSP-PCT MOVE 0.25 TO H-FSP-PCT               CL**4
+112000         MOVE 0.00 TO H-NAT-PCT MOVE 1.00 TO H-REG-PCT.              CL**4
+112100                                                                     CL**4
+112200     IF  SCH-REBASED-FY90 OR MDH-REBASED-FY90                        CL**4
+112300         MOVE 1.00 TO H-HSP-PCT MOVE 1.00 TO H-FSP-PCT.              CL**4
+112400                                                                     CL**4
+112500***************************************************************      CL**4
+112600***  GET THE STANDARD UPDATING FACTOR                                CL**4
+112700                                                                     CL**4
+112800     MOVE HSP-FY TO U1.                                              CL**4
+112900     ADD 1 TO U1.                                                    CL**4
+113000     MOVE P-MM TO U2.                                                CL**4
+113100                                                                     CL**4
+113200     IF  H-FYE-MM = 01 AND H-FYE-DD < 16                             CL**4
+113300         MOVE 12 TO U2                                               CL**4
+113400     ELSE                                                            CL**4
+113500     IF  H-FYE-MM = 02 AND H-FYE-DD < 15                             CL**4
+113600         MOVE 01 TO U2                                               CL**4
+113700     ELSE                                                            CL**4
+113800     IF  H-FYE-MM > 02 AND H-FYE-DD < 16                             CL**4
+113900         COMPUTE U2 = U2 - 1.                                        CL**4
+114000                                                                     CL**4
+114100     MOVE R3 TO U3.                                                  CL**4
+114200                                                                     CL**4
+114300     IF  REFERRAL-CENTER                                             CL**4
+114400         MOVE 3 TO U3.                                               CL**4
+114500                                                                     CL**4
+114600     IF  U1 > 6                                                      CL**4
+114700         SUBTRACT 6 FROM U1                                          CL**4
+114800         MOVE UPDATE-FACTOR2 (U1 U2 U3) TO H-UPDATE-FACTOR           CL**4
+114900     ELSE                                                            CL**4
+115000         MOVE UPDATE-FACTOR  (U1 U2)    TO H-UPDATE-FACTOR.          CL**4
+115100                                                                     CL**4
+115200***************************************************************      CL**4
+115300***  GET THE SPECIAL UPDATING FACTOR IF APPLICABLE                   CL**4
+115400                                                                     CL**4
+115500     IF  PRUP-UPDT-FACTOR NUMERIC                                    CL**4
+115600         IF  PRUP-UPDT-FACTOR > 0                                    CL**4
+115700             MOVE PRUP-UPDT-FACTOR TO H-UPDATE-FACTOR.               CL**4
+115800                                                                     CL**4
+115900 2100-CHECK-HSP-FY5.                                                 CL**4
+116000     COMPUTE HOLD-BILL-DAYS =                                        CL**4
+116100         H-BILL-YY * 365 + T-DAYS (H-BILL-MM) + H-BILL-DD.           CL**4
+116200                                                                     CL**4
+116300     IF  (H-BILL-YY = 84 OR 88 OR 92) AND H-BILL-MM > 2              CL**4
+116400         ADD 1 TO HOLD-BILL-DAYS.                                    CL**4
+116500                                                                     CL**4
+116600     IF  H-FYE-MMDD > '0929'                                         CL**4
+116700         MOVE 87 TO H-FYE-YY                                         CL**4
+116800     ELSE                                                            CL**4
+116900         MOVE 88 TO H-FYE-YY.                                        CL**4
+117000                                                                     CL**4
+117100     MOVE P-DD TO H-FYE-DD.                                          CL**4
+117200                                                                     CL**4
+117300     COMPUTE HOLD-PROV-DAYS =                                        CL**4
+117400         H-FYE-YY * 365 + T-DAYS (H-FYE-MM) + H-FYE-DD.              CL**4
+117500                                                                     CL**4
+117600     IF  (H-FYE-YY = 84 OR 88 OR 92) AND H-FYE-MM > 2                CL**4
+117700         ADD 1 TO HOLD-PROV-DAYS.                                    CL**4
+117800                                                                     CL**4
+117900     IF  HOLD-BILL-DAYS > (HOLD-PROV-DAYS + 51)                      CL**4
+118000         MOVE 5 TO HSP-FY.                                           CL**4
+118100                                                                     CL**4
+118200     IF  HOLD-BILL-DAYS > (HOLD-PROV-DAYS + 183)                     CL**4
+118300         MOVE 6 TO HSP-FY.                                           CL**4
+118400                                                                     CL**4
+118500 2200-GET-LABOR-NLABOR-RATES.                                        CL**4
+118600     IF  HOLD-BILL-DATE NOT < RATE-EFF-DATE (R1)                     CL**4
+118700         MOVE REG-LABOR  (R1 R2 R3) TO H-REG-LABOR                   CL**4
+118800         MOVE REG-NLABOR (R1 R2 R3) TO H-REG-NLABOR                  CL**4
+118900         MOVE REG-LABOR  (R1 R4 R3) TO H-NAT-LABOR                   CL**4
+119000         MOVE REG-NLABOR (R1 R4 R3) TO H-NAT-NLABOR                  CL**4
+119100         IF REDESIGNATED-RURAL-YR1 OR REDESIGNATED-RURAL-YR2         CL**4
+119200            PERFORM 2250-BLEND-RURAL-RATES.                          CL**4
+119300                                                                     CL**4
+119400 2250-BLEND-RURAL-RATES.                                             CL**4
+119500      IF  REDESIGNATED-RURAL-YR1                                     CL**4
+119600          COMPUTE BLEND-RURAL-PCT ROUNDED = 2 / 3                    CL**4
+119700      ELSE                                                           CL**4
+119800          COMPUTE BLEND-RURAL-PCT ROUNDED = 1 / 3.                   CL**4
+119900                                                                     CL**4
+120000      COMPUTE H-REG-LABOR  ROUNDED =                                 CL**4
+120100          (REG-LABOR  (R1 R2 1) - REG-LABOR  (R1 R2 2))              CL**4
+120200            * BLEND-RURAL-PCT   + REG-LABOR  (R1 R2 2).              CL**4
+120300                                                                     CL**4
+120400      COMPUTE H-REG-NLABOR ROUNDED =                                 CL**4
+120500          (REG-NLABOR (R1 R2 1) - REG-NLABOR (R1 R2 2))              CL**4
+120600            * BLEND-RURAL-PCT   + REG-NLABOR (R1 R2 2).              CL**4
+120700                                                                     CL**4
+120800      COMPUTE H-NAT-LABOR  ROUNDED =                                 CL**4
+120900          (REG-LABOR  (R1 R4 1) - REG-LABOR  (R1 R4 2))              CL**4
+121000            * BLEND-RURAL-PCT   + REG-LABOR  (R1 R4 2).              CL**4
+121100                                                                     CL**4
+121200      COMPUTE H-NAT-NLABOR ROUNDED =                                 CL**4
+121300          (REG-NLABOR (R1 R4 1) - REG-NLABOR (R1 R4 2))              CL**4
+121400            * BLEND-RURAL-PCT   + REG-NLABOR (R1 R4 2).              CL**4
+121500                                                                     CL**4
+121600 2300-GET-LABOR-NLABOR-RATES2.                                       CL**4
+121700     IF  LARGE-URBAN                                                 CL**4
+121800         MOVE 1 TO R3                                                CL**4
+121900     ELSE                                                            CL**4
+122000     IF  OTHER-URBAN OR REFERRAL-CENTER                              CL**4
+122100         MOVE 2 TO R3                                                CL**4
+122200     ELSE                                                            CL**4
+122300         MOVE 3 TO R3.                                               CL**4
+122400                                                                     CL**4
+122500     IF  HOLD-BILL-DATE NOT < RATE-EFF-DATE2 (R1)                    CL**4
+122600         MOVE REG-LABOR2  (R1 R2 R3) TO H-REG-LABOR                  CL**4
+122700         MOVE REG-NLABOR2 (R1 R2 R3) TO H-REG-NLABOR                 CL**4
+122800         MOVE REG-LABOR2  (R1 R4 R3) TO H-NAT-LABOR                  CL**4
+122900         MOVE REG-NLABOR2 (R1 R4 R3) TO H-NAT-NLABOR                 CL**4
+123000         IF REDESIGNATED-RURAL-YR1 OR REDESIGNATED-RURAL-YR2         CL**4
+123100            PERFORM 2350-BLEND-RURAL-RATES2.                         CL**4
+123200                                                                     CL**4
+123300 2350-BLEND-RURAL-RATES2.                                            CL**4
+123400      IF  REDESIGNATED-RURAL-YR1                                     CL**4
+123500          COMPUTE BLEND-RURAL-PCT ROUNDED = 2 / 3                    CL**4
+123600      ELSE                                                           CL**4
+123700          COMPUTE BLEND-RURAL-PCT ROUNDED = 1 / 3.                   CL**4
+123800                                                                     CL**4
+123900      COMPUTE H-REG-LABOR  ROUNDED =                                 CL**4
+124000          (REG-LABOR2  (R1 R2 2) - REG-LABOR2  (R1 R2 3))            CL**4
+124100            * BLEND-RURAL-PCT   +  REG-LABOR2  (R1 R2 3).            CL**4
+124200                                                                     CL**4
+124300      COMPUTE H-REG-NLABOR ROUNDED =                                 CL**4
+124400          (REG-NLABOR2 (R1 R2 2) - REG-NLABOR2 (R1 R2 3))            CL**4
+124500            * BLEND-RURAL-PCT   +  REG-NLABOR2 (R1 R2 3).            CL**4
+124600                                                                     CL**4
+124700      COMPUTE H-NAT-LABOR  ROUNDED =                                 CL**4
+124800          (REG-LABOR2  (R1 R4 2) - REG-LABOR2  (R1 R4 3))            CL**4
+124900            * BLEND-RURAL-PCT   +  REG-LABOR2  (R1 R4 3).            CL**4
+125000                                                                     CL**4
+125100      COMPUTE H-NAT-NLABOR ROUNDED =                                 CL**4
+125200          (REG-NLABOR2 (R1 R4 2) - REG-NLABOR2 (R1 R4 3))            CL**4
+125300            * BLEND-RURAL-PCT   +  REG-NLABOR2 (R1 R4 3).            CL**4
+125400                                                                     CL**4
+125500 2400-GET-DRG-WEIGHT.                                                CL**4
+125600     IF  HOLD-BILL-DATE NOT < DRGX-EFF-DATE (DX1)                    CL**4
+125700         SET DX2 TO B-DRG                                            CL**4
+125800         MOVE DRG-WT (DX1 DX2)          TO H-DRG-WT                  CL**4
+125900         MOVE DRG-ALOS (DX1 DX2)        TO H-ALOS                    CL**4
+126000         MOVE DRG-DAYS-CUTOFF (DX1 DX2) TO H-DAYS-CUTOFF.            CL**4
+126100                                                                     CL**4
+126200                                                                     CL**4
+126300 3000-CALC-BLENDED-PAYMENT.                                          CL**4
+126400***************************************************************      CL**4
+126500*    IF THE BILL DATA HAS PASSED ALL EDITS (RTC=00)           *      CL**4
+126600*        CALCULATE COVERED DAYS UTILIZATION.                  *      CL**4
+126700*        CALCULATE THE FEDERAL PORTION.                       *      CL**4
+126800*        CALCULATE THE HOSPITAL PORTION.                      *      CL**4
+126900*        CALCULATE THE DAYS-OUTLIER PORTION.                  *      CL**4
+127000*        CALCULATE THE COST-OUTLIER PORTION.                  *      CL**4
+127100*        CALCULATE THE TOTAL PAYMENT (BLENDED)                *      CL**4
+127200*        CALCULATE THE INDIRECT TEACHING ADJUSTMENT.          *      CL**4
+127300***************************************************************      CL**4
+127400     PERFORM 3100-CALC-STAY-UTILIZATION.                             CL**4
+127500     PERFORM 3300-CALC-FSP-AMT.                                      CL**4
+127600     PERFORM 3400-CALC-HSP-AMT.                                      CL**4
+127700     MOVE 00            TO  PPS-RTC.                                 CL**4
+127800     MOVE H-WAGE-INDX   TO  PPS-WAGE-INDX.                           CL**4
+127900     MOVE H-ALOS        TO  PPS-AVG-LOS.                             CL**4
+128000     MOVE H-DAYS-CUTOFF TO  PPS-DAYS-CUTOFF.                         CL**4
+128100                                                                     CL**4
+128200     PERFORM 3600-CALC-OUTLIER.                                      CL**4
+128300                                                                     CL**4
+128400     IF  PAY-AVG-STAY-ONLY                                           CL**4
+128500         MOVE 0  TO H-OUTLIER-PART                                   CL**4
+128600         MOVE 04 TO PPS-RTC.                                         CL**4
+128700                                                                     CL**4
+128800     IF  PAY-PERDIEM-DAYS OR PAY-XFER-WITH-COST                      CL**4
+128900         IF  B-LOS < H-ALOS                                          CL**4
+129000             IF  NOT (B-DRG = 385 OR 456)                            CL**4
+129100                 PERFORM 3500-CALC-PERDIEM-AMT                       CL**4
+129200                 MOVE 03 TO PPS-RTC.                                 CL**4
+129300                                                                     CL**4
+129400     IF  (PAY-PERDIEM-DAYS OR PAY-XFER-WITH-COST)                    CL**4
+129500         IF  H-OUTCST-PART > 0                                       CL**4
+129600             MOVE H-OUTCST-PART TO H-OUTLIER-PART                    CL**4
+129700             MOVE 05 TO PPS-RTC                                      CL**4
+129800         ELSE                                                        CL**4
+129900         IF  PPS-RTC NOT = 03                                        CL**4
+130000             MOVE 00 TO PPS-RTC                                      CL**4
+130100             MOVE 0  TO H-OUTLIER-PART.                              CL**4
+130200                                                                     CL**4
+130300     IF  PAY-DAYS-OUTLIER                                            CL**4
+130400         IF  PPS-RTC NOT = 01                                        CL**4
+130500             MOVE 0  TO H-OUTLIER-PART                               CL**4
+130600             MOVE 00 TO PPS-RTC.                                     CL**4
+130700                                                                     CL**4
+130800     IF  PAY-COST-OUTLIER                                            CL**4
+130900         IF  PPS-RTC = 01                                            CL**4
+131000             MOVE 0  TO H-OUTLIER-PART                               CL**4
+131100             MOVE 60 TO PPS-RTC.                                     CL**4
+131200                                                                     CL**4
+131300     IF  PAY-XFER-NO-COST                                            CL**4
+131400         MOVE 0  TO H-OUTLIER-PART                                   CL**4
+131500         MOVE 00 TO PPS-RTC                                          CL**4
+131600         IF B-LOS < H-ALOS                                           CL**4
+131700         IF  NOT (B-DRG = 385 OR 456)                                CL**4
+131800             PERFORM 3500-CALC-PERDIEM-AMT                           CL**4
+131900             MOVE 06 TO PPS-RTC.                                     CL**4
+132000                                                                     CL**4
+132100     IF  PPS-RTC < 50                                                CL**4
+132200         PERFORM 3800-CALC-BLEND-AMT                                 CL**4
+132300     ELSE                                                            CL**4
+132400         MOVE 0 TO PPS-HSP-PART                                      CL**4
+132500                   PPS-FSP-PART                                      CL**4
+132600                   PPS-OUTLIER-PART                                  CL**4
+132700                   PPS-OUTLIER-DAYS                                  CL**4
+132800                   PPS-REG-DAYS-USED                                 CL**4
+132900                   PPS-LTR-DAYS-USED                                 CL**4
+133000                   PPS-TOTAL-PAYMENT                                 CL**4
+133100                   PPS-DSH-ADJ                                       CL**4
+133200                   PPS-INDTEACH-ADJ.                                 CL**4
+133300                                                                     CL**4
+133400 3100-CALC-STAY-UTILIZATION.                                         CL**4
+133500     IF  H-REG-DAYS > 0                                              CL**4
+133600         IF  H-REG-DAYS < H-DAYS-CUTOFF                              CL**4
+133700             MOVE H-REG-DAYS TO PPS-REG-DAYS-USED                    CL**4
+133800             MOVE 0          TO H-REG-DAYS                           CL**4
+133900         ELSE                                                        CL**4
+134000             MOVE H-DAYS-CUTOFF TO PPS-REG-DAYS-USED                 CL**4
+134100             SUBTRACT H-DAYS-CUTOFF FROM H-REG-DAYS                  CL**4
+134200     ELSE                                                            CL**4
+134300     IF  H-LTR-DAYS < H-DAYS-CUTOFF                                  CL**4
+134400         MOVE H-LTR-DAYS TO PPS-LTR-DAYS-USED                        CL**4
+134500         MOVE 0          TO H-LTR-DAYS                               CL**4
+134600     ELSE                                                            CL**4
+134700         MOVE H-DAYS-CUTOFF TO PPS-LTR-DAYS-USED                     CL**4
+134800         SUBTRACT H-DAYS-CUTOFF  FROM H-LTR-DAYS.                    CL**4
+134900                                                                     CL**4
+135000     IF  B-LOS > H-DAYS-CUTOFF                                       CL**4
+135100         PERFORM 3200-CALC-OUTLIER-UTILIZATION.                      CL**4
+135200                                                                     CL**4
+135300 3200-CALC-OUTLIER-UTILIZATION.                                      CL**4
+135400     COMPUTE PPS-OUTLIER-DAYS =                                      CL**4
+135500         B-LOS - H-DAYS-CUTOFF.                                      CL**4
+135600                                                                     CL**4
+135700     IF  (H-REG-DAYS + H-LTR-DAYS) < PPS-OUTLIER-DAYS                CL**4
+135800         COMPUTE PPS-OUTLIER-DAYS =                                  CL**4
+135900             H-REG-DAYS + H-LTR-DAYS                                 CL**4
+136000         ADD H-REG-DAYS TO PPS-REG-DAYS-USED                         CL**4
+136100         ADD H-LTR-DAYS TO PPS-LTR-DAYS-USED                         CL**4
+136200     ELSE                                                            CL**4
+136300     IF  H-REG-DAYS < PPS-OUTLIER-DAYS                               CL**4
+136400         ADD H-REG-DAYS TO PPS-REG-DAYS-USED                         CL**4
+136500         COMPUTE PPS-LTR-DAYS-USED =                                 CL**4
+136600             PPS-LTR-DAYS-USED + (PPS-OUTLIER-DAYS - H-REG-DAYS)     CL**4
+136700     ELSE                                                            CL**4
+136800         ADD PPS-OUTLIER-DAYS TO PPS-REG-DAYS-USED.                  CL**4
+136900                                                                     CL**4
+137000     IF  B-REVIEW-CODE = 03 OR 04                                    CL**4
+137100         IF  PPS-REG-DAYS-USED > 0                                   CL**4
+137200             MOVE 0 TO PPS-LTR-DAYS-USED.                            CL**4
+137300                                                                     CL**4
+137400 3300-CALC-FSP-AMT.                                                  CL**4
+137500     COMPUTE H-FSP-PART ROUNDED =                                    CL**4
+137600         (H-NAT-PCT * (H-NAT-LABOR * H-WAGE-INDX +                   CL**4
+137700         H-NAT-NLABOR * H-COLA) * H-DRG-WT)                          CL**4
+137800                           +                                         CL**4
+137900         (H-REG-PCT * (H-REG-LABOR * H-WAGE-INDX +                   CL**4
+138000         H-REG-NLABOR * H-COLA) * H-DRG-WT).                         CL**4
+138100                                                                     CL**4
+138200 3400-CALC-HSP-AMT.                                                  CL**4
+138300     COMPUTE H-HSP-PART ROUNDED =                                    CL**4
+138400         H-CMI-ADJ-CPD * H-UPDATE-FACTOR * H-DRG-WT.                 CL**4
+138500                                                                     CL**4
+138600 3500-CALC-PERDIEM-AMT.                                              CL**4
+138700     MOVE B-LOS TO H-COV-DAYS.                                       CL**4
+138800                                                                     CL**4
+138900     IF  H-COV-DAYS = 0                                              CL**4
+139000         MOVE 1 TO H-COV-DAYS.                                       CL**4
+139100                                                                     CL**4
+139200     COMPUTE H-HSP-PART ROUNDED =                                    CL**4
+139300        H-HSP-PART / H-ALOS * H-COV-DAYS                             CL**4
+139400        ON SIZE ERROR MOVE 0 TO H-HSP-PART.                          CL**4
+139500                                                                     CL**4
+139600     COMPUTE H-FSP-PART ROUNDED =                                    CL**4
+139700        H-FSP-PART / H-ALOS * H-COV-DAYS                             CL**4
+139800        ON SIZE ERROR MOVE 0 TO H-FSP-PART.                          CL**4
+139900                                                                     CL**4
+140000 3600-CALC-OUTLIER.                                                  CL**4
+140100     MOVE 0.60 TO H-DAYOUT-PCT H-CSTOUT-PCT.                         CL**4
+140200                                                                     CL**4
+140300     IF  HOLD-BILL-DATE > '880331'                                   CL**4
+140400         IF  B-DRG = 456 OR 457 OR 458 OR 459 OR 460 OR 472          CL**4
+140500             MOVE 0.90 TO H-DAYOUT-PCT H-CSTOUT-PCT.                 CL**4
+140600                                                                     CL**4
+140700     MOVE 0.7439   TO H-LABOR-PCT.                                   CL**4
+140800     MOVE 0.2561   TO H-NLABOR-PCT.                                  CL**4
+140900     MOVE 0.660    TO H-CSTCHG-RATIO.                                CL**4
+141000     MOVE 2.000    TO H-CST-MULTIPLE.                                CL**4
+141100     MOVE 14000.00 TO H-CST-THRESH.                                  CL**4
+141200                                                                     CL**4
+141300***********************************************************          CL**4
+141400***  DAY OUTLIER CALCULATION                                         CL**4
+141500                                                                     CL**4
+141600     IF  PPS-OUTLIER-DAYS > 0                                        CL**4
+141700     COMPUTE H-OUTDAY-PART  =                                        CL**4
+141800         H-DAYOUT-PCT *  H-FSP-PART / H-ALOS * PPS-OUTLIER-DAYS      CL**4
+141900         ON SIZE ERROR MOVE 0 TO H-OUTDAY-PART.                      CL**4
+142000                                                                     CL**4
+142100***********************************************************          CL**4
+142200***  COST OUTLIER CALCULATION                                        CL**4
+142300                                                                     CL**4
+142400     COMPUTE H-DOLLAR-THRESHOLD ROUNDED =                            CL**4
+142500         (H-CST-THRESH * H-LABOR-PCT  * H-WAGE-INDX) +               CL**4
+142600         (H-CST-THRESH * H-NLABOR-PCT * H-COLA).                     CL**4
+142700                                                                     CL**4
+142800     COMPUTE H-COST-OUTLIER ROUNDED =                                CL**4
+142900         H-CST-MULTIPLE * H-FSP-PART.                                CL**4
+143000                                                                     CL**4
+143100     IF  H-DOLLAR-THRESHOLD > H-COST-OUTLIER                         CL**4
+143200         MOVE H-DOLLAR-THRESHOLD TO H-COST-OUTLIER.                  CL**4
+143300                                                                     CL**4
+143400     PERFORM 3700-CALC-IND-TEACHING.                                 CL**4
+143500     MOVE 0 TO H-DSH-PERCENT.                                        CL**4
+143600                                                                     CL**4
+143700     IF  P-DSH-PERCENT NUMERIC                                       CL**4
+143800         MOVE P-DSH-PERCENT TO H-DSH-PERCENT.                        CL**4
+143900                                                                     CL**4
+144000     COMPUTE H-BILL-COSTS ROUNDED =                                  CL**4
+144100         B-CHARGES-CLAIMED * H-CSTCHG-RATIO /                        CL**4
+144200         (1 + H-IND-TEACHING + H-DSH-PERCENT)                        CL**4
+144300         ON SIZE ERROR MOVE 0 TO H-BILL-COSTS.                       CL**4
+144400                                                                     CL**4
+144500     IF  H-BILL-COSTS > H-COST-OUTLIER                               CL**4
+144600         COMPUTE H-OUTCST-PART =                                     CL**4
+144700         H-CSTOUT-PCT * (H-BILL-COSTS - H-COST-OUTLIER).             CL**4
+144800                                                                     CL**4
+144900     IF  PAY-WITHOUT-COST                                            CL**4
+145000         MOVE 0 TO H-OUTCST-PART.                                    CL**4
+145100                                                                     CL**4
+145200***********************************************************          CL**4
+145300***  DAY OUTLIER PRECEDENCE                                          CL**4
+145400                                                                     CL**4
+145500     IF  HOLD-BILL-DATE < '881101'                                   CL**4
+145600         IF  H-OUTDAY-PART > 0 OR H-OUTCST-PART > 0                  CL**4
+145700             IF  H-OUTDAY-PART > 0                                   CL**4
+145800                 MOVE H-OUTDAY-PART TO H-OUTLIER-PART                CL**4
+145900                 MOVE 01 TO PPS-RTC                                  CL**4
+146000             ELSE                                                    CL**4
+146100                 MOVE H-OUTCST-PART TO H-OUTLIER-PART                CL**4
+146200                 MOVE 02 TO PPS-RTC.                                 CL**4
+146300                                                                     CL**4
+146400                                                                     CL**4
+146500 3700-CALC-IND-TEACHING.                                             CL**4
+146600                                                                     CL**4
+146700         COMPUTE H-IND-TEACHING =                                    CL**4
+146800             2.0 * ((1 + H-INTERN-RATIO) ** .405  - 1).              CL**4
+146900                                                                     CL**4
+147000 3800-CALC-BLEND-AMT.                                                CL**4
+147100     IF  H-CMI-ADJ-CPD = 0                                           CL**4
+147200         MOVE 0.00 TO H-HSP-PCT                                      CL**4
+147300         MOVE 1.00 TO H-FSP-PCT.                                     CL**4
+147400                                                                     CL**4
+147500     COMPUTE PPS-HSP-PART ROUNDED =                                  CL**4
+147600         H-HSP-PCT * H-HSP-PART.                                     CL**4
+147700                                                                     CL**4
+147800     COMPUTE PPS-FSP-PART ROUNDED =                                  CL**4
+147900         H-FSP-PCT * H-FSP-PART.                                     CL**4
+148000                                                                     CL**4
+148100     COMPUTE PPS-OUTLIER-PART ROUNDED =                              CL**4
+148200             H-FSP-PCT * H-OUTLIER-PART.                             CL**4
+148300                                                                     CL**4
+148400     MOVE ZERO TO PPS-DSH-ADJ.                                       CL**4
+148500                                                                     CL**4
+148600     IF  P-DSH-PERCENT NUMERIC                                       CL**4
+148700             COMPUTE PPS-DSH-ADJ ROUNDED =                           CL**4
+148800             (PPS-FSP-PART + PPS-OUTLIER-PART) * P-DSH-PERCENT.      CL**4
+148900                                                                     CL**4
+149000     PERFORM 3700-CALC-IND-TEACHING.                                 CL**4
+149100                                                                     CL**4
+149200     COMPUTE PPS-INDTEACH-ADJ ROUNDED =                              CL**4
+149300         (PPS-FSP-PART + PPS-OUTLIER-PART) * H-IND-TEACHING.         CL**4
+149400                                                                     CL**4
+149500     COMPUTE PPS-TOTAL-PAYMENT =                                     CL**4
+149600             PPS-HSP-PART     + PPS-FSP-PART +                       CL**4
+149700             PPS-OUTLIER-PART + PPS-DSH-ADJ.                         CL**4
+149800                                                                     CL**4
+149900******        L A S T   S O U R C E   S T A T E M E N T   *****      CL**4

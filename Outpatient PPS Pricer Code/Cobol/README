@@ -1,0 +1,397 @@
+      *********************************************
+      *    08/13/2021 RELEASE - V202140           *
+      *               PRODUCTION                  *
+      *********************************************
+NOTE TO: Shared System Coordinators, MEDICARE Coordinators
+
+SUBJECT: Outpatient Prospective Payment System (OPPS) Pricer System
+         Release, Version 202140,CR#12436
+(August 13, 2021)  --ACTION--refer to CMS change request CR#12436
+This OPPS Pricer release is the updated version and is designed for
+implementation in conjunction with the October version OCE/APC.
+
+************************* IMPORTANT NOTE ***************************
+FISS will compile OPPSCAL internally as OPPSWI19 copybook is too large
+to compile within CMS mainframe. FISS will test OPPSCAL using the
+OPPSWI19 copybook and communicate findings with CMS.
+************************* IMPORTANT NOTE ***************************
+
+Version 2021.4.0 includes the following updates in OPPSCAL:
+-----------------------------------------------------------------
+2021.4.0  - UPDATED W-STORAGE-REF
+          - UPDATED CAL-VERSION
+          - UPDATED BASEAPCS AND OPPSAPCS
+            -'02034','09538','09539'
+          - (Site Neutral) REVERT TO PAY 70% OF APC WITH PMF = 'A'
+            FOR CY 2019 ('PO' MODIFIER)
+            Changed in response to the Supreme Court's
+            decision regarding the AHA Site Neutrality case
+
+A partitioned data set (PDS) of the code
+(MU00.@BF12390.OPPS.V202140.COBOL) is at the CMS Data Center for users
+to obtain by Connect:Direct (Network DataMover).
+
+The 28 members listed below comprise the Pricer, but only the modules
+that changed since the previous release are included in the PDS.
+
+1  source program - OPPSCAL.
+
+16 copybooks  - --------,OPPSWNXC,OPPSAPCS,--------,--------,--------,
+                --------,--------,--------,--------,--------,--------,
+                --------,OPPSPTRH,OPPSPTRO,OPPSPTCH,OPPSPTCO,--------,
+                --------,--------,--------,--------,OPPSPTDO,--------,
+                --------,--------,DEVRED13,OPPSMH13,OPPSPH13,DEVCR14 ,
+                OPPSMH14,OPPSPH14,DEVCR15 ,--------,OPPSOUTM,OPPSWI19.
+
+8  databooks  - BASEAPCS,--------,BASEWNXC,BASEWNXF,BASEPTRH,BASEPTRO,
+                BASEPTCH,BASEPTCO,BASEPTDO.
+
+3  text files - copy of this Release Memorandum, the manifest,
+                and a list of the return codes (expanded by user notes)
+              - README,RTNCODES,MANIFEST.
+
+
+If you have any questions concerning this release or any other OPPS
+Pricer-related issues, please call Fred Rooke at (404) 562-7205.
+
+
+
+
+
+                              Gabriel Farmer
+                              Computer Specialist/Systems Analyst
+                              Division of Data Systems
+                              CMS/CMM/PBG/DDS
+
+
+
+                              Page 1 of 2
+OPPS Pricer Release Notes:
+
+Below are brief descriptions of the OPPS Pricer modules to be used for
+the system plus a copy of the linkage Section and the CALL statement
+needed to access the module.  This list includes all members that have
+been associated with the OPPS Pricer software (including those no
+longer used).
+
+BASEAPCS - human-readable data from which the OPPSAPCS copybook is built
+
+BASEPTCH - human-readable data from which the OPPSPTCH copybook is built
+
+BASEPTCO - human-readable data from which the OPPSPTCO copybook is built
+
+BASEPTDO - human-readable data from which the OPPSPTDO copybook is built
+
+BASEPTRH - human-readable data from which the OPPSPTRH copybook is built
+
+BASEPTRO - human-readable data from which the OPPSPTRO copybook is built
+
+BASEWINX - human-readable data from which the OPPSWINX copybook is built
+
+BASEWNXC - human-readable data from which the OPPSWNXC copybook is built
+
+BASEWNXF - basewnxc with only two  wage index columns for FISS.
+
+DEVRED07 - copybook of 2007 device reduction APCs and reduction amounts
+
+DEVRED08 - copybook of 2008 device reduction APCs and reduction amounts
+
+DEVRED09 - copybook of 2009 device reduction APCs and reduction amounts
+
+DEVRED10 - copybook of 2010 device reduction APCs and reduction amounts
+
+DEVRED11 - copybook of 2011 device reduction APCs and reduction amounts
+
+DEVRED12 - copybook of 2012 device reduction APCs and reduction amounts
+
+DEVRED13 - copybook of 2013 device reduction APCs and reduction amounts
+
+DEVCR14  - copybook of 2014 device credit eligible apcs and credit caps
+
+DEVCR15  - copybook of 2015 device credit eligible apcs and credit caps
+
+OPPSAPCS - copybook of APC groups for OPPSCAL,
+           expanded to include additional APC groups
+OPPSCAL  - source code for OPPS pricing subroutine
+
+OPPSMH08 - copybook of CY 2008 mental health HCPCS
+
+OPPSMH09 - copybook of CY 2009 mental health HCPCS
+
+OPPSMH10 - copybook of CY 2010 mental health HCPCS
+
+OPPSMH12 - copybook of CY 2012 mental health HCPCS
+
+OPPSMH13 - copybook of CY 2013 mental health HCPCS
+
+OPPSMH14 - copybook of CY 2014 mental health HCPCS
+
+OPPSOF02 - copybook of device APC groups with an offset amount,
+           for SI ' H' processing for OPPSCAL for 2002
+OPPSOF03 - copybook of device APC groups with an offset amount,
+           for SI ' H' processing for OPPSCAL for 2003
+OPPSOF04 - copybook of device APC groups with an offset amount,
+           for SI ' H' processing for OPPSCAL for 2004, 2005
+OPPSOF06 - copybook of device APC groups with an offset amount,
+           for SI ' H' processing for OPPSCAL for 2006
+OPPSOF07 - copybook of device APC groups with an offset amount,
+           for SI ' H' processing for OPPSCAL for 2007
+OPPSOF08 - copybook of device APC groups with an offset amount,
+           for SI ' H' processing for OPPSCAL for 2008
+OPPSOUTM - copybook of outmigration adjustments by FIPS
+           county code
+OPPSPH08 - copybook of CY 2008 partial hospitalization HCPCS
+
+OPPSPH09 - copybook of CY 2009 partial hospitalization HCPCS
+
+OPPSPH10 - copybook of CY 2010 - 2012 partial hospitalization HCPCS
+
+OPPSPH13 - copybook of CY 2013 partial hospitalization HCPCS
+
+OPPSPH14 - copybook of CY 2014 partial hospitalization HCPCS
+
+OPPSPTCH - copybook of pass-through contrast agent hcpcs for OPPSCAL
+
+OPPSPTCO - copybook of pass-through contrast agent offsets for OPPSCAL
+
+OPPSPTDO - copybook of pass-through device offsets for OPPSCAL
+
+OPPSPTRH - copybook of pass-through radiopharm. hcpcs for OPPSCAL
+
+OPPSPTRO - copybook of pass-through radiopharm. offsets for OPPSCAL
+
+OPPSWINX - copybook of wage indices by MSA for OPPSCAL
+
+OPPSWNXC - copybook of wage indices by CBSA for OPPSCAL
+
+OPPSWI19 - copybook of previous CY wage indices for OPPSCAL (2019)
+
+RTNCODES - list of OPPS Pricer claim and line level return codes
+
+SSRFBN09 - copybook of CY 2009 state-specific rural floor budget
+           neutrality (SSRFBN) factors
+SSRFBN10 - copybook of CY 2010 state-specific rural floor budget
+           neutrality (SSRFBN) factors: 01/01/2010 - 06/30/2010
+SSRFB10B - copybook of CY 2010 state-specific rural floor budget
+           neutrality (SSRFBN) factors: 07/01/2010 - 12/31/2010
+README   - copy of this memorandum
+
+MANIFEST - listing of the included and excluded members
+
+This is the LINKAGE SECTION defined in OPPSCAL.
+
+      ***************************************************************   00000100
+      *   WHEN FISS CALLS THIS PROGRAM, THEY GET THE LINKAGE        *   00000300
+      *   SECTION.                                                  *   00000400
+      ***************************************************************   00000600
+
+      ***************************************************************
+      * LAYUP TABLE AREA FOR OUTPATIENT PROVIDER SPECIFIC RECORD    *
+      ***************************************************************
+
+       01  L-PROV-SPEC-AREA.
+               05  L-PSF-NPI                    PIC X(08).
+               05  L-PSF-NPI-FILLER             PIC X(02).
+               05  L-PSF-PROV-OSCAR.
+                 10  L-PSF-PROV-ST              PIC X(02).
+                 10  L-PSF-PROV-3456            PIC X(04).
+               05  L-PSF-EFFDT                  PIC 9(08).
+               05  L-PSF-FY-BEGIN-DT            PIC 9(08).
+               05  L-PSF-REPORT-DT              PIC 9(08).
+               05  L-PSF-TERMDT                 PIC 9(08).
+               05  L-PSF-WAIVE-IND              PIC X(01).
+               05  L-PSF-FI-NUM                 PIC 9(05).
+               05  L-PSF-PROV-TYPE              PIC X(02).
+               05  L-PSF-SPCL-LOCATION-IND      PIC X(01).
+               05  L-PSF-WGIDX-RECLASS          PIC X(01).
+               05  L-PSF-GEO-MSA                PIC X(04).
+               05  L-PSF-WI-MSA                 PIC X(04).
+               05  L-PSF-COLA                   PIC 9V9(03).
+               05  L-PSF-STATE-CODE             PIC 9(02).
+               05  L-PSF-TOPS-INDICATOR         PIC X(01).
+               05  L-PSF-HOSP-QUAL-IND          PIC X(01).
+               05  FILLER                       PIC X(01).
+               05  L-PSF-OPCOST-RATIO           PIC 9V9(03).
+               05  L-PSF-GEO-CBSA               PIC X(05).
+               05  L-PSF-WI-CBSA                PIC X(05).
+               05  L-PSF-SPEC-WGIDX             PIC 9(02)V9(04).
+               05  L-PSF-SPEC-PYMT-IND          PIC X(01).
+               05  L-PSF-APC-LINE-CNT           PIC 9(04).
+               05  L-PSF-ESRD-CHILD-QUAL-IND    PIC X(01).
+               05  L-PSF-DEVICE-CCR             PIC 9V9(03).
+               05  L-PSF-CARRIER-LOCAL          PIC X(7).
+               05  L-PSF-COUNTY-CODE            PIC 9(5).
+               05  L-PSF-PYMT-CBSA              PIC X(5).
+               05  L-PSF-PYMT-MODEL-ADJ         PIC 9V9(05).
+               05  L-PSF-MPA                    PIC X(05).
+               05  L-PSF-SUPPL-WI-IND           PIC X(01).
+               05  L-PSF-SUPPL-WI               PIC 9(02)V9(04).
+               05  FILLER                       PIC X(22).
+               05  L-PSF-APC-TABLE     OCCURS 999 TIMES
+                        DEPENDING ON L-PSF-APC-LINE-CNT.
+                   10  L-PSF-APC                PIC X(04).
+                   10  L-PSF-RED-COIN           PIC 9(04)V99.
+
+
+      ***************************************************************   00000100
+      *  INPUT RECORD FROM THE OCE/STANDARD SYSTEM                  *
+      *-------------------------------------------------------------*
+      * BELOW ARE THE VARIABLES THAT WILL BE PASSED                 *
+      * TO PRICER FROM THE OCE BEGINNING OCT. 1, 2005 THERE WILL BE *
+      *    - INCREASED SIZE OF SERVICE AND PAYMENT - 1 TO 2 BYTES   *
+      *    - INCREASED SIZE OF PYMT ADJUSTMENT FLAG - 1 TO 2 BYTES  *
+      *    CY 2009 EDITS - MADE 11/10/2008:                         *
+      *    - INCREASED SIZE OF SERVICE UNITS - 7 TO 9 BYTES         *
+      *    - ADDED COMPOSITE ADJUSTMENT FLAG - 2 BYTES              *
+      *    CY 2021 EDITS - MADE 03/25/2021:                         *
+      *    - ADDED PAYMENT ADJUSTMENT FLAG 2 - 2 BYTES              *
+      ***************************************************************
+       01  OPPS-LINE-CNT                  PIC 9(08) COMP.
+       01  OCE-DATA.
+           05  OPPS-OCE-LINE OCCURS 450 TIMES
+                     DEPENDING ON OPPS-LINE-CNT.
+               10  OPPS-HCPCS.
+                 15  OPPS-ALPHA           PIC X(01).
+                 15  FILLER               PIC X(04).
+               10  OPPS-GRP.
+                 15  FILLER               PIC X(01).
+                 15  OPPS-APC             PIC X(04).
+               10  OPPS-HCPCS-APC         PIC X(05).
+               10  OPPS-SRVC-IND          PIC X(02).
+               10  OPPS-PYMT-IND          PIC X(02).
+               10  OPPS-DISC-FACT         PIC 9(01).
+               10  OPPS-LITEM-DR-FLAG     PIC X(01).
+               10  OPPS-PKG-FLAG          PIC X(01).
+               10  OPPS-PYMT-ADJ-FLAG     PIC X(02).
+               10  OPPS-SITE-SRVC-FLAG    PIC X(01).
+               10  OPPS-SRVC-UNITS        PIC 9(09).
+               10  OPPS-SUB-CHRG          PIC 9(08)V99.
+               10  OPPS-LITEM-ACT-FLAG    PIC X(01).
+               10  OPPS-COMP-ADJ-FLAG     PIC X(02).
+               10  OPPS-PYMT-ADJ-FLAG2    PIC X(02).
+       01  L-SERVICE-FROM-DATE       PIC 9(08).
+       01  BENE-DEDUCT               PIC 9(03)V9(02).
+       01  BENE-BLOOD-PINTS          PIC 9(01).
+
+
+      ***************************************************************
+      *   BELOW ARE THE VARIABLES THAT WILL BE PASSED BACK          *
+      *   TO SS ASSOCIATED WITH THE BILL BEING PROCESSED            *
+      *   - EFF. 04/01/2002 CALCULATE LINE ITEM OUTIER PAYMENT      *
+      ***************************************************************
+       01  A-ADDITIONAL-VARIABLES.
+           05  A-CALC-VERS             PIC X(07).
+           05  A-TOTAL-CLM-DEDUCT      PIC 9(03)V9(02).
+           05  A-OUTLIER-PYMT          PIC 9(07)V9(02).
+           05  A-TOT-CLM-PYMT          PIC 9(07)V9(02).
+           05  A-TOT-CLM-CHRG          PIC 9(07)V9(02).
+           05  A-CLM-RTN-CODE          PIC 9(02).
+           05  A-MSA                   PIC X(04).
+           05  A-CBSA                  PIC X(05).
+           05  A-WINX                  PIC S9V9(04).
+           05  A-BLOOD-PINTS-USED      PIC 9(01).
+           05  A-BLOOD-DEDUCT-DUE      PIC 9(05)V9(02).
+           05  A-DEVICE-CREDIT-QD      PIC 9(07)V9(02).
+           05  A-LINE-ITEMS OCCURS 450 TIMES
+                   DEPENDING ON OPPS-LINE-CNT.
+             10  A-LITEM-PYMT          PIC 9(07)V9(02).
+             10  A-LITEM-REIM          PIC 9(07)V9(02).
+             10  A-TOTAL-LN-DEDUCT     PIC 9(03)V9(02).
+             10  A-ADJ-COIN            PIC 9(05)V9(02).
+             10  A-RED-COIN            PIC 9(05)V9(02).
+             10  A-BLOOD-LN-DEDUCT     PIC 9(05)V9(02).
+             10  A-RETURN-CODE         PIC 9(02).
+
+
+
+      ***************************************************************
+      *   BELOW ARE THE CLAIM SERVICE LINES (INPUT FROM FISS)       *
+      ***************************************************************
+       01  OCE-IN-DATE.
+           05  OCE-IN-LINES OCCURS 450 TIMES.
+              10  FILLER               PIC X(15).
+              10  OPPS-LITEM-DOS       PIC 9(08).
+              10  OPPS-LITEM-RVCD      PIC X(04).
+              10  FILLER               PIC X(19).
+
+
+      ***************************************************************
+      *    CY 2012 EDIT - MADE 02/07/2012:                          *
+      *    - ADDED TYPE OF BILL - 3 BYTES                           *
+      ***************************************************************
+       01  L-TYPE-OF-BILL            PIC X(03).
+           88 BILL-TYPE-14X          VALUE '14A' THRU '149'.
+
+
+      ***************************************************************
+      *    CY 2014 EDIT - EFFECTIVE 01/01/2014:                     *
+      *    - ADDED DEVICE CREDIT - 9 BYTES  (VALUE CODE FD)         *
+      ***************************************************************
+       01  L-DEVICE-CREDIT      PIC 9(07)V9(02).
+
+
+      ***************************************************************
+      *    CY 2016 EDIT - EFFECTIVE 01/01/2016:                     *
+      *    - ADDED 10 VALUE CODES - QN-QW - 9 BYTES EACH            *
+      ***************************************************************
+       01  L-PAYER-ONLY-VALUE-CODES.
+      *-------------------------------------------------------------*
+      *    QN, QO & QP - FOR PASS-THROUGH DEVICE OFFSET             *
+      *-------------------------------------------------------------*
+           05  L-PAYER-ONLY-VC-QN   PIC 9(07)V9(02).
+           05  L-PAYER-ONLY-VC-QO   PIC 9(07)V9(02).
+           05  L-PAYER-ONLY-VC-QP   PIC 9(07)V9(02).
+      *-------------------------------------------------------------*
+      *    QQ - FOR TERMINATED PROCEDURE WITH PASS-THROUGH DEVICE   *
+      *-------------------------------------------------------------*
+           05  L-PAYER-ONLY-VC-QQ   PIC 9(07)V9(02).
+      *-------------------------------------------------------------*
+      *    QR, QS & QT - FOR PT DRUG/BIOLOGICAL OFFSETS             *
+      *-------------------------------------------------------------*
+           05  L-PAYER-ONLY-VC-QR   PIC 9(07)V9(02).
+           05  L-PAYER-ONLY-VC-QS   PIC 9(07)V9(02).
+           05  L-PAYER-ONLY-VC-QT   PIC 9(07)V9(02).
+      *-------------------------------------------------------------*
+      *    QU - FOR DEVICE CREDIT CAP AMOUNT                        *
+      *-------------------------------------------------------------*
+           05  L-PAYER-ONLY-VC-QU   PIC 9(07)V9(02).
+      *-------------------------------------------------------------*
+      *    QV & QW - FOR FUTURE USE                                 *
+      *-------------------------------------------------------------*
+           05  L-PAYER-ONLY-VC-QV   PIC 9(07)V9(02).
+           05  L-PAYER-ONLY-VC-QW   PIC 9(07)V9(02).
+      ***************************************************************
+      *    CY 2017 EDIT - EFFECTIVE 01/01/2017:                     *
+      *    - ADDED 2 NEW PRIOR TOTALS                               *
+      ***************************************************************
+       01  L-PRIOR-OUTL-TOTAL       PIC 9(10)V9(02).
+       01  L-PRIOR-PYMT-TOTAL       PIC 9(10)V9(02).
+
+
+
+      ******************************************************************
+      ******************************************************************
+      ***                                                            ***
+      **                                                              **
+      **        OUTPATIENT PROSPECTIVE PAYMENT SYSTEM PRICER          **
+      **        --------------------------------------------          **
+      **                 PROCEDURE DIVISION START                     **
+      **                                                              **
+      ***                                                            ***
+      ******************************************************************
+      ******************************************************************
+
+       PROCEDURE DIVISION  USING OPPS-LINE-CNT
+                                 OCE-DATA
+                                 A-ADDITIONAL-VARIABLES
+                                 L-PROV-SPEC-AREA
+                                 L-SERVICE-FROM-DATE
+                                 BENE-DEDUCT
+                                 BENE-BLOOD-PINTS
+                                 OCE-IN-DATE
+                                 L-TYPE-OF-BILL
+                                 L-DEVICE-CREDIT
+                                 L-PAYER-ONLY-VALUE-CODES
+                                 L-PRIOR-OUTL-TOTAL
+                                 L-PRIOR-PYMT-TOTAL.
+

@@ -1,0 +1,27 @@
+       01  W-DEVICE-CREDIT14.
+           03                          PIC X(33)   VALUE
+               '003914863380040025381000610490313'.
+           03                          PIC X(33)   VALUE
+               '008906074980090049310001040322833'.
+           03                          PIC X(33)   VALUE
+               '010602170750107202447101082645851'.
+           03                          PIC X(33)   VALUE
+               '022711897080229040819802592592885'.
+           03                          PIC X(33)   VALUE
+               '029304975170315202943103182408200'.
+           03                          PIC X(33)   VALUE
+               '031908057440385052580203860947391'.
+           03                          PIC X(33)   VALUE
+               '042505832430648022755306540585869'.
+           03                          PIC X(33)   VALUE
+               '065507677650656045929306740466955'.
+           03                          PIC X(11)   VALUE
+               '06800460281'.
+       01  W-DEVICE-CREDIT-TABLE REDEFINES W-DEVICE-CREDIT14.
+           03  DEV-CR14 OCCURS 25 TIMES
+                   ASCENDING KEY IS DEV-APC14
+                   INDEXED BY DEV-INDX14.
+               05  DEV-APC14           PIC X(4).
+               05  DEV-CAP14           PIC 9(5)V99.
+       01  DEV-MAX14                   PIC S9(7)   COMP-3
+                                       VALUE +25.

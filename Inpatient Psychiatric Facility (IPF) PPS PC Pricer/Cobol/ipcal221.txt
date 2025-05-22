@@ -1,0 +1,1438 @@
+000100 IDENTIFICATION DIVISION.
+000200 PROGRAM-ID.    IPCAL221.
+000300*REMARKS.       CMS.
+000400******************************************************************
+000500*  FIRST IPF STARTED 01/01/2005 - NEW IPF YEAR BEGINS OCTOBER 1  *
+000600******************************************************************
+000601*--------------- C R # 12417   ----------------------------------*
+000610******************************************************************
+000700*--------------- U P D A T E S ----------------------------------*
+000800* UPDATED OUTLIER THRESHOLD AMOUNT:                              *
+001800*                                                                *
+001900*    MOVE 16040.00 TO IPF-OUTL-THRES-AMT.                        *
+002200*                                                                *
+002300******************************************************************
+002400 DATE-COMPILED.
+002500 ENVIRONMENT DIVISION.
+002600 CONFIGURATION SECTION.
+002700 SOURCE-COMPUTER.            IBM-370.
+002800 OBJECT-COMPUTER.            IBM-370.
+002900 INPUT-OUTPUT  SECTION.
+003000 FILE-CONTROL.
+003100     EJECT
+003200 DATA DIVISION.
+003300 FILE SECTION.
+003400
+003500 WORKING-STORAGE SECTION.
+003600 01  FILLER                         PIC X(40)  VALUE
+003700     'IPCAL221 - W O R K I N G   S T O R A G E'.
+003800 01  CAL-VERSION             PIC X(05)  VALUE 'C22.1'.
+003810 01  WS-SUM-LOS-PD           PIC 9(6)   VALUE 0.
+003900 01  WS-IPF-GEO-RURAL-ADJ    PIC 9(01)V9(03).
+004000 01  SUB                     PIC 999   VALUE 0.
+004100 01  SUB2                    PIC 999   VALUE 0.
+004200 01  DAYS-UPTO-21            PIC 9(05) VALUE 0.
+004300 01  DAYS-OVER-21            PIC 9(05) VALUE 0.
+004400 01  DAYS-UPTO-9             PIC 9(05) VALUE 0.
+004500 01  DAYS-OVER-9             PIC 9(05) VALUE 0.
+004600 01  X1                      PIC 9(05)  COMP SYNC VALUE 0.
+004700 01  X2                      PIC 9(05)  COMP SYNC VALUE 0.
+004800 01  HOLDADJ                 PIC 9(02)V9(4)  COMP SYNC VALUE 0.
+004900 01  WK-FED-PORTION          PIC 9(07)V9(2)  VALUE 0.
+005000 01  WK-TEACH-PORTION        PIC 9(07)V9(2)  VALUE 0.
+005100 01  WK-PER-DIEM-AMT         PIC 9(07)V9(2)  VALUE 0.
+005200 01  WK-ADJ-PER-DIEM-STEP1   PIC 9(07)V9(2)  VALUE 0.
+005300 01  WK-ADJ-PER-DIEM-STEP2   PIC 9(07)V9(2)  VALUE 0.
+005400 01  WK-TOTAL-LOS            PIC 9(03) VALUE 0.
+005500 01  SW-CATS.
+005600     05 SW-STOP-CATS         PIC X     VALUE SPACE.
+005700     05 SW-CAT1              PIC X     VALUE SPACE.
+005800     05 SW-CAT2              PIC X     VALUE SPACE.
+005900     05 SW-CAT3              PIC X     VALUE SPACE.
+006000     05 SW-CAT4              PIC X     VALUE SPACE.
+006100     05 SW-CAT5              PIC X     VALUE SPACE.
+006200     05 SW-CAT6              PIC X     VALUE SPACE.
+006300     05 SW-CAT6P             PIC X     VALUE SPACE.
+006400     05 SW-CAT7              PIC X     VALUE SPACE.
+006500     05 SW-CAT8              PIC X     VALUE SPACE.
+006600     05 SW-CAT9              PIC X     VALUE SPACE.
+006700     05 SW-CAT10             PIC X     VALUE SPACE.
+006800     05 SW-CAT11             PIC X     VALUE SPACE.
+006900     05 SW-CAT12             PIC X     VALUE SPACE.
+007000     05 SW-CAT13             PIC X     VALUE SPACE.
+007100     05 SW-CAT14             PIC X     VALUE SPACE.
+007200     05 SW-CAT15             PIC X     VALUE SPACE.
+007300     05 SW-CAT16             PIC X     VALUE SPACE.
+007400     05 SW-CAT17             PIC X     VALUE SPACE.
+007500
+007600     EJECT
+007700***************************************************************
+007800*    COMORBIDITY TABLES                                       *
+007900***************************************************************
+008000     COPY COMOR220.
+008100     EJECT
+008200******************************************************************
+008300***    INREC IS A SKEL OF FILE TO BE USED   FOR TESTING ONLY
+008400*          OR IT IS THE CODE PASSED FROM PRICER
+008500***************************************************************
+008600
+008700 01  WK-COMORBIDITY-DATA.
+008800     05  DDX.
+008900         10  DDXX         OCCURS 25 TIMES.
+009000             20 WK-DDXX1     PIC X.
+009100             20 WK-DDXX2     PIC X.
+009200             20 WK-DDXX3     PIC X.
+009300             20 WK-DDXX4     PIC X.
+009400             20 WK-DDXX5     PIC X.
+009500             20 WK-DDXX6     PIC X.
+009600             20 WK-DDXX7     PIC X.
+009700     05  SRG.
+009800         10  SRGX         PIC X(07)  OCCURS 25 TIMES.
+009900
+010000***************************************************************
+010100* NO TABLE CHANGES FOR FY2022                                 *
+010200***************************************************************
+010300 01  DRG-FACTOR-TABLE.
+010400     02  TB-DRG-DATA.
+010500         10  FILLER      PIC X(07) VALUE '056 105'.
+010600         10  FILLER      PIC X(07) VALUE '057 105'.
+010700         10  FILLER      PIC X(07) VALUE '080 107'.
+010800         10  FILLER      PIC X(07) VALUE '081 107'.
+010900         10  FILLER      PIC X(07) VALUE '876 122'.
+011000         10  FILLER      PIC X(07) VALUE '880 105'.
+011100         10  FILLER      PIC X(07) VALUE '881 099'.
+011200         10  FILLER      PIC X(07) VALUE '882 102'.
+011300         10  FILLER      PIC X(07) VALUE '883 102'.
+011400         10  FILLER      PIC X(07) VALUE '884 103'.
+011500         10  FILLER      PIC X(07) VALUE '885 100'.
+011600         10  FILLER      PIC X(07) VALUE '886 099'.
+011700         10  FILLER      PIC X(07) VALUE '887 092'.
+011800         10  FILLER      PIC X(07) VALUE '894 097'.
+011900         10  FILLER      PIC X(07) VALUE '895 102'.
+012000         10  FILLER      PIC X(07) VALUE '896 088'.
+012100         10  FILLER      PIC X(07) VALUE '897 088'.
+012200     02  TB-DRG-DATA2 REDEFINES TB-DRG-DATA OCCURS 17
+012300             ASCENDING KEY IS TB-DRG-CODE
+012400             INDEXED BY DRGSUB.
+012500          05  TB-DRG-CODE           PIC XXX.
+012600          05  TB-DRG-ADJUSTMENTS  OCCURS 1.
+012700              10  FILLER            PIC X.
+012800              10  TB-DRG-FACTOR     PIC 9V99.
+012900
+013000***************************************************************
+013100* NO TABLE CHANGES FOR FY2022                                 *
+013200***************************************************************
+013300 01  CODE-FIRST-TABLE.
+013400     02  TB-FST-DATA.
+013500         10  FILLER      PIC X(11) VALUE 'F0150   103'.
+013600         10  FILLER      PIC X(11) VALUE 'F0151   103'.
+013700         10  FILLER      PIC X(11) VALUE 'F0280   103'.
+013800         10  FILLER      PIC X(11) VALUE 'F0281   103'.
+013900         10  FILLER      PIC X(11) VALUE 'F04     103'.
+014000         10  FILLER      PIC X(11) VALUE 'F05     105'.
+014100         10  FILLER      PIC X(11) VALUE 'F060    103'.
+014200         10  FILLER      PIC X(11) VALUE 'F061    103'.
+014300         10  FILLER      PIC X(11) VALUE 'F062    103'.
+014400         10  FILLER      PIC X(11) VALUE 'F0630   103'.
+014500         10  FILLER      PIC X(11) VALUE 'F0631   103'.
+014600         10  FILLER      PIC X(11) VALUE 'F0632   103'.
+014700         10  FILLER      PIC X(11) VALUE 'F0633   103'.
+014800         10  FILLER      PIC X(11) VALUE 'F0634   103'.
+014900         10  FILLER      PIC X(11) VALUE 'F064    103'.
+015000         10  FILLER      PIC X(11) VALUE 'F068    103'.
+015100         10  FILLER      PIC X(11) VALUE 'F4542   102'.
+015200     02  TB-FST-DATA2 REDEFINES TB-FST-DATA OCCURS 17
+015300             ASCENDING KEY IS TB-FST-CODE
+015400             INDEXED BY FSTSUB.
+015500          05  TB-FST-CODE           PIC X(07).
+015600          05  TB-FST-ADJUSTMENTS  OCCURS 1.
+015700              10  FILLER            PIC X.
+015800              10  TB-FST-FACTOR     PIC 9V99.
+015900
+016000***************************************************************
+016100* NO TABLE CHANGES FOR FY2022                                 *
+016200***************************************************************
+016300 01  DAY-ADJUSTMENTS.
+016400     02  DAY-VALUES.
+016500         10  DAY1        PIC XXX  VALUE '000'.
+016600         10  DAY2        PIC XXX  VALUE '112'.
+016700         10  DAY3        PIC XXX  VALUE '108'.
+016800         10  DAY4        PIC XXX  VALUE '105'.
+016900         10  DAY5        PIC XXX  VALUE '104'.
+017000         10  DAY6        PIC XXX  VALUE '102'.
+017100         10  DAY7        PIC XXX  VALUE '101'.
+017200         10  DAY8        PIC XXX  VALUE '101'.
+017300         10  DAY9        PIC XXX  VALUE '100'.
+017400         10  DAY10       PIC XXX  VALUE '100'.
+017500         10  DAY11       PIC XXX  VALUE '099'.
+017600         10  DAY12       PIC XXX  VALUE '099'.
+017700         10  DAY13       PIC XXX  VALUE '099'.
+017800         10  DAY14       PIC XXX  VALUE '099'.
+017900         10  DAY15       PIC XXX  VALUE '098'.
+018000         10  DAY16       PIC XXX  VALUE '097'.
+018100         10  DAY17       PIC XXX  VALUE '097'.
+018200         10  DAY18       PIC XXX  VALUE '096'.
+018300         10  DAY19       PIC XXX  VALUE '095'.
+018400         10  DAY20       PIC XXX  VALUE '095'.
+018500         10  DAY21       PIC XXX  VALUE '095'.
+018600         10  DAY21-OVER  PIC XXX  VALUE '092'.
+018700     02  DAY-VALUES2 REDEFINES DAY-VALUES OCCURS 22.
+018800         10 DAY-VALUE2   PIC 9V99.
+018900     EJECT
+019000 LINKAGE SECTION.
+019100
+019200***************************************************************
+019300*    THIS DATA IS CALCULATED BY THIS PPCAL  SUBROUTINE        *
+019400*    AND PASSED BACK TO THE CALLING PROGRAM                   *
+019500*            RETURN CODE VALUES (IPF-RTC)                     *
+019600*                                                             *
+019700*            IPF-RTC 00-49 = HOW THE BILL WAS PAID            *
+019800*                                                             *
+019900*              00 = PAID NORMAL IPF PAYMENT                   *
+020000*              02 = PAID AS A COST-OUTLIER                    *
+020100*              03 = PRIOR DAYS BILL - VARIABLE PER DIEM       *
+020200*              04 = COMBO OF '02' AND '03'                    *
+020300*              60 = DRG NOT FOUND, CODES FIRST TABLE LOOK UP  *
+020400*                                                             *
+020500*                                                             *
+020600*            IPF-RTC 50-99 = WHY THE BILL WAS NOT PAID        *
+020700*              51 = NO PROVIDER SPECIFIC INFO FOUND           *
+020800*              52 = INVALID CBSA# IN PROVIDER FILE            *
+020900*                   OR INVALID WAGE INDEX                     *
+021000*              53 = WAIVER STATE - NOT CALCULATED BY PPS      *
+021100*              54 = BILL-DRG INVALID
+021200*              55 = DISCHARGE DATE < PROVIDER EFF START DATE  *
+021300*                                      OR                     *
+021400*                   DISCHARGE DATE < CBSA EFF START DATE      *
+021500*                                      OR                     *
+021600*                   DISCHARGE DATE > 20060630 START CBSA AND  *
+021700*                 SELECTED PROV EFF DATE < 20060701 START CBSA*
+021800*                   FOR PPS                                   *
+021900*              56 = INVALID LENGTH OF STAY                    *
+022000*              57 = INVALID AGE                               *
+022100*              58 = INVALID PPS FED BLEND INDICATOR           *
+022200*              98 = CANNOT PROCESS BILL OUTSIDE THIS VERSION  *
+022300***************************************************************
+022400*******************************************************
+022500*    PASSED FROM IPDRV                                *
+022600*******************************************************
+022700 01  BILL-INPUT-DATA.
+022800     05  BILL-IN-DATA.
+022900         10  BILL-NPI-NUMBER.
+023000             15  BILL-NPI            PIC X(08).
+023100             15  BILL-NPI-FILLER     PIC X(02).
+023200         10  BILL-PROVIDER-NO        PIC X(06).
+023300         10  BILL-HIC-NO             PIC X(12).
+023400         10  BILL-DISCHARGE-DATE.
+023500             15  BILL-D-CC           PIC 9(02).
+023600             15  BILL-D-YY           PIC 9(02).
+023700             15  BILL-D-MM           PIC 9(02).
+023800             15  BILL-D-DD           PIC 9(02).
+023900         10  BILL-PATIENT-STATUS     PIC X(02).
+024000         10  BILL-AGE                PIC 9(03).
+024100         10  BILL-DRG                PIC 9(03).
+024200         10  BILL-LOS                PIC 9(05).
+024300         10  BILL-OUTL-OCCUR-IND     PIC X(01).
+024400         10  BILL-SRC-OF-ADMISSION   PIC X(01).
+024500         10  BILL-ECT-NO-OF-UNITS    PIC 9(03).
+024600         10  BILL-CHARGES-CLAIMED    PIC 9(07)V9(02).
+024700         10  BILL-DIAG-PROC-DATA.
+024800             15  BILL-OTHER-DIAG-DATA   OCCURS 25 TIMES.
+024900                 20  BILL-DDXX-1ST     PIC X.
+025000                 20  FILLER            PIC X(06).
+025100             15  BILL-OTHER-PROC-DATA PIC X(07)  OCCURS 25 TIMES.
+025200         10  BILL-PRIOR-DAYS         PIC 9(03).
+025300*******************************************************
+025400*    PASSED AND RETURNED BY IPCAL                     *
+025500*******************************************************
+025600 01  IPF-DATA-VARIABLES.
+025700         10  IPF-RTC                 PIC 9(02).
+025800         10  IPF-MSA-CBSA            PIC X(05).
+025900         10  IPF-MSA-CODE REDEFINES IPF-MSA-CBSA.
+026000             15  IPF-MSA             PIC X(04).
+026100             15  FILLER              PIC X.
+026200         10  IPF-CBSA-CODE REDEFINES IPF-MSA-CBSA.
+026300             15  IPF-CBSA            PIC X(05).
+026400         10  IPF-WAGE-INDEX          PIC 9(02)V9(04).
+026500         10  IPF-LABOR-SHARE         PIC 9(01)V9(05).
+026600         10  IPF-NLABOR-SHARE        PIC 9(01)V9(05).
+026700         10  IPF-COLA                PIC 9(01)V9(03).
+026800         10  IPF-STD-FACTOR          PIC 9(01)V9(05).
+026900         10  IPF-COMORB-FACTOR       PIC 9(01)V9(05).
+027000         10  IPF-AGE-ADJ             PIC 9(01)V9(02).
+027100         10  IPF-DRG-FACTOR          PIC 9(01)V9(02).
+027200         10  IPF-GEO-RURAL-ADJ       PIC 9(01)V9(02).
+027300         10  IPF-EMERG-ADJ           PIC 9(01)V9(02).
+027400         10  IPF-TEACH-ADJ           PIC 9(01)V9(02).
+027500         10  IPF-FED-PPS-BLEND-IND   PIC X.
+027600         10  IPF-CAL-VERSION         PIC X(05).
+027700         10  IPF-CSTCHG-RATIO        PIC 9(01)V9(03).
+027800         10  FILLER                  PIC X(08).
+027900
+028000*******************************************************
+028100*    PASSED AND RETURNED BY IPCAL                     *
+028200*******************************************************
+028300 01  IPF-ADDITIONAL-VARIABLES.
+028400     02  IPF-MF-VARIABLES.
+028500         10  IPF-100PCT-STOPLOS-AMT      PIC 9(07)V9(02).
+028600         10  IPF-TOT-PAYMENT             PIC 9(07)V9(02).
+028700         10  IPF-FED-PAYMENT             PIC 9(07)V9(02).
+028800         10  IPF-FAC-PAYMENT             PIC 9(07)V9(02).
+028900         10  IPF-ECT-PAYMENT             PIC 9(07)V9(02).
+029000         10  IPF-OUTLIER-PAYMENT         PIC 9(07)V9(02).
+029100         10  IPF-OUTL-COST               PIC 9(07)V9(02).
+029200         10  IPF-OUTL-ADJ-COST           PIC 9(07)V9(02).
+029300         10  IPF-OUTL-PER-DIEM-AMT       PIC 9(07)V9(02).
+029400         10  IPF-OUTL-THRES-AMT          PIC 9(07)V9(02).
+029500         10  IPF-OUTL-THRES-ADJ-AMT      PIC 9(07)V9(02).
+029600         10  IPF-ADJUSTED-PER-DIEM-AMT   PIC 9(07)V9(02).
+029700         10  IPF-WAGE-ADJ-AMT            PIC 9(07)V9(02).
+029800         10  IPF-LABOR-BASE-AMT          PIC 9(07)V9(05).
+029900         10  IPF-NLABOR-BASE-AMT         PIC 9(07)V9(05).
+030000         10  IPF-OUTL-LABOR-BASE-AMT     PIC 9(07)V9(05).
+030100         10  IPF-OUTL-NLABOR-BASE-AMT    PIC 9(07)V9(05).
+030200         10  IPF-BUDGNUT-RATE-AMT        PIC 9(05)V9(02).
+030300         10  IPF-ECT-RATE-AMT            PIC 9(05)V9(02).
+030400         10  IPF-TEACH-PAYMENT           PIC 9(07)V9(02).
+030500         10  FILLER                      PIC X(01).
+030600      02 IPF-PC-VARIABLES.
+030700         10  IPF-PC-DATA                 PIC X(44).
+030800
+030900 01  PRICER-OPT-VERS-SW.
+031000     02  PRICER-OPTION-SW          PIC X(01).
+031100         88  VARIABLES                  VALUE 'S'.
+031200         88  PROV-RECORD-PASSED         VALUE 'P'.
+031300         88  ALL-TABLES-PASSED          VALUE 'B'.
+031400         88  PC-PRICER                  VALUE 'C'.
+031500     02  IPF-VERSIONS.
+031600         10  IPDRV-VERSION         PIC X(05).
+031700
+031800**************************************************************
+031900*      THIS IS THE PROV-RECORD THAT WILL BE PASSED BACK FROM *
+032000*      THE IPCAL056 PROGRAM FOR PROCESSING                   *
+032100**************************************************************
+032200 01  PROV-NEW-HOLD.
+032300     02  PROV-NEWREC-HOLD1.
+032400         05  P-NEW-NPI10.
+032500             10  P-NEW-NPI8             PIC X(08).
+032600             10  P-NEW-NPI-FILLER       PIC X(02).
+032700         05  P-NEW-PROVIDER-NO.
+032800             88  P-NEW-DSH-ADJ-PROVIDERS
+032900                             VALUE '180049' '190044' '190144'
+033000                                   '190191' '330047' '340085'
+033100                                   '370016' '370149' '420043'.
+033200             10  P-NEW-STATE            PIC 9(02).
+033300             10  FILLER                 PIC X(04).
+033400         05  P-NEW-DATE-DATA.
+033500             10  P-NEW-EFF-DATE.
+033600                 15  P-NEW-EFF-DT-CC    PIC 9(02).
+033700                 15  P-NEW-EFF-DT-YY    PIC 9(02).
+033800                 15  P-NEW-EFF-DT-MM    PIC 9(02).
+033900                 15  P-NEW-EFF-DT-DD    PIC 9(02).
+034000             10  P-NEW-FY-BEGIN-DATE.
+034100                 15  P-NEW-FY-BEG-DT-CC PIC 9(02).
+034200                 15  P-NEW-FY-BEG-DT-YY PIC 9(02).
+034300                 15  P-NEW-FY-BEG-DT-MM PIC 9(02).
+034400                 15  P-NEW-FY-BEG-DT-DD PIC 9(02).
+034500             10  P-NEW-REPORT-DATE.
+034600                 15  P-NEW-REPORT-DT-CC PIC 9(02).
+034700                 15  P-NEW-REPORT-DT-YY PIC 9(02).
+034800                 15  P-NEW-REPORT-DT-MM PIC 9(02).
+034900                 15  P-NEW-REPORT-DT-DD PIC 9(02).
+035000             10  P-NEW-TERMINATION-DATE.
+035100                 15  P-NEW-TERM-DT-CC   PIC 9(02).
+035200                 15  P-NEW-TERM-DT-YY   PIC 9(02).
+035300                 15  P-NEW-TERM-DT-MM   PIC 9(02).
+035400                 15  P-NEW-TERM-DT-DD   PIC 9(02).
+035500         05  P-NEW-WAIVER-CODE          PIC X(01).
+035600             88  P-NEW-WAIVER-STATE       VALUE 'Y'.
+035700         05  P-NEW-INTER-NO             PIC 9(05).
+035800         05  P-NEW-PROVIDER-TYPE        PIC X(02).
+035900             88  P-N-SOLE-COMMUNITY-PROV    VALUE '01' '11'.
+036000             88  P-N-REFERRAL-CENTER        VALUE '07' '11'
+036100                                                  '15' '17'
+036200                                                  '22'.
+036300             88  P-N-INDIAN-HEALTH-SERVICE  VALUE '08'.
+036400             88  P-N-REDESIGNATED-RURAL-YR1 VALUE '09'.
+036500             88  P-N-REDESIGNATED-RURAL-YR2 VALUE '10'.
+036600             88  P-N-SOLE-COM-REF-CENT      VALUE '11'.
+036700             88  P-N-MDH-REBASED-FY90       VALUE '14' '15'.
+036800             88  P-N-MDH-RRC-REBASED-FY90   VALUE '15'.
+036900             88  P-N-SCH-REBASED-FY90       VALUE '16' '17'.
+037000             88  P-N-SCH-RRC-REBASED-FY90   VALUE '17'.
+037100             88  P-N-MEDICAL-ASSIST-FACIL   VALUE '18'.
+037200             88  P-N-EACH                   VALUE '21' '22'.
+037300             88  P-N-EACH-REFERRAL-CENTER   VALUE '22'.
+037400             88  P-N-NHCMQ-II-SNF           VALUE '32'.
+037500             88  P-N-NHCMQ-III-SNF          VALUE '33'.
+037600         05  P-NEW-CURRENT-CENSUS-DIV   PIC 9(01).
+037700             88  P-N-NEW-ENGLAND            VALUE  1.
+037800             88  P-N-MIDDLE-ATLANTIC        VALUE  2.
+037900             88  P-N-SOUTH-ATLANTIC         VALUE  3.
+038000             88  P-N-EAST-NORTH-CENTRAL     VALUE  4.
+038100             88  P-N-EAST-SOUTH-CENTRAL     VALUE  5.
+038200             88  P-N-WEST-NORTH-CENTRAL     VALUE  6.
+038300             88  P-N-WEST-SOUTH-CENTRAL     VALUE  7.
+038400             88  P-N-MOUNTAIN               VALUE  8.
+038500             88  P-N-PACIFIC                VALUE  9.
+038600         05  P-NEW-CURRENT-DIV   REDEFINES
+038700                    P-NEW-CURRENT-CENSUS-DIV   PIC 9(01).
+038800             88  P-N-VALID-CENSUS-DIV    VALUE 1 THRU 9.
+038900         05  P-NEW-MSA-DATA.
+039000             10  P-NEW-CHG-CODE-INDEX       PIC X.
+039100             10  P-NEW-GEO-LOC-MSAX         PIC X(04) JUST RIGHT.
+039200             10  P-NEW-GEO-LOC-MSA9   REDEFINES
+039300                             P-NEW-GEO-LOC-MSAX  PIC 9(04).
+039400             10  P-NEW-GEO REDEFINES
+039500                                 P-NEW-GEO-LOC-MSAX.
+039600                 15  P-NEW-GEO-RURAL-1ST.
+039700                     20  P-NEW-GEO-RURAL  PIC XX.
+039800                         88  P-NEW-GEO-MSAX-RURAL VALUE '  '.
+039900                 15  P-NEW-GEO-RURAL-2ND        PIC XX.
+040000             10  P-NEW-WAGE-INDEX-LOC-MSA   PIC X(04) JUST RIGHT.
+040100             10  P-NEW-STAND-AMT-LOC-MSA    PIC X(04) JUST RIGHT.
+040200             10  P-NEW-STAND-AMT-LOC-MSA9
+040300       REDEFINES P-NEW-STAND-AMT-LOC-MSA.
+040400                 15  P-NEW-RURAL-1ST.
+040500                     20  P-NEW-STAND-RURAL  PIC XX.
+040600                         88  P-NEW-STD-RURAL-CHECK VALUE '  '.
+040700                 15  P-NEW-RURAL-2ND        PIC XX.
+040800         05  P-NEW-SOL-COM-DEP-HOSP-YR PIC XX.
+040900                 88  P-NEW-SCH-YRBLANK    VALUE   '  '.
+041000                 88  P-NEW-SCH-YR82       VALUE   '82'.
+041100                 88  P-NEW-SCH-YR87       VALUE   '87'.
+041200         05  P-NEW-LUGAR                    PIC X.
+041300         05  P-NEW-TEMP-RELIEF-IND          PIC X.
+041400         05  P-NEW-FED-PPS-BLEND-IND        PIC X.
+041500         05  FILLER                         PIC X(05).
+041600     02  PROV-NEWREC-HOLD2.
+041700         05  P-NEW-VARIABLES.
+041800             10  P-NEW-FAC-SPEC-RATE     PIC  9(05)V9(02).
+041900             10  P-NEW-COLA              PIC  9(01)V9(03).
+042000             10  P-NEW-INTERN-RATIO      PIC  9(01)V9(04).
+042100             10  P-NEW-BED-SIZE          PIC  9(05).
+042200             10  P-NEW-OPER-CSTCHG-RATIO PIC  9(01)V9(03).
+042300             10  P-NEW-CMI               PIC  9(01)V9(04).
+042400             10  P-NEW-SSI-RATIO         PIC  V9(04).
+042500             10  P-NEW-MEDICAID-RATIO    PIC  V9(04).
+042600             10  P-NEW-PPS-BLEND-YR-IND  PIC  9(01).
+042700             10  P-NEW-PRUF-UPDTE-FACTOR PIC  9(01)V9(05).
+042800             10  P-NEW-DSH-PERCENT       PIC  V9(04).
+042900             10  P-NEW-FYE-DATE          PIC  X(08).
+043000         05  P-NEW-CBSA-DATA.
+043100             10  P-NEW-CBSA-SPEC-PAY-IND   PIC X.
+043200             10  P-NEW-CBSA-HOSP-QUAL-IND  PIC X.
+043300             10  P-NEW-CBSA-GEO-LOC        PIC X(05) JUST RIGHT.
+043400             10  P-NEW-CBSA-GEO-LOCX REDEFINES
+043500                 P-NEW-CBSA-GEO-LOC.
+043600                 15  P-NEW-CBSA-GEO-RURAL-1ST.
+043700                     20  P-NEW-CBSA-GEO-RURAL  PIC XXX.
+043800                         88  P-NEW-CBSA-GEO-RURAL-CHECK
+043900                             VALUE '   '.
+044000                 15  P-NEW-CBSA-GEO-RURAL-2ND PIC XX.
+044100             10  P-NEW-CBSA-RECLASS-LOC    PIC X(05) JUST RIGHT.
+044200             10  P-NEW-CBSA-STAND-AMT-LOC  PIC X(05) JUST RIGHT.
+044300             10  P-NEW-CBSA-SPEC-WI        PIC 9(02)V9(04).
+044400             10  P-NEW-CBSA-SPEC-WI-N  REDEFINES
+044500                 P-NEW-CBSA-SPEC-WI        PIC 9(06).
+044600     02  PROV-NEWREC-HOLD3.
+044700         05  P-NEW-PASS-AMT-DATA.
+044800             10  P-NEW-PASS-AMT-CAPITAL    PIC 9(04)V99.
+044900             10  P-NEW-PASS-AMT-DIR-MED-ED PIC 9(04)V99.
+045000             10  P-NEW-PASS-AMT-ORGAN-ACQ  PIC 9(04)V99.
+045100             10  P-NEW-PASS-AMT-PLUS-MISC  PIC 9(04)V99.
+045200         05  P-NEW-CAPI-DATA.
+045300             15  P-NEW-CAPI-PPS-PAY-CODE   PIC X.
+045400             15  P-NEW-CAPI-HOSP-SPEC-RATE PIC 9(04)V99.
+045500             15  P-NEW-CAPI-OLD-HARM-RATE  PIC 9(04)V99.
+045600             15  P-NEW-CAPI-NEW-HARM-RATIO PIC 9(01)V9999.
+045700             15  P-NEW-CAPI-CSTCHG-RATIO   PIC 9V999.
+045800             15  P-NEW-CAPI-NEW-HOSP       PIC X.
+045900             15  P-NEW-CAPI-IME            PIC 9V9999.
+046000             15  P-NEW-CAPI-EXCEPTIONS     PIC 9(04)V99.
+046100             15  P-VAL-BASED-PURCH-SCORE    PIC 9V999.
+046200*-----------------------------------------------------------------
+046300*                SUPPLEMENTAL WAGE INDEX
+046400*    1=PRIOR YEAR WAGE INDEX
+046500*    2=CURRENT YEAR IPPS-COMPARABLE WAGE INDEX (LTCHS ONLY)
+046600*    3=FUTURE USE
+046700*    4=FUTURE USE
+046800         05  P-NEW-SUPPLEMENTAL-WI.
+046900             10  P-NEW-SUPP-WI-IND         PIC X.
+047000                 88 SUPP-WI-PRIOR-YEAR     VALUE '1'.
+047100             10  P-NEW-SUPP-WI             PIC 9(2)V9(04).
+047200         05  FILLER                        PIC X(11).
+047300******************************************************************
+047400
+047500 01  WAGE-INDEX-RECORD.
+047600     05  W-CBSA              PIC 9(5).
+047700     05  W-SIZE              PIC X(01).
+047800         88  LARGE-URBAN       VALUE 'L'.
+047900         88  OTHER-URBAN       VALUE 'O'.
+048000         88  ALL-RURAL         VALUE 'R'.
+048100     05  W-CBSA-EFF-DATE     PIC 9(8).
+048200     05  FILLER              PIC X.
+048300     05  W-CBSA-WAGE-INDEX   PIC S9(02)V9(04).
+048400     05  FILLER              PIC S9(02)V9(04).
+048500     EJECT
+048600 PROCEDURE DIVISION  USING BILL-INPUT-DATA
+048700                           IPF-DATA-VARIABLES
+048800                           IPF-ADDITIONAL-VARIABLES
+048900                           PRICER-OPT-VERS-SW
+049000                           PROV-NEW-HOLD
+049100                           WAGE-INDEX-RECORD.
+049200
+049300***************************************************************
+049400*    PROCESSING:                                              *
+049500*        A. WILL PROCESS CASES BASED ON DISCHARGE DATE        *
+049600*        B. INITIALIZE IPCAL  HOLD VARIABLES.                 *
+049700*        C. EDIT THE DATA PASSED FROM THE BILL BEFORE         *
+049800*           ATTEMPTING TO CALCULATE IPF. IF THIS BILL         *
+049900*           CANNOT BE PROCESSED, SET A RETURN CODE AND        *
+050000*           GOBACK.                                           *
+050100*        D. ASSEMBLE PRICING COMPONENTS.                      *
+050200*        E. CALCULATE THE PRICE.                              *
+050300***************************************************************
+050400
+050410**>
+050420
+050500     PERFORM 0200-MAINLINE-CONTROL THRU 0200-EXIT.
+050600
+050700     MOVE CAL-VERSION  TO  IPF-CAL-VERSION.
+050800
+050900     GOBACK.
+051000
+051100 0200-MAINLINE-CONTROL.
+051200
+051300     PERFORM 1000-EDIT-THE-BILL-INFO.
+051400
+051500     IF  IPF-RTC = 00
+051600         PERFORM 2000-ASSEMBLE-PPS-VARIABLES THRU
+051700                 2000-EXIT
+051800         PERFORM 3000-CALC-PAYMENT THRU
+051900                 3000-EXIT.
+052000
+052100 0200-EXIT.   EXIT.
+052200
+052300 1000-EDIT-THE-BILL-INFO.
+052400***************************************************************
+052500*    BILL DATA EDITS IF ANY FAIL SET IPF-RTC                  *
+052600*    AND DO NOT ATTEMPT TO PRICE.                             *
+052700***************************************************************
+052800     MOVE SPACES TO WK-COMORBIDITY-DATA.
+052900
+053000     IF  IPF-RTC = 00
+053100         IF  P-NEW-WAIVER-STATE
+053200             MOVE 53 TO IPF-RTC.
+053300*-------------------------------------------------------------*
+053400*    FOR FY2020, REMOVED LIST OF INVALID DRG CODES.           *
+053500*    HOWEVER, A DRG IS A REQUIRED FIELD AND MUST HAVE A VALUE *
+053600*-------------------------------------------------------------*
+053700     IF  IPF-RTC = 00
+053800         IF  BILL-DRG = ZEROES OR SPACES
+053900             MOVE 54 TO IPF-RTC.
+054000
+054100     IF IPF-RTC = 00
+054200        IF  ((BILL-DISCHARGE-DATE < P-NEW-EFF-DATE) OR
+054300             (BILL-DISCHARGE-DATE < W-CBSA-EFF-DATE))
+054400              MOVE 55 TO IPF-RTC.
+054500
+054600     IF IPF-RTC = 00
+054700         IF  BILL-LOS NOT NUMERIC OR
+054800             BILL-LOS = ZERO
+054900             MOVE 56 TO IPF-RTC.
+055000
+055100     IF IPF-RTC = 00
+055200         IF  BILL-AGE NOT NUMERIC OR
+055300             BILL-AGE = ZERO
+055400             MOVE 57 TO IPF-RTC.
+055500
+055600 2000-ASSEMBLE-PPS-VARIABLES.
+055700***************************************************************
+055800*    THE APPROPRIATE SET OF THESE IPF VARIABLES ARE SELECTED  *
+055900*    DEPENDING ON THE BILL DISCHARGE DATE AND EFFECTIVE DATE  *
+056000*    OF THAT VARIABLE.                                        *
+056100*    3/31/2009 - THE STANDARDIZATION FACTOR WAS USED ONLY ONCE*
+056200*    TO CORRECT WHERE A COMPUTER CODE INCORRECTLY ASSIGNED    *
+056300*    NON-TEACHING STATUS TO MOST TEACHING FACILITIES.         *
+056400*    IT HAS BEEN COMMENTED OUT AS IT IS NO LONGER NEEDED.     *
+056500***************************************************************
+056600     MOVE ALL '0'  TO IPF-MF-VARIABLES.
+056700
+056800     IF P-NEW-CBSA-HOSP-QUAL-IND IS EQUAL TO '1'
+056900        MOVE 0832.94  TO IPF-BUDGNUT-RATE-AMT
+057000        MOVE 0358.60  TO IPF-ECT-RATE-AMT
+057100     ELSE
+057200        MOVE 816.61   TO IPF-BUDGNUT-RATE-AMT
+057300        MOVE 351.57   TO IPF-ECT-RATE-AMT
+057400     END-IF.
+057500
+057600     MOVE 16040.00 TO IPF-OUTL-THRES-AMT.
+057700
+057800     MOVE 0.77200  TO IPF-LABOR-SHARE.
+057900     MOVE 0.22800  TO IPF-NLABOR-SHARE.
+058000
+058100     MOVE ZEROES   TO WK-FED-PORTION
+058200                      WK-TEACH-PORTION.
+058300
+058400     IF P-NEW-STATE = 02 OR 12
+058500         MOVE P-NEW-COLA TO IPF-COLA
+058600     ELSE
+058700         MOVE 1.000 TO IPF-COLA.
+058800
+058900***************************************************************
+059000***  GET THE DRG ADJUSTMENT FACTORES OR FIRST CODES
+059100***************************************************************
+059200
+059300     PERFORM 2600-GET-DRG-FACTORS THRU 2600-EXIT.
+059400
+059500     IF IPF-RTC = '60'
+059600         MOVE '00' TO IPF-RTC
+059700         PERFORM 2700-GET-FIRST-CODES THRU 2700-EXIT.
+059800
+059900*******************************************************
+060000***  GET THE COMORBIDITY FACTORS
+060100***************************************************************
+060200
+060300     PERFORM 3900-GET-COMORBIDITY THRU 3900-EXIT.
+060400
+060500***************************************************************
+060600***  GET THE WAGE-INDEX
+060700***************************************************************
+060800
+060900     MOVE W-CBSA-WAGE-INDEX TO IPF-WAGE-INDEX.
+061000
+061100***************************************************************
+061200***  GET THE AGE ADJUSTMENT
+061300***************************************************************
+061400
+061500     IF BILL-AGE < 45
+061600        MOVE 1.00 TO IPF-AGE-ADJ
+061700        GO TO 2000-SKIP.
+061800
+061900     IF BILL-AGE < 50
+062000        MOVE 1.01 TO IPF-AGE-ADJ
+062100        GO TO 2000-SKIP.
+062200
+062300     IF BILL-AGE < 55
+062400        MOVE 1.02 TO IPF-AGE-ADJ
+062500        GO TO 2000-SKIP.
+062600
+062700     IF BILL-AGE < 60
+062800        MOVE 1.04 TO IPF-AGE-ADJ
+062900        GO TO 2000-SKIP.
+063000
+063100     IF BILL-AGE < 65
+063200        MOVE 1.07 TO IPF-AGE-ADJ
+063300        GO TO 2000-SKIP.
+063400
+063500     IF BILL-AGE < 70
+063600        MOVE 1.10 TO IPF-AGE-ADJ
+063700        GO TO 2000-SKIP.
+063800
+063900     IF BILL-AGE < 75
+064000        MOVE 1.13 TO IPF-AGE-ADJ
+064100        GO TO 2000-SKIP.
+064200
+064300     IF BILL-AGE < 80
+064400        MOVE 1.15 TO IPF-AGE-ADJ
+064500        GO TO 2000-SKIP.
+064600
+064700     MOVE 1.17 TO IPF-AGE-ADJ.
+064800
+064900 2000-SKIP.
+065000
+065100***************************************************************
+065200***  GET THE TEACHING ADJUSTMENT
+065300***************************************************************
+065400
+065500     IF P-NEW-INTERN-RATIO NUMERIC
+065600        COMPUTE IPF-TEACH-ADJ ROUNDED =
+065700              ((1 + P-NEW-INTERN-RATIO) ** 0.5150)
+065800     ELSE
+065900        MOVE 1.00 TO IPF-TEACH-ADJ.
+066000
+066100***************************************************************
+066200***  GET THE RURAL ADJUSTMENT
+066300***************************************************************
+066400
+066500     PERFORM 2100-CHECK-RURAL-ADJ
+066600        THRU 2100-EXIT.
+066700
+066800***************************************************************
+066900***  GET THE EMERGENCY ADJUSTMENT
+067000***************************************************************
+067100
+067200     IF P-NEW-TEMP-RELIEF-IND = 'Y'
+067300        MOVE 1.31 TO IPF-EMERG-ADJ
+067400                     DAY-VALUE2 (1)
+067500     ELSE
+067600        MOVE 1.19 TO IPF-EMERG-ADJ
+067700                     DAY-VALUE2 (1).
+067800
+067900***  CHECK FOR FACILITY W/O FULL SERVICE FROM CLAIM
+068000     IF BILL-SRC-OF-ADMISSION = 'D'
+068100        MOVE 1.19 TO IPF-EMERG-ADJ
+068200                     DAY-VALUE2 (1).
+068300
+068400***************************************************************
+068500***  GET THE ECT ADJUSTED PAYMENT
+068600***************************************************************
+068700
+068800     COMPUTE IPF-ECT-PAYMENT ROUNDED =
+068900             (((IPF-ECT-RATE-AMT * IPF-LABOR-SHARE) *
+069000                    W-CBSA-WAGE-INDEX)
+069100                           +
+069200              ((IPF-ECT-RATE-AMT * IPF-NLABOR-SHARE) *
+069300                       IPF-COLA)).
+069400
+069500     COMPUTE IPF-ECT-PAYMENT ROUNDED =
+069600             IPF-ECT-PAYMENT * BILL-ECT-NO-OF-UNITS.
+069700
+069800 2000-EXIT.   EXIT.
+069900
+070000 2100-CHECK-RURAL-ADJ.
+070100
+070200     IF P-NEW-CBSA-GEO-RURAL-CHECK
+070300        MOVE 1.17 TO IPF-GEO-RURAL-ADJ
+070400        MOVE 1.17 TO WS-IPF-GEO-RURAL-ADJ
+070500     ELSE
+070600        MOVE 1.00 TO IPF-GEO-RURAL-ADJ
+070700        MOVE 1.00 TO WS-IPF-GEO-RURAL-ADJ.
+070800
+070900 2100-EXIT.   EXIT.
+071000
+071100 2600-GET-DRG-FACTORS.
+071200
+071300     SET DRGSUB TO 1.
+071400     SEARCH TB-DRG-DATA2 VARYING DRGSUB
+071500         AT END
+071600            MOVE '60' TO IPF-RTC
+071700            GO TO 2600-EXIT
+071800         WHEN TB-DRG-CODE (DRGSUB) = BILL-DRG
+071900            MOVE TB-DRG-FACTOR (DRGSUB, 1) TO IPF-DRG-FACTOR.
+072000
+072100 2600-EXIT.    EXIT.
+072200
+072300 2700-GET-FIRST-CODES.
+072400
+072500     SET FSTSUB TO 1.
+072600     SEARCH TB-FST-DATA2 VARYING FSTSUB
+072700       AT END
+072800          MOVE 1.00 TO IPF-DRG-FACTOR
+072900          GO TO 2700-EXIT
+073000       WHEN  TB-FST-CODE (FSTSUB) = BILL-OTHER-DIAG-DATA(2)
+073100          MOVE TB-FST-FACTOR (FSTSUB, 1) TO IPF-DRG-FACTOR.
+073200
+073300 2700-EXIT.    EXIT.
+073400
+073500 3000-CALC-PAYMENT.
+073600***************************************************************
+073700***  CALCULATE THE WAGE ADJ RATES
+073800***************************************************************
+073900
+074000     COMPUTE IPF-LABOR-BASE-AMT ROUNDED =
+074100                ((IPF-BUDGNUT-RATE-AMT * IPF-LABOR-SHARE) *
+074200                     W-CBSA-WAGE-INDEX).
+074300
+074400     COMPUTE IPF-NLABOR-BASE-AMT ROUNDED =
+074500                ((IPF-BUDGNUT-RATE-AMT * IPF-NLABOR-SHARE) *
+074600                     IPF-COLA).
+074700
+074800     COMPUTE IPF-WAGE-ADJ-AMT ROUNDED =
+074900                (IPF-LABOR-BASE-AMT + IPF-NLABOR-BASE-AMT).
+075000
+075100***************************************************************
+075200***  CALCULATE ADJUSTED PER DIEM AMOUNT W/O TEACH-ADJ
+075300***************************************************************
+075400
+075500     COMPUTE WK-ADJ-PER-DIEM-STEP2 ROUNDED =
+075600          (IPF-COMORB-FACTOR *
+075700           IPF-AGE-ADJ * IPF-DRG-FACTOR *
+075800           WS-IPF-GEO-RURAL-ADJ)
+075900                         *
+076000                IPF-WAGE-ADJ-AMT.
+076100
+076200***************************************************************
+076300***  CALCULATE THE DAY LOS FOR TOTAL PAYMENT W/O  TEACH-ADJ
+076400***************************************************************
+076500
+076600     MOVE WK-ADJ-PER-DIEM-STEP2 TO IPF-ADJUSTED-PER-DIEM-AMT
+076700                                   WK-PER-DIEM-AMT.
+076800
+076900     MOVE ZEROES TO DAYS-UPTO-21
+077000                    DAYS-OVER-21
+077100                    IPF-FED-PAYMENT.
+077200     MOVE 001    TO SUB
+077300                    SUB2.
+077400
+077500     COMPUTE SUB2 = SUB2 + BILL-PRIOR-DAYS.
+077600     COMPUTE WK-TOTAL-LOS = BILL-LOS + BILL-PRIOR-DAYS.
+077700
+077800     IF WK-TOTAL-LOS > 21
+077900        COMPUTE DAYS-OVER-21 = (WK-TOTAL-LOS - 21)
+078000        MOVE 21 TO DAYS-UPTO-21
+078100     ELSE
+078200        MOVE WK-TOTAL-LOS TO DAYS-UPTO-21.
+078300
+078400     PERFORM 3100-GET-EACH-DAY THRU 3100-EXIT  VARYING
+078500             SUB FROM SUB2 BY 1 UNTIL
+078600             SUB > DAYS-UPTO-21.
+078700
+078800     IF WK-TOTAL-LOS > 21
+078900        IF BILL-LOS > 0
+079000           IF DAYS-OVER-21 > BILL-LOS
+079100              MOVE BILL-LOS  TO DAYS-OVER-21
+079200           END-IF
+079300        END-IF
+079400        COMPUTE IPF-FED-PAYMENT ROUNDED =
+079500                IPF-FED-PAYMENT +
+079600       (DAYS-OVER-21 * (WK-PER-DIEM-AMT *
+079700                         DAY-VALUE2 (22)))
+079800     END-IF.
+079900
+080000     MOVE IPF-FED-PAYMENT TO WK-FED-PORTION.
+080100
+080200     MOVE ZEROES TO IPF-FED-PAYMENT.
+080300
+080400***************************************************************
+080500     IF IPF-TEACH-ADJ = 1.00
+080600        MOVE ZEROES TO WK-ADJ-PER-DIEM-STEP1
+080700                       WK-TEACH-PORTION
+080800        GO TO 3000-BYPASS-TEACH.
+080900
+081000***************************************************************
+081100***  CALCULATE ADJUSTED PER DIEM AMOUNT WITH TEACHING-ADJ
+081200***************************************************************
+081300
+081400     COMPUTE WK-ADJ-PER-DIEM-STEP1 ROUNDED =
+081500          (IPF-COMORB-FACTOR *
+081600           IPF-AGE-ADJ * IPF-DRG-FACTOR *
+081700           IPF-TEACH-ADJ * WS-IPF-GEO-RURAL-ADJ)
+081800                         *
+081900                IPF-WAGE-ADJ-AMT.
+082000
+082100***************************************************************
+082200***  CALCULATE THE ADJUSTED PER DIEM AMOUNT
+082300***************************************************************
+082400
+082500     COMPUTE  WK-PER-DIEM-AMT ROUNDED =
+082600             WK-ADJ-PER-DIEM-STEP1 - WK-ADJ-PER-DIEM-STEP2.
+082700
+082800     MOVE WK-ADJ-PER-DIEM-STEP1 TO IPF-ADJUSTED-PER-DIEM-AMT.
+082900
+083000***************************************************************
+083100***  CALCULATE THE DAY LOS FOR TEACH ONLY
+083200***************************************************************
+083300
+083400     MOVE ZEROES TO DAYS-UPTO-21
+083500                    DAYS-OVER-21
+083600                    IPF-FED-PAYMENT.
+083700
+083800     MOVE 001    TO SUB
+083900                    SUB2.
+084000
+084100     COMPUTE SUB2 = SUB2 + BILL-PRIOR-DAYS.
+084200     COMPUTE WK-TOTAL-LOS = BILL-LOS + BILL-PRIOR-DAYS.
+084300
+084400     IF WK-TOTAL-LOS > 21
+084500        COMPUTE DAYS-OVER-21 = (WK-TOTAL-LOS - 21)
+084600        MOVE 21 TO DAYS-UPTO-21
+084700     ELSE
+084800        MOVE WK-TOTAL-LOS TO DAYS-UPTO-21.
+084900
+085000     PERFORM 3100-GET-EACH-DAY THRU 3100-EXIT  VARYING
+085100             SUB FROM SUB2 BY 1 UNTIL
+085200             SUB > DAYS-UPTO-21.
+085300
+085400     IF WK-TOTAL-LOS > 21
+085500        IF BILL-LOS > 0
+085600           IF DAYS-OVER-21 > BILL-LOS
+085700              MOVE BILL-LOS  TO DAYS-OVER-21
+085800           END-IF
+085900        END-IF
+086000        COMPUTE IPF-FED-PAYMENT ROUNDED =
+086100                IPF-FED-PAYMENT +
+086200       (DAYS-OVER-21 * (WK-PER-DIEM-AMT *
+086300                         DAY-VALUE2 (22)))
+086400     END-IF.
+086500
+086600     MOVE IPF-FED-PAYMENT TO WK-TEACH-PORTION.
+086700
+086800     MOVE ZEROES TO IPF-FED-PAYMENT.
+086900
+087000***************************************************************
+087100***  ADD FED AND TEACHING INPUT TO OULTLIER
+087200***************************************************************
+087300 3000-BYPASS-TEACH.
+087400
+087500     COMPUTE IPF-FED-PAYMENT ROUNDED =
+087600                      WK-FED-PORTION + WK-TEACH-PORTION.
+087700
+087800***************************************************************
+087900***  CHECK FOR OUTLIER TO BE APPLIED
+088000***************************************************************
+088100
+088200     IF ((BILL-PATIENT-STATUS = '30' AND
+088300          BILL-OUTL-OCCUR-IND  = 'Y')
+088400                     OR
+088500         (BILL-PATIENT-STATUS NOT = '30'))
+088600          PERFORM 3050-GET-OUTLIER THRU 3050-EXIT.
+088700
+088800***************************************************************
+088900***  RETURN 100% PPS AMOUNT  FOR STOP LOSS PROVISION
+089000***  NOT BLENDED
+089100***************************************************************
+089200
+089300      COMPUTE IPF-100PCT-STOPLOS-AMT ROUNDED =
+089400              WK-FED-PORTION + IPF-OUTLIER-PAYMENT +
+089500              IPF-ECT-PAYMENT + WK-TEACH-PORTION.
+089600
+089700     COMPUTE IPF-FED-PAYMENT ROUNDED =
+089800                WK-FED-PORTION * 1.00
+089900     COMPUTE IPF-ECT-PAYMENT ROUNDED =
+090000                IPF-ECT-PAYMENT * 1.00
+090100     COMPUTE IPF-TEACH-PAYMENT ROUNDED =
+090200                WK-TEACH-PORTION * 1.00
+090300     COMPUTE IPF-OUTLIER-PAYMENT ROUNDED =
+090400                IPF-OUTLIER-PAYMENT * 1.00
+090500     COMPUTE IPF-FAC-PAYMENT ROUNDED =
+090600                P-NEW-FAC-SPEC-RATE * .0.
+090700
+090800     COMPUTE IPF-TOT-PAYMENT ROUNDED =
+090900             IPF-FED-PAYMENT + IPF-FAC-PAYMENT +
+091000             IPF-ECT-PAYMENT + IPF-TEACH-PAYMENT +
+091100             IPF-OUTLIER-PAYMENT.
+091200
+091300     IF IPF-RTC = 00
+091400        IF BILL-PRIOR-DAYS IS GREATER THAN 0
+091500           MOVE 03 TO IPF-RTC.
+091600     IF IPF-RTC = 02
+091700        IF BILL-PRIOR-DAYS IS GREATER THAN 0
+091800           MOVE 04 TO IPF-RTC.
+091900
+092000 3000-EXIT.   EXIT.
+092100
+092200************************************
+092300***  CALCULATE THE OUTLIER PAYMENT
+092400************************************
+092500 3050-GET-OUTLIER.
+092700******************************************************************
+092800** CALCULATE THE ADJUSTED FIXED DOLLAR LOSS THRESHOLD            *
+092910******************************************************************
+093100
+093200     COMPUTE IPF-OUTL-LABOR-BASE-AMT ROUNDED =
+093300                ((IPF-OUTL-THRES-AMT * IPF-LABOR-SHARE) *
+093400                     W-CBSA-WAGE-INDEX).
+093500
+093600     COMPUTE IPF-OUTL-NLABOR-BASE-AMT ROUNDED =
+093700                ((IPF-OUTL-THRES-AMT * IPF-NLABOR-SHARE) *
+093800                     IPF-COLA).
+093900
+094000     COMPUTE IPF-OUTL-THRES-ADJ-AMT ROUNDED =
+094100           ((IPF-OUTL-LABOR-BASE-AMT +
+094200             IPF-OUTL-NLABOR-BASE-AMT) *
+094300             WS-IPF-GEO-RURAL-ADJ *
+094400             IPF-TEACH-ADJ) +
+094500             IPF-FED-PAYMENT +
+094600             IPF-ECT-PAYMENT.
+094700
+094710******************************************************************
+094800**  NOTE> IPF-FED-PAYMENT CONTAINS NO ECT OR OUTL PAYMENT        *
+094900**           AT THIS POINT IN THE PROGRAM LOGIC                  *
+094910******************************************************************
+095000
+095100******************************************************************
+095200** CALCULATE ELIGIBLE OUTLIER COSTS                              *
+095210******************************************************************
+095400
+095500     MOVE P-NEW-OPER-CSTCHG-RATIO TO IPF-CSTCHG-RATIO.
+095600     COMPUTE IPF-OUTL-COST ROUNDED =
+095700             (BILL-CHARGES-CLAIMED * P-NEW-OPER-CSTCHG-RATIO).
+095800
+095900     MOVE '02' TO IPF-RTC.
+096000
+096100     IF IPF-OUTL-COST < IPF-OUTL-THRES-ADJ-AMT
+096200        MOVE '00' TO IPF-RTC
+096300        MOVE ZEROES TO IPF-OUTLIER-PAYMENT
+096400        GO TO 3050-EXIT.
+096500
+096600     COMPUTE IPF-OUTL-ADJ-COST ROUNDED =
+096700             (IPF-OUTL-COST - IPF-OUTL-THRES-ADJ-AMT).
+096800
+096900     COMPUTE IPF-OUTL-PER-DIEM-AMT ROUNDED =
+097000            (IPF-OUTL-ADJ-COST / BILL-LOS).
+097102
+097114*----------------------------------------------------------------*
+097140
+097145     INITIALIZE DAYS-UPTO-9, DAYS-OVER-9, WS-SUM-LOS-PD.
+097146
+097148     COMPUTE WS-SUM-LOS-PD = BILL-LOS + BILL-PRIOR-DAYS.
+097150
+097151     IF BILL-PRIOR-DAYS = 0
+097160        PERFORM 3200-OUTL-NO-PRIOR-DAYS      THRU 3200-EXIT
+097170     END-IF.
+097180     IF BILL-PRIOR-DAYS > 0
+097190        PERFORM 3300-OUTL-WITH-PRIOR-DAYS    THRU 3300-EXIT
+097191     END-IF.
+097192
+098900     IF IPF-OUTLIER-PAYMENT = ZEROES
+099000        MOVE '00' TO IPF-RTC.
+099100
+099200 3050-EXIT.   EXIT.
+099300
+099400 3100-GET-EACH-DAY.
+099500
+099600     COMPUTE IPF-FED-PAYMENT ROUNDED =
+099700             IPF-FED-PAYMENT + (WK-PER-DIEM-AMT *
+099800                                  DAY-VALUE2 (SUB)).
+099900
+100000 3100-EXIT.   EXIT.
+100100
+100110 3200-OUTL-NO-PRIOR-DAYS.
+100120
+100130     IF BILL-LOS > 9
+100140        COMPUTE DAYS-OVER-9 = (BILL-LOS - 9)
+100150        MOVE 9 TO DAYS-UPTO-9
+100160     ELSE
+100170        MOVE BILL-LOS TO DAYS-UPTO-9
+100180     END-IF.
+100190
+100191     COMPUTE IPF-OUTLIER-PAYMENT ROUNDED =
+100192             (DAYS-UPTO-9 * (IPF-OUTL-PER-DIEM-AMT * .80)).
+100193
+100194     IF BILL-LOS > 9
+100195        COMPUTE IPF-OUTLIER-PAYMENT ROUNDED =
+100196                IPF-OUTLIER-PAYMENT +
+100197           (DAYS-OVER-9 * (IPF-OUTL-PER-DIEM-AMT * .60))
+100198     END-IF.
+100199
+100200 3200-EXIT.
+100201     EXIT.
+100202
+100207 3300-OUTL-WITH-PRIOR-DAYS.
+100208
+100212     IF BILL-PRIOR-DAYS < 9
+100213        COMPUTE DAYS-UPTO-9 = 9 - BILL-PRIOR-DAYS
+100214        COMPUTE DAYS-OVER-9 = WS-SUM-LOS-PD - 9
+100217        COMPUTE IPF-OUTLIER-PAYMENT ROUNDED =
+100218           (DAYS-UPTO-9 * (IPF-OUTL-PER-DIEM-AMT * .80)) +
+100219           (DAYS-OVER-9 * (IPF-OUTL-PER-DIEM-AMT * .60))
+100220     END-IF.
+100221
+100222     IF BILL-PRIOR-DAYS = 9
+100223        COMPUTE DAYS-UPTO-9 = 9 - BILL-PRIOR-DAYS
+100224        COMPUTE DAYS-OVER-9 = WS-SUM-LOS-PD - 9
+100227        COMPUTE IPF-OUTLIER-PAYMENT ROUNDED =
+100228           (DAYS-UPTO-9 * (IPF-OUTL-PER-DIEM-AMT * .80)) +
+100229           (DAYS-OVER-9 * (IPF-OUTL-PER-DIEM-AMT * .60))
+100230     END-IF.
+100231
+100232     IF BILL-PRIOR-DAYS > 9
+100233        MOVE 0 TO DAYS-UPTO-9
+100234        COMPUTE DAYS-OVER-9 = WS-SUM-LOS-PD - 9
+100237        COMPUTE IPF-OUTLIER-PAYMENT ROUNDED =
+100238           (DAYS-UPTO-9 * (IPF-OUTL-PER-DIEM-AMT * .80)) +
+100239           (DAYS-OVER-9 * (IPF-OUTL-PER-DIEM-AMT * .60))
+100240     END-IF.
+100241 3300-EXIT.
+100242     EXIT.
+100243
+100250 3900-GET-COMORBIDITY.
+100300
+100400     INITIALIZE SW-CATS.
+100500     MOVE BILL-DIAG-PROC-DATA TO WK-COMORBIDITY-DATA.
+100600     MOVE 01.0000 TO HOLDADJ.
+100700
+100800     PERFORM 4000-CAT-SEARCH THRU 4000-EXIT
+100900       VARYING X1 FROM 2 BY 1 UNTIL X1 > 25
+101000            OR SW-STOP-CATS = 'Y'.
+101100
+101200
+101300     MOVE HOLDADJ TO IPF-COMORB-FACTOR.
+101400
+101500 3900-EXIT.   EXIT.
+101600     EJECT
+101700******************************************************************
+101800* EACH CATEGORY CAN ONLY BE HIT ONCE FOR EACH BILL               *
+101900******************************************************************
+102000 4000-CAT-SEARCH.
+102100
+102200     IF DDXX (X1) = SPACES
+102300         MOVE 'Y'    TO SW-STOP-CATS
+102400         GO TO 4000-EXIT.
+102500
+102600     PERFORM 4010-CAT1-SEARCH        THRU 4010-EXIT.
+102700     PERFORM 4020-CAT2-SEARCH        THRU 4020-EXIT.
+102800     PERFORM 4030-CAT3-SEARCH        THRU 4030-EXIT.
+102900     PERFORM 4040-CAT4-SEARCH        THRU 4040-EXIT.
+103000     PERFORM 4050-CAT5-SEARCH        THRU 4050-EXIT.
+103100     PERFORM 4060-CAT6-SEARCH        THRU 4060-EXIT.
+103200     PERFORM 4070-CAT7-SEARCH        THRU 4070-EXIT.
+103300     PERFORM 4080-CAT8-SEARCH        THRU 4080-EXIT.
+103400     PERFORM 4090-CAT9-SEARCH        THRU 4090-EXIT.
+103500     PERFORM 4100-CAT10-SEARCH       THRU 4100-EXIT.
+103600     PERFORM 4110-CAT11-SEARCH       THRU 4110-EXIT.
+103700     PERFORM 4120-CAT12-SEARCH       THRU 4120-EXIT.
+103800     PERFORM 4130-CAT13-SEARCH       THRU 4130-EXIT.
+103900     PERFORM 4140-CAT14-SEARCH       THRU 4140-EXIT.
+104000     PERFORM 4150-CAT15-SEARCH       THRU 4150-EXIT.
+104100     PERFORM 4160-CAT16-SEARCH       THRU 4160-EXIT.
+104200     PERFORM 4170-CAT17-SEARCH       THRU 4170-EXIT.
+104300
+104400 4000-EXIT.
+104500     EXIT.
+104600     EJECT
+104700***************************************************************
+104800* DEVELOPMENTAL DISABILITIES                                  *
+104900***************************************************************
+105000 4010-CAT1-SEARCH.
+105100
+105200     IF SW-CAT1 = 'Y'
+105300        GO TO 4010-EXIT.
+105400
+105500     SEARCH ALL CAT1-DATA
+105600        AT END
+105700          GO TO 4010-EXIT
+105800        WHEN
+105900          CAT1-CODE (IX-CAT1) = DDXX (X1)
+106000          COMPUTE HOLDADJ ROUNDED = HOLDADJ * 1.04
+106100          MOVE 'Y' TO SW-CAT1.
+106200
+106300 4010-EXIT.
+106400     EXIT.
+106500     EJECT
+106600***************************************************************
+106700* COAGULATION FACTOR DEFICITS                                 *
+106800***************************************************************
+106900 4020-CAT2-SEARCH.
+107000
+107100     IF SW-CAT2 = 'Y'
+107200        GO TO 4020-EXIT.
+107300
+107400     SEARCH ALL CAT2-DATA
+107500        AT END
+107600          GO TO 4020-EXIT
+107700        WHEN
+107800          CAT2-CODE (IX-CAT2) = DDXX (X1)
+107900          COMPUTE HOLDADJ ROUNDED = HOLDADJ * 1.13
+108000          MOVE 'Y' TO SW-CAT2.
+108100
+108200 4020-EXIT.
+108300     EXIT.
+108400     EJECT
+108500***************************************************************
+108600* TRACHEOSTOMY                                                *
+108700***************************************************************
+108800 4030-CAT3-SEARCH.
+108900
+109000     IF SW-CAT3 = 'Y'
+109100        GO TO 4030-EXIT.
+109200
+109300     SEARCH ALL CAT3-DATA
+109400        AT END
+109500          GO TO 4030-EXIT
+109600        WHEN
+109700          CAT3-CODE (IX-CAT3) = DDXX (X1)
+109800          COMPUTE HOLDADJ ROUNDED = HOLDADJ * 1.06
+109900          MOVE 'Y' TO SW-CAT3.
+110000
+110100 4030-EXIT.
+110200     EXIT.
+110300     EJECT
+110400***************************************************************
+110500* RENAL FAILURE, ACUTE                                        *
+110600***************************************************************
+110700 4040-CAT4-SEARCH.
+110800
+110900     IF SW-CAT4 = 'Y'
+111000        GO TO 4040-EXIT.
+111100
+111200     SEARCH ALL CAT4-DATA
+111300        AT END
+111400          GO TO 4040-EXIT
+111500        WHEN
+111600          CAT4-CODE (IX-CAT4) = DDXX (X1)
+111700          COMPUTE HOLDADJ ROUNDED = HOLDADJ * 1.11
+111800          MOVE 'Y' TO SW-CAT4.
+111900
+112000 4040-EXIT.
+112100     EXIT.
+112200     EJECT
+112300***************************************************************
+112400* RENAL FAILURE, CHRONIC                                      *
+112500***************************************************************
+112600 4050-CAT5-SEARCH.
+112700
+112800     IF SW-CAT5 = 'Y'
+112900        GO TO 4050-EXIT.
+113000
+113100     SEARCH ALL CAT5-DATA
+113200        AT END
+113300          GO TO 4050-EXIT
+113400        WHEN
+113500          CAT5-CODE (IX-CAT5) = DDXX (X1)
+113600          COMPUTE HOLDADJ ROUNDED = HOLDADJ * 1.11
+113700          MOVE 'Y' TO SW-CAT5.
+113800
+113900 4050-EXIT.
+114000     EXIT.
+114100     EJECT
+114200***************************************************************
+114300* ONCOLOGY TREATMENT - DIAGNOSIS CODES                        *
+114400***************************************************************
+114500 4060-CAT6-SEARCH.
+114600
+114700     IF SW-CAT6 = 'Y'
+114800        GO TO 4060-EXIT.
+114900
+115000     SEARCH ALL CAT6-DATA
+115100        AT END
+115200          GO TO 4060-EXIT
+115300        WHEN
+115400          CAT6-CODE (IX-CAT6) = DDXX (X1)
+115500          MOVE SPACE TO SW-CAT6P
+115600          PERFORM 4065-CAT6P-SEARCH THRU 4065-EXIT
+115700                  VARYING X2 FROM 1 BY 1 UNTIL X2 > 25
+115800                  OR SW-CAT6P = 'Y'.
+115900
+116000 4060-EXIT.
+116100     EXIT.
+116200     EJECT
+116300***************************************************************
+116400* ONCOLOGY TREATMENT - PROCEDURE CODES                        *
+116500***************************************************************
+116600 4065-CAT6P-SEARCH.
+116700
+116800     SEARCH ALL CAT6P-DATA
+116900        AT END
+117000          GO TO 4065-EXIT
+117100        WHEN
+117200          CAT6P-CODE (IX-CAT6P) = SRGX (X2)
+117300          COMPUTE HOLDADJ ROUNDED = HOLDADJ * 1.07
+117400          MOVE 'Y' TO SW-CAT6
+117500          MOVE 'Y' TO SW-CAT6P.
+117600
+117700 4065-EXIT.
+117800     EXIT.
+117900     EJECT
+118000***************************************************************
+118100* UNCONTROLLED DIABETES-MELLITUS W OR WO COMPLICATIONS        *
+118200***************************************************************
+118300 4070-CAT7-SEARCH.
+118400
+118500     IF SW-CAT7 = 'Y'
+118600        GO TO 4070-EXIT.
+118700
+118800     SEARCH ALL CAT7-DATA
+118900        AT END
+119000          GO TO 4070-EXIT
+119100        WHEN
+119200          CAT7-CODE (IX-CAT7) = DDXX (X1)
+119300          COMPUTE HOLDADJ ROUNDED = HOLDADJ * 1.05
+119400          MOVE 'Y' TO SW-CAT7.
+119500
+119600 4070-EXIT.
+119700     EXIT.
+119800     EJECT
+119900***************************************************************
+120000* SEVERE PROTEIN CALORTIE MALNUTRITION                        *
+120100***************************************************************
+120200 4080-CAT8-SEARCH.
+120300
+120400     IF SW-CAT8 = 'Y'
+120500        GO TO 4080-EXIT.
+120600
+120700     SEARCH ALL CAT8-DATA
+120800        AT END
+120900          GO TO 4080-EXIT
+121000        WHEN
+121100          CAT8-CODE (IX-CAT8) = DDXX (X1)
+121200          COMPUTE HOLDADJ ROUNDED = HOLDADJ * 1.13
+121300          MOVE 'Y' TO SW-CAT8.
+121400
+121500 4080-EXIT.
+121600     EXIT.
+121700     EJECT
+121800***************************************************************
+121900* EATING AND CONDUCT DISORDERS                                *
+122000***************************************************************
+122100 4090-CAT9-SEARCH.
+122200
+122300     IF SW-CAT9 = 'Y'
+122400        GO TO 4090-EXIT.
+122500
+122600     SEARCH ALL CAT9-DATA
+122700        AT END
+122800          GO TO 4090-EXIT
+122900        WHEN
+123000          CAT9-CODE (IX-CAT9) = DDXX (X1)
+123100          COMPUTE HOLDADJ ROUNDED = HOLDADJ * 1.12
+123200          MOVE 'Y' TO SW-CAT9.
+123300
+123400 4090-EXIT.
+123500     EXIT.
+123600     EJECT
+123700***************************************************************
+123800* INFECTIOUS DISEASE                                          *
+123900***************************************************************
+124000 4100-CAT10-SEARCH.
+124100
+124200     IF SW-CAT10 = 'Y'
+124300        GO TO 4100-EXIT.
+124400
+124500     SEARCH ALL CAT10-DATA
+124600        AT END
+124700          GO TO 4100-EXIT
+124800        WHEN
+124900          CAT10-CODE (IX-CAT10) = DDXX (X1)
+125000          COMPUTE HOLDADJ ROUNDED = HOLDADJ * 1.07
+125100          MOVE 'Y' TO SW-CAT10.
+125200
+125300 4100-EXIT.
+125400     EXIT.
+125500     EJECT
+125600***************************************************************
+125700* DRUG AND/OR ALCOHOL INDUCED MENTAL DISORDERS                *
+125800***************************************************************
+125900 4110-CAT11-SEARCH.
+126000
+126100     IF SW-CAT11 = 'Y'
+126200        GO TO 4110-EXIT.
+126300
+126400     SEARCH ALL CAT11-DATA
+126500        AT END
+126600          GO TO 4110-EXIT
+126700        WHEN
+126800          CAT11-CODE (IX-CAT11) = DDXX (X1)
+126900          COMPUTE HOLDADJ ROUNDED = HOLDADJ * 1.03
+127000          MOVE 'Y' TO SW-CAT11.
+127100
+127200 4110-EXIT.
+127300     EXIT.
+127400     EJECT
+127500***************************************************************
+127600* CARDIAC CONDITIONS                                          *
+127700***************************************************************
+127800 4120-CAT12-SEARCH.
+127900
+128000     IF SW-CAT12 = 'Y'
+128100        GO TO 4120-EXIT.
+128200
+128300     SEARCH ALL CAT12-DATA
+128400        AT END
+128500          GO TO 4120-EXIT
+128600        WHEN
+128700          CAT12-CODE (IX-CAT12) = DDXX (X1)
+128800          COMPUTE HOLDADJ ROUNDED = HOLDADJ * 1.11
+128900          MOVE 'Y' TO SW-CAT12.
+129000
+129100 4120-EXIT.
+129200     EXIT.
+129300     EJECT
+129400***************************************************************
+129500* GANGRENE                                                    *
+129600***************************************************************
+129700 4130-CAT13-SEARCH.
+129800
+129900     IF SW-CAT13 = 'Y'
+130000        GO TO 4130-EXIT.
+130100
+130200     SEARCH ALL CAT13-DATA
+130300        AT END
+130400          GO TO 4130-EXIT
+130500        WHEN
+130600          CAT13-CODE (IX-CAT13) = DDXX (X1)
+130700          COMPUTE HOLDADJ ROUNDED = HOLDADJ * 1.10
+130800          MOVE 'Y' TO SW-CAT13.
+130900
+131000 4130-EXIT.
+131100     EXIT.
+131200     EJECT
+131300***************************************************************
+131400* CHRONIC OBSTRUCTIVE PULMONARY DISEASE                       *
+131500***************************************************************
+131600 4140-CAT14-SEARCH.
+131700
+131800     IF SW-CAT14 = 'Y'
+131900        GO TO 4140-EXIT.
+132000
+132100*-------------------------------------------------------------*
+132200* FOR COVID-19, VALID ONLY ON OR AFTER 20200401               *
+132300     IF DDXX (X1) = 'U071'
+132400        IF BILL-DISCHARGE-DATE < 20200401
+132500         GO TO 4140-EXIT.
+132600*-------------------------------------------------------------*
+132700
+132800     SEARCH ALL CAT14-DATA
+132900        AT END
+133000          GO TO 4140-EXIT
+133100        WHEN
+133200          CAT14-CODE (IX-CAT14) = DDXX (X1)
+133300          COMPUTE HOLDADJ ROUNDED = HOLDADJ * 1.12
+133400          MOVE 'Y' TO SW-CAT14.
+133500
+133600 4140-EXIT.
+133700     EXIT.
+133800     EJECT
+133900***************************************************************
+134000* ARTIFICIAL OPENINGS - DIGESTIVE AND URINARY                 *
+134100***************************************************************
+134200 4150-CAT15-SEARCH.
+134300
+134400     IF SW-CAT15 = 'Y'
+134500        GO TO 4150-EXIT.
+134600
+134700     SEARCH ALL CAT15-DATA
+134800        AT END
+134900          GO TO 4150-EXIT
+135000        WHEN
+135100          CAT15-CODE (IX-CAT15) = DDXX (X1)
+135200          COMPUTE HOLDADJ ROUNDED = HOLDADJ * 1.08
+135300          MOVE 'Y' TO SW-CAT15.
+135400
+135500 4150-EXIT.
+135600     EXIT.
+135700     EJECT
+135800***************************************************************
+135900* SEVERE MUSCLOSKELETAL AND CONNECTIVE TISSUE                 *
+136000***************************************************************
+136100 4160-CAT16-SEARCH.
+136200
+136300     IF SW-CAT16 = 'Y'
+136400        GO TO 4160-EXIT.
+136500
+136600     SEARCH ALL CAT16-DATA
+136700        AT END
+136800          GO TO 4160-EXIT
+136900        WHEN
+137000          CAT16-CODE (IX-CAT16) = DDXX (X1)
+137100          COMPUTE HOLDADJ ROUNDED = HOLDADJ * 1.09
+137200          MOVE 'Y' TO SW-CAT16.
+137300
+137400 4160-EXIT.
+137500     EXIT.
+137600     EJECT
+137700***************************************************************
+137800* POISONING                                                   *
+137900***************************************************************
+138000 4170-CAT17-SEARCH.
+138100
+138200     IF SW-CAT17 = 'Y'
+138300        GO TO 4170-EXIT.
+138400
+138500     SEARCH ALL CAT17-DATA
+138600        AT END
+138700          GO TO 4170-EXIT
+138800        WHEN
+138900          CAT17-CODE (IX-CAT17) = DDXX (X1)
+139000          COMPUTE HOLDADJ ROUNDED = HOLDADJ * 1.11
+139100          MOVE 'Y' TO SW-CAT17.
+139200
+139300 4170-EXIT.
+139400     EXIT.
+139500
+139600***************************************************************
+139700******       L A S T   S O U R C E   S T A T E M E N T    *****
+139800***************************************************************
+

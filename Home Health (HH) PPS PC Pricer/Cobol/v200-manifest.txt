@@ -1,0 +1,70 @@
+************************************************************************
+*                                                                      *
+*                           MANIFEST LIST                              *
+*                                                                      *
+* DATASET NAME:        MU00.@BFN2699.HHNDM200                          *
+* PRICER:              HOME HEALTH PPS PRICER (HHA)                    *
+* VERSION:             2020.0                                          *
+* CR#    :             11536                                           *
+*                                                                      *
+* IMPLEMENTATION DATE: 01/01/2020                                      *
+* BETA/PRODUCTION:     PRODUCTION                                      *
+* RELEASE DATE:        11/06/2019                                      *
+*                                                                      *
+*----------------------------------------------------------------------*
+*                                                                      *
+* TOTAL NUMBER OF MEMBERS ASSOCIATED WITH THIS PRICER: 25              *
+*                                                                      *
+*     - NUMBER OF MEMBERS INCLUDED IN THIS DATASET: 4                  *
+*       - NEW MEMBERS: 2                                               *
+*         (LISTED BELOW UNDER "NON-PAIRED NEW FILE MEMBERS")           *
+*       - MEMBERS WITH CHANGES: 2                                      *
+*         (LISTED BELOW WITH "**" IN THE "CHNG" COLUMN)                *
+*                                                                      *
+*     - NUMBER OF MEMBERS NOT INCLUDED IN THIS DATASET: 21             *
+*       - MEMBERS WITH NO CHANGES: 21                                  *
+*         (LISTED BELOW WITH NOTHING IN THE "CHNG" COLUMN)             *
+*                                                                      *
+************************************************************************
+                       MEMBER SUMMARY LISTING (LINE COMPARE)
+
+ CHNG MEMBERS-COMPARED NEW-PROC OLD-PROC  MATCHED NEW-INS OLD-DEL REFM-LN N-DP-L
+
+      ADDONTBL             2002     2002     2002
+      HHCAL016              874      874      874
+      HHCAL023              867      867      867
+      HHCAL033              995      995      995
+      HHCAL044              989      989      989
+      HHCAL053              993      993      993
+      HHCAL066             1033     1033     1033
+      HHCAL074             1080     1080     1080
+      HHCAL088             1272     1272     1272
+      HHCAL095             1297     1297     1297
+      HHCAL10A             1439     1439     1439
+      HHCAL10D             1579     1579     1579
+      HHCAL113             1437     1437     1437
+      HHCAL122             1438     1438     1438
+      HHCAL132             1442     1442     1442
+      HHCAL145             1833     1833     1833
+      HHCAL152             1840     1840     1840
+      HHCAL160             1840     1840     1840
+      HHCAL171             1827     1827     1827
+      HHCAL181             2125     2125     2125
+      HHCAL190             2338     2338     2338
+ **   MANIFEST
+ **   README
+
+    21   TOTAL MEMBER(S) PROCESSED AS A PDS
+     0   TOTAL MEMBER(S) PROCESSED HAD CHANGES
+    21   TOTAL MEMBER(S) PROCESSED HAD NO CHANGES
+     2   TOTAL NEW FILE MEMBER(S) NOT PAIRED
+     0   TOTAL OLD FILE MEMBER(S) NOT PAIRED
+
+
+                       MEMBER SUMMARY LISTING (LINE COMPARE)
+
+    NON-PAIRED NEW FILE MEMBERS         ³   NON-PAIRED OLD FILE MEMBERS
+
+        HHCAL200                        ³
+        HHDRV200                        ³
+

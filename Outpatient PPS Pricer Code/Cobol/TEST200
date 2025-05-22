@@ -1,0 +1,34 @@
+      ****************************************************
+      * PREVIOUS FISCAL YEAR (FR19) WAGE INDEX TABLE     *
+      * FOR USE WITH THE OPPS FINAL RULE                 *
+      * REVISED 09/10/2019 (CY 2020)                     *
+      ****************************************************
+       01  PREV-ADJ-TABLE.
+           02  PREV-ADJ-DATA.
+               05  FILLER   PIC X(13)  VALUE    '010998 007313'.
+               05  FILLER   PIC X(13)  VALUE    '010999 007313'.
+               05  FILLER   PIC X(13)  VALUE    '020011 012130'.
+               05  FILLER   PIC X(13)  VALUE    '030083 010528'.
+               05  FILLER   PIC X(13)  VALUE    '041111 008908'.
+               05  FILLER   PIC X(13)  VALUE    '053304 012500'.
+               05  FILLER   PIC X(13)  VALUE    '060023 010050'.
+               05  FILLER   PIC X(13)  VALUE    '114619 007932'.
+               05  FILLER   PIC X(13)  VALUE    '130003 010292'.
+               05  FILLER   PIC X(13)  VALUE    '170001 007718'.
+               05  FILLER   PIC X(13)  VALUE    '170137 009165'.
+               05  FILLER   PIC X(13)  VALUE    '180051 008577'.
+               05  FILLER   PIC X(13)  VALUE    '230022 008469'.
+               05  FILLER   PIC X(13)  VALUE    '230022 008469'.
+               05  FILLER   PIC X(13)  VALUE    '370324 008909'.
+               05  FILLER   PIC X(13)  VALUE    '390201 010304'.
+               05  FILLER   PIC X(13)  VALUE    '390233 009585'.
+               05  FILLER   PIC X(13)  VALUE    '400008 003711'.
+               05  FILLER   PIC X(13)  VALUE    '400079 003711'.
+           02  PREV-ADJ-DATA2 REDEFINES PREV-ADJ-DATA.
+               05  PREV-TAB OCCURS 19 TIMES
+                            ASCENDING KEY IS PREV-PROV
+                            INDEXED BY PREV-IDX.
+                   10  PREV-DATA-TAB.
+                       15  PREV-PROV        PIC X(06).
+                       15  FILLER           PIC X(01).
+                       15  PREV-WI          PIC 9(02)V9(04).
